@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import Modal from '../shared/Modal.vue';
 import Avatar from '../shared/Avatar.vue';
 import { useChatStore } from '../../store';
+import { chatableKeyOf } from '../../chatable';
 import { useUsers } from '../../composables/useUsers';
 import { useMessages } from '../../composables/useMessages';
 
@@ -20,8 +21,8 @@ const selected = ref([]);
 
 function displayName(conversation) {
     if (conversation.type === 'group') return conversation.name || 'Group';
-    const other = (conversation.participants ?? []).find((p) => p.user_id !== store.currentUserId);
-    return other ? get(other.user_id).name : 'Unknown';
+    const other = (conversation.participants ?? []).find((p) => chatableKeyOf(p) !== store.currentKey);
+    return other ? get({ type: other.chatable_type, id: other.chatable_id }).name : 'Unknown';
 }
 
 function toggle(id) {

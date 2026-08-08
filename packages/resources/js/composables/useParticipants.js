@@ -8,17 +8,22 @@ export function useParticipants() {
         return data.data;
     }
 
-    async function add(conversationId, userIds) {
-        const { data } = await api.post(`/conversations/${conversationId}/participants`, { user_ids: userIds });
+    /**
+     * @param {Array<{type: string, id: number}>} participants
+     */
+    async function add(conversationId, participants) {
+        const { data } = await api.post(`/conversations/${conversationId}/participants`, {
+            participants: participants.map((p) => ({ type: p.type, id: p.id })),
+        });
         return data.data;
     }
 
-    async function remove(conversationId, userId) {
-        await api.delete(`/conversations/${conversationId}/participants/${userId}`);
+    async function remove(conversationId, type, id) {
+        await api.delete(`/conversations/${conversationId}/participants/${type}/${id}`);
     }
 
-    async function changeRole(conversationId, userId, role) {
-        await api.patch(`/conversations/${conversationId}/participants/${userId}/role`, { role });
+    async function changeRole(conversationId, type, id, role) {
+        await api.patch(`/conversations/${conversationId}/participants/${type}/${id}/role`, { role });
     }
 
     return { list, add, remove, changeRole };

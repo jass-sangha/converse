@@ -6,13 +6,13 @@ export function useProfile() {
     const store = useChatStore();
 
     async function ensureSelfCached() {
-        if (!store.currentUserId || store.usersById[store.currentUserId]) {
-            return store.usersById[store.currentUserId] ?? null;
+        if (!store.currentKey || store.usersById[store.currentKey]) {
+            return store.usersById[store.currentKey] ?? null;
         }
 
-        const { data } = await api.get('/users', { params: { ids: [store.currentUserId] } });
+        const { data } = await api.get('/users', { params: { type: store.currentType, ids: [store.currentId] } });
         cacheUsers(data.data);
-        return store.usersById[store.currentUserId] ?? null;
+        return store.usersById[store.currentKey] ?? null;
     }
 
     async function updateAvatar(file) {

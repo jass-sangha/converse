@@ -8,12 +8,12 @@ export function useBlockedUsers() {
         return data.data;
     }
 
-    async function block(userId) {
-        await api.post('/blocked-users', { user_id: userId });
+    async function block(chatable) {
+        await api.post('/blocked-users', { chatable_type: chatable.type, chatable_id: chatable.id });
     }
 
-    async function unblock(userId) {
-        await api.delete(`/blocked-users/${userId}`);
+    async function unblock(type, id) {
+        await api.delete(`/blocked-users/${type}/${id}`);
     }
 
     return { list, block, unblock };

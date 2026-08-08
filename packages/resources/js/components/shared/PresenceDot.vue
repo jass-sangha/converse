@@ -3,12 +3,12 @@ import { computed } from 'vue';
 import { useChatStore } from '../../store';
 
 const props = defineProps({
-    userId: { type: [Number, String], required: true },
+    chatableKey: { type: String, required: true },
 });
 
 const store = useChatStore();
 
-const presence = computed(() => store.presenceByUser[props.userId]);
+const presence = computed(() => store.presenceByUser[props.chatableKey]);
 
 const lastSeenText = computed(() => {
     if (!presence.value) return null;

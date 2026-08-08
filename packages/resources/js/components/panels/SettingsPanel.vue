@@ -20,7 +20,7 @@ const uploading = ref(false);
 const showLastSeen = ref(true);
 const showReadReceipts = ref(true);
 
-const me = computed(() => store.usersById[store.currentUserId] ?? null);
+const me = computed(() => store.usersById[store.currentKey] ?? null);
 
 onMounted(async () => {
     const settings = await getPrivacySettings();

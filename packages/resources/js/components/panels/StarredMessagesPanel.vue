@@ -1,11 +1,12 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import Modal from '../shared/Modal.vue';
 import MessageBubble from '../chat/MessageBubble.vue';
 import { useApi } from '../../composables/useApi';
 import { useConversations } from '../../composables/useConversations';
 import { useUsers } from '../../composables/useUsers';
 import { useChatStore } from '../../store';
+import { chatableKeyOf, chatableKey } from '../../chatable';
 
 const emit = defineEmits(['close']);
 
@@ -22,12 +23,13 @@ const hasMore = ref(false);
 async function loadPage(pageNumber) {
     const { data } = await api.get('/starred-messages', { params: { page: pageNumber } });
 
-    const otherIds = data.data
-        .map((message) => otherParticipantId(message))
-        .filter((id) => id !== null);
+    const others = data.data
+        .map((message) => otherParticipant(message))
+        .filter((ref) => ref !== null);
 
-    if (otherIds.length) {
-        await resolve([...new Set(otherIds)]);
+    if (others.length) {
+        const unique = [...new Map(others.map((r) => [chatableKey(r.type, r.id), r])).values()];
+        await resolve(unique);
     }
 
     if (pageNumber === 1) {
@@ -49,17 +51,17 @@ async function loadMore() {
     await loadPage(page.value + 1);
 }
 
-function otherParticipantId(message) {
+function otherParticipant(message) {
     if (!message.conversation || message.conversation.type !== 'private') return null;
-    const other = (message.conversation.participants ?? []).find((p) => p.user_id !== store.currentUserId);
-    return other?.user_id ?? null;
+    const other = (message.conversation.participants ?? []).find((p) => chatableKeyOf(p) !== store.currentKey);
+    return other ? { type: other.chatable_type, id: other.chatable_id } : null;
 }
 
 function conversationLabel(message) {
     if (!message.conversation) return '';
     if (message.conversation.type === 'group') return message.conversation.name || 'Group';
-    const otherId = otherParticipantId(message);
-    return otherId ? get(otherId).name : 'Unknown';
+    const other = otherParticipant(message);
+    return other ? get(other).name : 'Unknown';
 }
 
 function jumpTo(message) {

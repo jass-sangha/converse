@@ -4,6 +4,7 @@ import Avatar from '../shared/Avatar.vue';
 import UserPicker from '../shared/UserPicker.vue';
 import DisappearingToggle from './DisappearingToggle.vue';
 import { useChatStore } from '../../store';
+import { chatableKey, chatableKeyOf } from '../../chatable';
 import { useUsers } from '../../composables/useUsers';
 import { useParticipants } from '../../composables/useParticipants';
 import { useBlockedUsers } from '../../composables/useBlockedUsers';
@@ -25,30 +26,38 @@ const { refreshOne, leave, setWallpaper } = useConversations();
 const showAddMember = ref(false);
 const picked = ref([]);
 const error = ref('');
-const blockedIds = ref([]);
+const blockedKeys = ref([]);
 
 const isGroup = computed(() => props.conversation.type === 'group');
 const myRole = computed(() => props.conversation.me?.role);
 const isAdmin = computed(() => myRole.value === 'admin');
 
-const otherParticipant = computed(() => {
+function isMe(participant) {
+    return chatableKeyOf(participant) === store.currentKey;
+}
+
+const otherParticipantRow = computed(() => {
     if (isGroup.value) return null;
-    const other = (props.conversation.participants ?? []).find((p) => p.user_id !== store.currentUserId);
-    return other ? get(other.user_id) : null;
+    return (props.conversation.participants ?? []).find((p) => !isMe(p)) ?? null;
+});
+
+const otherParticipant = computed(() => {
+    const row = otherParticipantRow.value;
+    return row ? get({ type: row.chatable_type, id: row.chatable_id }) : null;
 });
 
 const isOtherBlocked = computed(() => {
-    const otherId = (props.conversation.participants ?? []).find((p) => p.user_id !== store.currentUserId)?.user_id;
-    return otherId ? blockedIds.value.includes(otherId) : false;
+    const row = otherParticipantRow.value;
+    return row ? blockedKeys.value.includes(chatableKey(row.chatable_type, row.chatable_id)) : false;
 });
 
 async function loadAll() {
-    const ids = (props.conversation.participants ?? []).map((p) => p.user_id);
-    if (ids.length) await resolve(ids);
+    const refs = (props.conversation.participants ?? []).map((p) => ({ type: p.chatable_type, id: p.chatable_id }));
+    if (refs.length) await resolve(refs);
 
     if (!isGroup.value) {
         const blocked = await listBlocked();
-        blockedIds.value = blocked.map((b) => b.blocked_id);
+        blockedKeys.value = blocked.map((b) => chatableKey(b.blocked_type, b.blocked_id));
     }
 }
 
@@ -58,7 +67,7 @@ watch(() => props.conversation.id, loadAll);
 async function addMembers() {
     error.value = '';
     try {
-        await add(props.conversation.id, picked.value.map((u) => u.id));
+        await add(props.conversation.id, picked.value);
         await refreshOne(props.conversation.id);
         showAddMember.value = false;
         picked.value = [];
@@ -67,10 +76,10 @@ async function addMembers() {
     }
 }
 
-async function removeMember(userId) {
+async function removeMember(participant) {
     error.value = '';
     try {
-        await remove(props.conversation.id, userId);
+        await remove(props.conversation.id, participant.chatable_type, participant.chatable_id);
         await refreshOne(props.conversation.id);
     } catch (e) {
         error.value = e.response?.data?.message ?? 'Could not remove member.';
@@ -80,7 +89,7 @@ async function removeMember(userId) {
 async function toggleAdmin(participant) {
     error.value = '';
     try {
-        await changeRole(props.conversation.id, participant.user_id, participant.role === 'admin' ? 'member' : 'admin');
+        await changeRole(props.conversation.id, participant.chatable_type, participant.chatable_id, participant.role === 'admin' ? 'member' : 'admin');
         await refreshOne(props.conversation.id);
     } catch (e) {
         error.value = e.response?.data?.message ?? 'Could not change role.';
@@ -106,15 +115,17 @@ async function onPickCustomColor(event) {
 }
 
 async function toggleBlockOther() {
-    const otherId = (props.conversation.participants ?? []).find((p) => p.user_id !== store.currentUserId)?.user_id;
-    if (!otherId) return;
+    const row = otherParticipantRow.value;
+    if (!row) return;
+
+    const key = chatableKey(row.chatable_type, row.chatable_id);
 
     if (isOtherBlocked.value) {
-        await unblock(otherId);
-        blockedIds.value = blockedIds.value.filter((id) => id !== otherId);
+        await unblock(row.chatable_type, row.chatable_id);
+        blockedKeys.value = blockedKeys.value.filter((k) => k !== key);
     } else {
-        await block(otherId);
-        blockedIds.value.push(otherId);
+        await block({ type: row.chatable_type, id: row.chatable_id });
+        blockedKeys.value.push(key);
     }
 }
 </script>
@@ -185,19 +196,19 @@ async function toggleBlockOther() {
             <ul class="cv-group-info-panel__participants-list">
                 <li
                     v-for="participant in conversation.participants"
-                    :key="participant.user_id"
+                    :key="chatableKeyOf(participant)"
                     class="cv-group-info-panel__participant-row flex items-center gap-2 py-1.5"
                 >
-                    <Avatar :name="get(participant.user_id).name" :avatar-url="get(participant.user_id).avatar_url" :size="32" />
+                    <Avatar :name="get({ type: participant.chatable_type, id: participant.chatable_id }).name" :avatar-url="get({ type: participant.chatable_type, id: participant.chatable_id }).avatar_url" :size="32" />
                     <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm">{{ get(participant.user_id).name }}</p>
+                        <p class="truncate text-sm">{{ get({ type: participant.chatable_type, id: participant.chatable_id }).name }}</p>
                         <p v-if="participant.role === 'admin'" class="text-xs text-converse-textMuted">Admin</p>
                     </div>
-                    <div v-if="isAdmin && participant.user_id !== store.currentUserId" class="flex gap-1">
+                    <div v-if="isAdmin && !isMe(participant)" class="flex gap-1">
                         <button type="button" class="text-xs text-converse-accent" @click="toggleAdmin(participant)">
                             {{ participant.role === 'admin' ? 'Demote' : 'Promote' }}
                         </button>
-                        <button type="button" class="text-xs text-converse-danger" @click="removeMember(participant.user_id)">Remove</button>
+                        <button type="button" class="text-xs text-converse-danger" @click="removeMember(participant)">Remove</button>
                     </div>
                 </li>
             </ul>

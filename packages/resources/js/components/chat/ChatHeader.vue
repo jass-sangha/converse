@@ -3,6 +3,7 @@ import { computed, onMounted, watch } from 'vue';
 import Avatar from '../shared/Avatar.vue';
 import PresenceDot from '../shared/PresenceDot.vue';
 import { useChatStore } from '../../store';
+import { chatableKey, chatableKeyOf } from '../../chatable';
 import { useUsers } from '../../composables/useUsers';
 import { usePresence } from '../../composables/usePresence';
 
@@ -16,35 +17,35 @@ const store = useChatStore();
 const { resolve, get } = useUsers();
 const { fetchPresence } = usePresence();
 
-const otherParticipantId = computed(() => {
+const otherParticipant = computed(() => {
     if (props.conversation.type !== 'private') return null;
-    const other = (props.conversation.participants ?? []).find((p) => p.user_id !== store.currentUserId);
-    return other?.user_id ?? null;
+    const other = (props.conversation.participants ?? []).find((p) => chatableKeyOf(p) !== store.currentKey);
+    return other ? { type: other.chatable_type, id: other.chatable_id } : null;
 });
 
 async function ensureResolved() {
-    if (otherParticipantId.value) {
-        await Promise.all([resolve([otherParticipantId.value]), fetchPresence(otherParticipantId.value)]);
+    if (otherParticipant.value) {
+        await Promise.all([resolve([otherParticipant.value]), fetchPresence(otherParticipant.value)]);
     }
 }
 
 onMounted(ensureResolved);
-watch(otherParticipantId, ensureResolved);
+watch(otherParticipant, ensureResolved);
 
 const displayName = computed(() => {
     if (props.conversation.type === 'group') return props.conversation.name || 'Group';
-    return otherParticipantId.value ? get(otherParticipantId.value).name : 'Unknown';
+    return otherParticipant.value ? get(otherParticipant.value).name : 'Unknown';
 });
 
 const avatarUrl = computed(() => {
     if (props.conversation.avatar_url) return props.conversation.avatar_url;
-    return otherParticipantId.value ? get(otherParticipantId.value).avatar_url : null;
+    return otherParticipant.value ? get(otherParticipant.value).avatar_url : null;
 });
 
 const typingUsers = computed(() => {
     const set = store.typingByConversation[props.conversation.id];
     if (!set || !set.size) return [];
-    return Array.from(set).map((id) => get(id).name);
+    return Array.from(set).map((key) => get(key).name);
 });
 </script>
 
@@ -57,7 +58,7 @@ const typingUsers = computed(() => {
             <div class="cv-chat-header__meta min-w-0">
                 <p class="truncate font-medium">{{ displayName }}</p>
                 <p v-if="typingUsers.length" class="text-xs text-converse-accent">{{ typingUsers.join(', ') }} typing&hellip;</p>
-                <PresenceDot v-else-if="otherParticipantId" :user-id="otherParticipantId" />
+                <PresenceDot v-else-if="otherParticipant" :chatable-key="chatableKey(otherParticipant.type, otherParticipant.id)" />
             </div>
         </div>
     </div>

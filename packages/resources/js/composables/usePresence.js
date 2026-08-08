@@ -1,5 +1,6 @@
 import { useApi } from './useApi';
 import { setPresence } from '../store';
+import { chatableKey } from '../chatable';
 
 // Matches the backend's default `chat.presence.heartbeat_ttl_seconds` (60s) with a safety margin
 // so a heartbeat always lands before the server-side online window would lapse.
@@ -26,9 +27,9 @@ export function usePresence() {
         await api.post('/presence/heartbeat');
     }
 
-    async function fetchPresence(userId) {
-        const { data } = await api.get(`/users/${userId}/presence`);
-        setPresence(userId, data.data);
+    async function fetchPresence(chatable) {
+        const { data } = await api.get(`/users/${chatable.type}/${chatable.id}/presence`);
+        setPresence(chatableKey(chatable.type, chatable.id), data.data);
         return data.data;
     }
 

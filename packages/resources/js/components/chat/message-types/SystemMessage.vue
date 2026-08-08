@@ -10,19 +10,20 @@ const { get } = useUsers();
 
 const text = computed(() => {
     const meta = props.message.metadata ?? {};
-    const actor = meta.actor_id ? get(meta.actor_id).name : 'Someone';
+    const actor = meta.actor_type ? get({ type: meta.actor_type, id: meta.actor_id }).name : 'Someone';
+    const target = meta.target_type ? get({ type: meta.target_type, id: meta.target_id }) : null;
 
     switch (meta.event) {
         case 'participant_added': {
-            const names = (meta.target_ids ?? []).map((id) => get(id).name).join(', ');
+            const names = (meta.targets ?? []).map((t) => get(t).name).join(', ');
             return `${actor} added ${names}`;
         }
         case 'participant_removed':
-            return `${actor} removed ${get(meta.target_id).name}`;
+            return `${actor} removed ${target?.name ?? 'someone'}`;
         case 'participant_left':
-            return `${get(meta.target_id).name} left`;
+            return `${target?.name ?? 'Someone'} left`;
         case 'participant_role_changed':
-            return `${get(meta.target_id).name} is now ${meta.role === 'admin' ? 'an admin' : 'a member'}`;
+            return `${target?.name ?? 'Someone'} is now ${meta.role === 'admin' ? 'an admin' : 'a member'}`;
         default:
             return 'Group updated';
     }

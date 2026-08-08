@@ -14,7 +14,7 @@ const { createGroup, setActive } = useConversations();
 async function create() {
     if (!name.value.trim() || selected.value.length < 1) return;
 
-    const conversation = await createGroup(name.value.trim(), description.value.trim() || null, selected.value.map((u) => u.id));
+    const conversation = await createGroup(name.value.trim(), description.value.trim() || null, selected.value);
     setActive(conversation.id);
     emit('created', conversation);
     emit('close');

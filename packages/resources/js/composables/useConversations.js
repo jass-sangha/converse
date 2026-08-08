@@ -17,21 +17,21 @@ export function useConversations() {
         return data.data;
     }
 
-    async function createPrivate(userId) {
+    async function createPrivate(participant) {
         const { data } = await api.post('/conversations', {
             type: 'private',
-            participant_ids: [userId],
+            participants: [{ type: participant.type, id: participant.id }],
         });
         upsertConversation(data.data);
         return data.data;
     }
 
-    async function createGroup(name, description, participantIds) {
+    async function createGroup(name, description, participants) {
         const { data } = await api.post('/conversations', {
             type: 'group',
             name,
             description,
-            participant_ids: participantIds,
+            participants: participants.map((p) => ({ type: p.type, id: p.id })),
         });
         upsertConversation(data.data);
         return data.data;

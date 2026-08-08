@@ -20,7 +20,7 @@ async function refresh() {
     loading.value = true;
     const rows = await list();
     blocked.value = rows;
-    await resolve(rows.map((r) => r.blocked_id));
+    await resolve(rows.map((r) => ({ type: r.blocked_type, id: r.blocked_id })));
     loading.value = false;
 }
 
@@ -28,14 +28,14 @@ onMounted(refresh);
 
 async function addBlock() {
     if (!picked.value.length) return;
-    await block(picked.value[0].id);
+    await block(picked.value[0]);
     picked.value = [];
     showAdd.value = false;
     await refresh();
 }
 
-async function removeBlock(userId) {
-    await unblock(userId);
+async function removeBlock(row) {
+    await unblock(row.blocked_type, row.blocked_id);
     await refresh();
 }
 </script>
@@ -63,9 +63,9 @@ async function removeBlock(userId) {
 
         <ul v-else class="cv-blocked-users-panel__list">
             <li v-for="row in blocked" :key="row.id" class="cv-blocked-users-panel__row flex items-center gap-2 py-1.5">
-                <Avatar :name="get(row.blocked_id).name" :avatar-url="get(row.blocked_id).avatar_url" :size="32" />
-                <span class="flex-1 text-sm">{{ get(row.blocked_id).name }}</span>
-                <button type="button" class="text-xs text-converse-accent" @click="removeBlock(row.blocked_id)">Unblock</button>
+                <Avatar :name="get({ type: row.blocked_type, id: row.blocked_id }).name" :avatar-url="get({ type: row.blocked_type, id: row.blocked_id }).avatar_url" :size="32" />
+                <span class="flex-1 text-sm">{{ get({ type: row.blocked_type, id: row.blocked_id }).name }}</span>
+                <button type="button" class="text-xs text-converse-accent" @click="removeBlock(row)">Unblock</button>
             </li>
         </ul>
     </Modal>

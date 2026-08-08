@@ -38,7 +38,8 @@ export function useMessages() {
         const optimistic = {
             id: optimisticId,
             conversation_id: conversationId,
-            user_id: store.currentUserId,
+            chatable_type: store.currentType,
+            chatable_id: store.currentId,
             type: payload.type ?? 'text',
             body: payload.body ?? null,
             metadata: payload.metadata ?? null,

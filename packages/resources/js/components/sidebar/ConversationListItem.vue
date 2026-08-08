@@ -6,6 +6,7 @@ import ConversationMenu from './ConversationMenu.vue';
 import { useUsers } from '../../composables/useUsers';
 import { useConversations } from '../../composables/useConversations';
 import { useChatStore } from '../../store';
+import { chatableKey, chatableKeyOf } from '../../chatable';
 
 const props = defineProps({
     conversation: { type: Object, required: true },
@@ -15,7 +16,7 @@ const props = defineProps({
 defineEmits(['select']);
 
 const store = useChatStore();
-const { resolve } = useUsers();
+const { resolve, get } = useUsers();
 const { mute, setPinned, setHidden, leave } = useConversations();
 
 const isPinned = computed(() => !!(props.conversation.pinned_at || props.conversation.me?.pinned_at));
@@ -41,37 +42,32 @@ function onMenuAction(action) {
     }
 }
 
-const otherParticipantId = computed(() => {
+const otherParticipant = computed(() => {
     if (props.conversation.type !== 'private') return null;
-    const other = (props.conversation.participants ?? []).find((p) => p.user_id !== store.currentUserId);
-    return other?.user_id ?? null;
+    const other = (props.conversation.participants ?? []).find((p) => chatableKeyOf(p) !== store.currentKey);
+    return other ? { type: other.chatable_type, id: other.chatable_id } : null;
 });
 
 async function ensureResolved() {
-    if (otherParticipantId.value) {
-        await resolve([otherParticipantId.value]);
+    if (otherParticipant.value) {
+        await resolve([otherParticipant.value]);
     }
 }
 
 onMounted(ensureResolved);
-watch(otherParticipantId, ensureResolved);
+watch(otherParticipant, ensureResolved);
 
 const displayName = computed(() => {
     if (props.conversation.type === 'group') {
         return props.conversation.name || 'Group';
     }
 
-    if (otherParticipantId.value) {
-        return store.usersById[otherParticipantId.value]?.name ?? `User #${otherParticipantId.value}`;
-    }
-
-    return 'Unknown';
+    return otherParticipant.value ? get(otherParticipant.value).name : 'Unknown';
 });
 
 const avatarUrl = computed(() => {
     if (props.conversation.avatar_url) return props.conversation.avatar_url;
-    if (otherParticipantId.value) return store.usersById[otherParticipantId.value]?.avatar_url ?? null;
-    return null;
+    return otherParticipant.value ? get(otherParticipant.value).avatar_url : null;
 });
 
 const lastMessagePreview = computed(() => {
@@ -108,7 +104,7 @@ const lastMessagePreview = computed(() => {
                     {{ conversation.unread_count }}
                 </span>
             </div>
-            <PresenceDot v-if="otherParticipantId" :user-id="otherParticipantId" />
+            <PresenceDot v-if="otherParticipant" :chatable-key="chatableKey(otherParticipant.type, otherParticipant.id)" />
         </div>
 
         <ConversationMenu

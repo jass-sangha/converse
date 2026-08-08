@@ -1,7 +1,10 @@
 import { reactive } from 'vue';
+import { chatableKey } from '../chatable';
 
 const state = reactive({
-    currentUserId: null,
+    currentType: null,
+    currentId: null,
+    currentKey: null,
     conversations: [],
     activeConversationId: null,
     messagesByConversation: {},
@@ -13,6 +16,12 @@ const state = reactive({
 
 export function useChatStore() {
     return state;
+}
+
+export function setCurrentChatable(type, id) {
+    state.currentType = type;
+    state.currentId = id;
+    state.currentKey = chatableKey(type, id);
 }
 
 export function upsertConversation(conversation) {
@@ -55,23 +64,23 @@ export function removeMessage(conversationId, messageId) {
     state.messagesByConversation[conversationId] = list.filter((m) => m.id !== messageId);
 }
 
-export function setTyping(conversationId, userId, isTyping) {
+export function setTyping(conversationId, key, isTyping) {
     const set = state.typingByConversation[conversationId] ?? (state.typingByConversation[conversationId] = new Set());
 
     if (isTyping) {
-        set.add(userId);
+        set.add(key);
     } else {
-        set.delete(userId);
+        set.delete(key);
     }
 }
 
-export function setPresence(userId, presence) {
-    state.presenceByUser[userId] = { ...state.presenceByUser[userId], ...presence };
+export function setPresence(key, presence) {
+    state.presenceByUser[key] = { ...state.presenceByUser[key], ...presence };
 }
 
 export function cacheUsers(users) {
     for (const user of users) {
-        state.usersById[user.id] = user;
+        state.usersById[chatableKey(user.type, user.id)] = user;
     }
 }
 

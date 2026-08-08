@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useChatStore } from '../../store';
+import { chatableKeyOf } from '../../chatable';
 import { useMessages } from '../../composables/useMessages';
 import { useMessagePins } from '../../composables/useMessagePins';
 import TextMessage from './message-types/TextMessage.vue';
@@ -41,8 +42,8 @@ const { pin, unpin } = useMessagePins();
 
 const pinError = ref('');
 
-const isOwn = computed(() => props.message.user_id === store.currentUserId);
-const isSystem = computed(() => props.message.type === 'system' || props.message.user_id === null);
+const isOwn = computed(() => chatableKeyOf(props.message) === store.currentKey);
+const isSystem = computed(() => props.message.type === 'system' || props.message.chatable_id === null);
 const bodyComponent = computed(() => TYPE_COMPONENTS[props.message.type] ?? TextMessage);
 
 const showMenu = ref(false);

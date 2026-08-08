@@ -10,6 +10,7 @@ import {
     addPinnedMessage,
     removePinnedMessage,
 } from '../store';
+import { chatableKey } from '../chatable';
 import { useConversations } from './useConversations';
 
 window.Pusher = Pusher;
@@ -35,13 +36,17 @@ export function useEcho() {
         enabledTransports: ['ws', 'wss'],
     });
 
-    if (config.userId) {
-        echo.private(`user.${config.userId}`)
+    if (config.chatableType && config.chatableId) {
+        echo.private(`chatable.${config.chatableType}.${config.chatableId}`)
             .listen('.conversation.created', () => {
                 useConversations().refresh();
             })
             .listen('.participant.added', (payload) => {
-                if (payload.user_ids?.includes(config.userId)) {
+                const iWasAdded = payload.chatables?.some(
+                    (c) => c.type === config.chatableType && c.id === config.chatableId
+                );
+
+                if (iWasAdded) {
                     useConversations().refresh();
                 }
             });
@@ -95,15 +100,19 @@ function joinConversation(conversationId) {
             markStatusAtLeast(conversationId, 'read');
         })
         .listen('.typing.start', (payload) => {
-            if (payload.user_id !== store.currentUserId) {
-                setTyping(conversationId, payload.user_id, true);
+            const key = chatableKey(payload.chatable_type, payload.chatable_id);
+            if (key !== store.currentKey) {
+                setTyping(conversationId, key, true);
             }
         })
         .listen('.typing.stop', (payload) => {
-            setTyping(conversationId, payload.user_id, false);
+            setTyping(conversationId, chatableKey(payload.chatable_type, payload.chatable_id), false);
         })
         .listen('.presence.changed', (payload) => {
-            setPresence(payload.user_id, { is_online: payload.is_online, last_seen_at: payload.last_seen_at });
+            setPresence(chatableKey(payload.chatable_type, payload.chatable_id), {
+                is_online: payload.is_online,
+                last_seen_at: payload.last_seen_at,
+            });
         })
         .listen('.participant.role_changed', () => {
             useConversations().refreshOne(conversationId);

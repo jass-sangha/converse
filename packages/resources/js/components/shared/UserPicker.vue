@@ -26,12 +26,12 @@ watch(query, (value) => {
 search('').then((users) => (results.value = users));
 
 function isSelected(user) {
-    return props.modelValue.some((u) => u.id === user.id);
+    return props.modelValue.some((u) => u.id === user.id && u.type === user.type);
 }
 
 function toggle(user) {
     if (isSelected(user)) {
-        emit('update:modelValue', props.modelValue.filter((u) => u.id !== user.id));
+        emit('update:modelValue', props.modelValue.filter((u) => !(u.id === user.id && u.type === user.type)));
         return;
     }
 

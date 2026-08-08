@@ -12,7 +12,7 @@ const { createPrivate, setActive } = useConversations();
 async function start() {
     if (!selected.value.length) return;
 
-    const conversation = await createPrivate(selected.value[0].id);
+    const conversation = await createPrivate(selected.value[0]);
     setActive(conversation.id);
     emit('created', conversation);
     emit('close');
