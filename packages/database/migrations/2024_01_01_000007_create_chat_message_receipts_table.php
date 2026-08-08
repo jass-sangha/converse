@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create(config('chat.table_names.message_receipts', 'chat_message_receipts'), function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('message_id')
+                ->constrained(config('chat.table_names.messages', 'chat_messages'))
+                ->cascadeOnDelete();
+            $table->unsignedBigInteger('user_id');
+            $table->timestamp('delivered_at')->nullable();
+            $table->timestamp('read_at')->nullable();
+
+            $table->unique(['message_id', 'user_id']);
+            $table->index(['user_id', 'read_at']);
+            $table->index(['message_id', 'delivered_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists(config('chat.table_names.message_receipts', 'chat_message_receipts'));
+    }
+};

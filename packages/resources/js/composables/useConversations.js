@@ -1,0 +1,98 @@
+import { useApi } from './useApi';
+import { useChatStore, upsertConversation, removeConversation } from '../store';
+
+export function useConversations() {
+    const api = useApi();
+    const store = useChatStore();
+
+    async function refresh(filters = {}) {
+        const { data } = await api.get('/conversations', { params: filters });
+        store.conversations = data.data;
+        return store.conversations;
+    }
+
+    async function refreshOne(conversationId) {
+        const { data } = await api.get(`/conversations/${conversationId}`);
+        upsertConversation(data.data);
+        return data.data;
+    }
+
+    async function createPrivate(userId) {
+        const { data } = await api.post('/conversations', {
+            type: 'private',
+            participant_ids: [userId],
+        });
+        upsertConversation(data.data);
+        return data.data;
+    }
+
+    async function createGroup(name, description, participantIds) {
+        const { data } = await api.post('/conversations', {
+            type: 'group',
+            name,
+            description,
+            participant_ids: participantIds,
+        });
+        upsertConversation(data.data);
+        return data.data;
+    }
+
+    async function mute(conversationId, mutedUntil) {
+        const { data } = await api.patch(`/conversations/${conversationId}/mute`, { muted_until: mutedUntil });
+        upsertConversation(data.data);
+    }
+
+    async function setArchived(conversationId, archived) {
+        const { data } = await api.patch(`/conversations/${conversationId}/archive`, { archived });
+        upsertConversation(data.data);
+    }
+
+    async function setPinned(conversationId, pinned) {
+        const { data } = await api.patch(`/conversations/${conversationId}/pin`, { pinned });
+        upsertConversation(data.data);
+    }
+
+    async function setHidden(conversationId, hidden) {
+        const { data } = await api.patch(`/conversations/${conversationId}/hide`, { hidden });
+
+        if (hidden) {
+            removeConversation(conversationId);
+        } else {
+            upsertConversation(data.data);
+        }
+    }
+
+    async function setWallpaper(conversationId, wallpaper) {
+        const { data } = await api.patch(`/conversations/${conversationId}/wallpaper`, { wallpaper });
+        upsertConversation(data.data);
+    }
+
+    async function leave(conversationId) {
+        await api.post(`/conversations/${conversationId}/leave`);
+        removeConversation(conversationId);
+    }
+
+    async function setDisappearing(conversationId, ttlSeconds) {
+        const { data } = await api.patch(`/conversations/${conversationId}/disappearing`, { ttl_seconds: ttlSeconds });
+        upsertConversation(data.data);
+    }
+
+    function setActive(conversationId) {
+        store.activeConversationId = conversationId;
+    }
+
+    return {
+        refresh,
+        refreshOne,
+        createPrivate,
+        createGroup,
+        mute,
+        setArchived,
+        setPinned,
+        setHidden,
+        setWallpaper,
+        leave,
+        setDisappearing,
+        setActive,
+    };
+}

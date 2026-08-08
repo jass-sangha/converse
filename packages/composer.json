@@ -1,0 +1,57 @@
+{
+    "name": "jass-sangha/converse",
+    "description": "A WhatsApp-style real-time chat backend package for Laravel — conversations, groups, media, reactions, receipts, typing, presence, and more.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laravel", "chat", "messaging", "whatsapp", "reverb", "realtime"],
+    "authors": [
+        {
+            "name": "Jass Sangha"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0|^12.0",
+        "illuminate/broadcasting": "^11.0|^12.0",
+        "illuminate/database": "^11.0|^12.0",
+        "illuminate/notifications": "^11.0|^12.0",
+        "spatie/laravel-package-tools": "^1.16"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0",
+        "mockery/mockery": "^1.6",
+        "laravel/pint": "^1.24"
+    },
+    "autoload": {
+        "psr-4": {
+            "Converse\\Chat\\": "src/",
+            "Converse\\Chat\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Converse\\Chat\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Converse\\Chat\\ChatServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "format": "vendor/bin/pint"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}

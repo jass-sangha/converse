@@ -1,0 +1,50 @@
+<?php
+
+namespace Converse\Chat\Http\Resources;
+
+use Converse\Chat\Models\Message;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
+
+class ConversationResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        $userId = $request->user()?->getAuthIdentifier();
+        $me = $this->participants->firstWhere('user_id', $userId);
+
+        return [
+            'id' => $this->id,
+            'type' => $this->type?->value,
+            'name' => $this->name,
+            'description' => $this->description,
+            'avatar_url' => $this->avatar_path ? Storage::disk(config('chat.media.disk'))->url($this->avatar_path) : null,
+            'disappearing_messages_ttl' => $this->disappearing_messages_ttl,
+            'last_activity_at' => $this->last_activity_at,
+            'last_message' => $this->whenLoaded('lastMessage', fn () => $this->lastMessage ? new MessageResource($this->lastMessage) : null),
+            'participants' => ParticipantResource::collection($this->whenLoaded('participants')),
+            'unread_count' => $me ? $this->unreadCountFor($me) : 0,
+            'me' => $me ? [
+                'role' => $me->role?->value,
+                'muted_until' => $me->muted_until,
+                'archived_at' => $me->archived_at,
+                'pinned_at' => $me->pinned_at,
+                'hidden_at' => $me->hidden_at,
+                'wallpaper' => $me->wallpaper,
+            ] : null,
+            'created_at' => $this->created_at,
+        ];
+    }
+
+    protected function unreadCountFor($participant): int
+    {
+        $query = Message::query()->where('conversation_id', $this->id);
+
+        if ($participant->last_read_message_id) {
+            $query->where('id', '>', $participant->last_read_message_id);
+        }
+
+        return $query->where('user_id', '!=', $participant->user_id)->count();
+    }
+}

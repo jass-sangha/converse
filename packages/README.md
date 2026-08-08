@@ -1,0 +1,190 @@
+# Converse
+
+A WhatsApp-style real-time chat package for Laravel. Ships conversations (private & group), rich message types, reactions, replies, forwarding, read receipts, typing indicators, presence, group admin roles, blocking, disappearing messages, search, and a push-notification extension point — as a REST API + Laravel Reverb broadcasting — **plus a fully self-contained Vue 3 chat widget** pre-built and served directly by the package. No frontend build tooling required on your side; use the JSON API standalone if you'd rather bring your own client.
+
+## Requirements
+
+- PHP 8.2+
+- Laravel 11 or 12
+- A broadcasting driver — [Laravel Reverb](https://reverb.laravel.com) is the first-class target, but anything built on Laravel's standard broadcasting contracts (Pusher, Ably) works too
+- [Laravel Sanctum](https://laravel.com/docs/sanctum) for API authentication — the package's routes don't hard-depend on it (`chat.middleware` is just a default you can override), but the bundled UI's same-origin cookie auth assumes it
+
+## Installation
+
+```bash
+composer require jass-sangha/converse
+php artisan vendor:publish --tag=chat-config
+php artisan migrate
+```
+
+Point the package at your own user model in `config/chat.php` (or via `.env`):
+
+```env
+CHAT_USER_MODEL=App\Models\User
+```
+
+Every `chat_*` table stores a plain `user_id` referencing this model's primary key. There is no DB-level foreign key constraint and no polymorphism — the package works with any single Authenticatable model.
+
+If you want the bundled chat UI (see below), also wire up Sanctum's stateful (cookie) auth for your API middleware — a fresh Laravel app needs:
+
+```bash
+composer require laravel/sanctum
+php artisan install:api
+```
+
+and confirm `bootstrap/app.php` calls `$middleware->statefulApi();` inside `withMiddleware()` (`install:api` should add this automatically). Set `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` in `.env` to match the domain you'll serve the chat page from.
+
+### Broadcasting (Reverb)
+
+```bash
+composer require laravel/reverb
+php artisan reverb:install
+php artisan reverb:start
+```
+
+Conversations broadcast on **presence channels** (`presence-conversation.{id}`), authorized in the package's `routes/channels.php`. Presence channels let clients see who's currently viewing a chat for free, and let the frontend `whisper()` typing events peer-to-peer through Reverb — the backend never sees or stores a typing event unless you use the REST fallback (`POST /conversations/{id}/typing`).
+
+```js
+// Example Echo usage in a consuming frontend
+Echo.join(`conversation.${conversationId}`)
+    .here(users => { /* who's currently viewing */ })
+    .listen('.message.sent', e => { /* new message */ })
+    .listen('.messages.read', e => { /* read receipt */ })
+    .listenForWhisper('typing', e => { /* peer typed, zero backend cost */ });
+```
+
+## Configuration
+
+Key options in `config/chat.php`:
+
+| Key | Purpose |
+|---|---|
+| `user_model` | The Authenticatable model to bind chat participants to |
+| `table_names` | Override any table name if it collides with your app |
+| `route_prefix` / `middleware` | Where the API mounts and what protects it (default `api/chat`, `['api','auth:sanctum']`) |
+| `media.disk` | Filesystem disk for attachments/avatars (defaults to a package-registered local disk; override in `config/filesystems.php` to switch to S3 etc.) |
+| `media.mime_types` / `media.max_sizes` | Per-message-type upload validation |
+| `presence.*`, `typing.ttl_seconds` | Heartbeat/online-grace/typing-decay tuning |
+| `message.edit_window_minutes`, `message.delete_for_everyone_window_minutes` | `null` = unlimited |
+| `disappearing_messages.*` | Enable/default TTL for auto-vanishing messages |
+| `notifications.channels` | Extra notification channels appended to `broadcast` (see below) |
+
+## API surface
+
+All routes are prefixed with `config('chat.route_prefix')` (default `api/chat`).
+
+**Conversations** — `GET|POST /conversations`, `GET|PATCH /conversations/{id}`, `POST /conversations/{id}/avatar`, `PATCH /conversations/{id}/{mute,archive,pin,disappearing}`, `POST /conversations/{id}/leave`
+
+**Participants** — `GET|POST /conversations/{id}/participants`, `DELETE /conversations/{id}/participants/{userId}`, `PATCH /conversations/{id}/participants/{userId}/role`
+
+**Messages** — `GET|POST /conversations/{id}/messages`, `PATCH|DELETE /messages/{id}`, `DELETE /messages/{id}/me`, `POST /messages/{id}/forward`, `GET /messages/search`
+
+**Reactions & starring** — `POST|DELETE /messages/{id}/reactions`, `GET /starred-messages`, `POST|DELETE /messages/{id}/star`
+
+**Receipts, typing, presence** — `POST /conversations/{id}/receipts/{delivered,read}`, `POST /conversations/{id}/typing`, `POST /presence/heartbeat`, `GET /users/{id}/presence`
+
+**Blocking** — `GET|POST /blocked-users`, `DELETE /blocked-users/{userId}`
+
+**Media & link previews** — `POST /attachments`, `POST /link-preview`
+
+**People search** — `GET /users?q=` (search by `chat.user_search.name_field`, excludes yourself) / `GET /users?ids[]=1&ids[]=2` (batch-resolve display info for known participant ids) — used to power "new chat"/"add member" pickers; the package can't assume your user schema, so this is deliberately minimal (`{id, name, avatar_url}`) and configurable via `chat.user_search.{name_field,avatar_field}`.
+
+## Bundled Chat UI
+
+The package ships a complete, pre-built Vue 3 + Tailwind chat widget — no `npm install`, no Vite config, no Vue in your own app required. It's served directly by the package's own routes.
+
+Once installed and migrated, visit:
+
+```
+GET /converse/chat
+```
+
+behind your app's normal `web` + `auth` middleware (configurable via `chat.web_middleware`, default `['web', 'auth']`). The page authenticates via Sanctum's same-origin session-cookie flow (no token is ever embedded in the page) and talks to the JSON API described above over `axios` with `withCredentials`.
+
+It covers the full feature set: conversation list with search/pin/archive/mute, new chat/group creation, every message type (text, image, video, audio, voice notes via `MediaRecorder`, documents, location, contact cards), replies, reactions, forwarding, starred messages, group admin (add/remove/promote/demote, surfaces the sole-admin guard as an inline error), blocked-users management, disappearing-messages toggle, link previews, typing indicators, read receipts, and live presence — including live push when someone starts a new chat with you or adds you to a group (`ConversationCreated`/`ParticipantAdded` broadcast onto your personal `private-user.{id}` channel).
+
+To disable the bundled UI entirely and expose only the JSON API (e.g. you're building your own React/mobile client):
+
+```env
+CHAT_REGISTER_UI_ROUTES=false
+```
+
+Relevant config: `chat.web_middleware`, `chat.chat_route_prefix` (default `converse`), `chat.asset_middleware`, `chat.asset_route_prefix` (default `converse/assets`).
+
+If you ever need to modify the widget's source, it lives in `resources/js/` (Vue SFCs) and `resources/css/` (Tailwind) inside the package, with its own `package.json`/`vite.config.js`/`tailwind.config.js`. Run `npm install && npm run build` inside the package directory to regenerate the committed `resources/dist/app.{js,css}` bundle the `AssetController` serves.
+
+## Scheduled commands
+
+Register these in your app's scheduler (`routes/console.php` on Laravel 11/12):
+
+```php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('chat:sweep-presence')->everyMinute();
+Schedule::command('chat:prune-expired-messages')->everyFiveMinutes();
+```
+
+- `chat:sweep-presence` marks users offline once their heartbeat TTL + grace period has elapsed, broadcasting `PresenceChanged` to their active conversations.
+- `chat:prune-expired-messages` permanently deletes disappearing messages whose `expires_at` has passed.
+
+## Extension points
+
+The package intentionally ships **zero dependency** on media-processing or push-notification SDKs — bind your own implementation in your `AppServiceProvider`.
+
+### Real thumbnails / durations
+
+```php
+use Converse\Chat\Contracts\MediaProcessor;
+use Converse\Chat\Models\MessageAttachment;
+
+class FfmpegMediaProcessor implements MediaProcessor
+{
+    public function supports(string $mimeType): bool
+    {
+        return str_starts_with($mimeType, 'video/') || str_starts_with($mimeType, 'audio/');
+    }
+
+    public function process(MessageAttachment $attachment): array
+    {
+        // ...run ffmpeg/getid3, return ['width'=>..,'height'=>..,'duration_seconds'=>..,'thumbnail_path'=>..]
+    }
+}
+
+$this->app->bind(MediaProcessor::class, FfmpegMediaProcessor::class);
+```
+
+### Push notifications (FCM/APNs/WebPush)
+
+`NewChatMessageNotification` ships with only the `broadcast` channel wired. To add real push:
+
+```php
+// config/chat.php
+'notifications' => ['channels' => ['fcm']],
+```
+
+```php
+// Extend or replace the notification with your own toFcm()/toWebPush() method,
+// or just listen to the domain event directly for full control:
+use Converse\Chat\Events\MessageSent;
+
+Event::listen(MessageSent::class, function (MessageSent $event) {
+    // dispatch your own push notification however you like
+});
+```
+
+### Link previews
+
+The default `OpenGraphLinkPreviewFetcher` does a simple OG-tag scrape. Bind `Converse\Chat\Contracts\LinkPreviewFetcher` to your own implementation (e.g. a dedicated unfurling service) if you need more than that.
+
+## Testing
+
+```bash
+composer install
+vendor/bin/pest
+```
+
+Built on Orchestra Testbench — no host Laravel app required to run the package's own test suite.
+
+## License
+
+MIT

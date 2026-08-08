@@ -1,0 +1,38 @@
+/*
+ * Converse chat widget theme variables.
+ * Publish this file (`php artisan vendor:publish --tag=chat-theme`) and hand-edit
+ * the published copy to re-theme the widget without rebuilding any JS/CSS.
+ * Values are space-separated RGB triplets so Tailwind's `/opacity` modifiers work
+ * (e.g. `bg-converse-accent/60`).
+ */
+
+:root {
+    --cv-bg: 240 242 245;
+    --cv-surface: 255 255 255;
+    --cv-surface-hover: 249 250 251;
+    --cv-border: 229 231 235;
+    --cv-text: 32 44 51;
+    --cv-text-muted: 107 114 128;
+    --cv-accent: 0 168 132;
+    --cv-accent-contrast: 255 255 255;
+    --cv-bubble-out: 217 253 211;
+    --cv-bubble-in: 255 255 255;
+    --cv-danger: 220 38 38;
+    --cv-overlay: 0 0 0;
+    --cv-warning: 254 252 232;
+    --cv-info: 96 165 250;
+    --cv-radius: 0.75rem;
+}
+
+:root[data-theme='dark'] {
+    --cv-bg: 17 27 33;
+    --cv-surface: 32 44 51;
+    --cv-surface-hover: 42 57 66;
+    --cv-border: 42 57 66;
+    --cv-text: 233 237 239;
+    --cv-text-muted: 134 150 160;
+    --cv-bubble-out: 0 92 75;
+    --cv-bubble-in: 32 44 51;
+    --cv-danger: 248 113 113;
+    --cv-warning: 63 58 26;
+}

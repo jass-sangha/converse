@@ -1,0 +1,43 @@
+<?php
+
+use Converse\Chat\Tests\Fixtures\User;
+
+function frontendUser(string $email): User
+{
+    return User::query()->create(['name' => $email, 'email' => $email, 'password' => bcrypt('secret')]);
+}
+
+it('serves the built js and css assets with correct content types', function () {
+    $this->get('/converse/assets/app.js')
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/javascript; charset=UTF-8');
+
+    $this->get('/converse/assets/app.css')
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/css; charset=UTF-8');
+});
+
+it('renders the mount page with a ConverseConfig script tag when reverb is configured', function () {
+    config(['broadcasting.connections.reverb' => [
+        'driver' => 'reverb',
+        'key' => 'test-key',
+        'options' => ['host' => '127.0.0.1', 'port' => 8080, 'scheme' => 'http'],
+    ]]);
+
+    $user = frontendUser('frontend-page@example.com');
+
+    $response = $this->actingAs($user)->get('/converse/chat');
+
+    $response->assertOk();
+    $response->assertSee('converse-chat-app', false);
+    $response->assertSee('window.ConverseConfig', false);
+    $response->assertSee('test-key', false);
+});
+
+it('aborts the mount page when no reverb broadcasting connection is configured', function () {
+    config(['broadcasting.connections.reverb' => null]);
+
+    $user = frontendUser('frontend-noreverb@example.com');
+
+    $this->actingAs($user)->get('/converse/chat')->assertStatus(500);
+});
