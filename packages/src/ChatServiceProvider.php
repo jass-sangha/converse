@@ -42,6 +42,7 @@ use Converse\Chat\Services\PresenceService;
 use Converse\Chat\Services\StarredMessageService;
 use Converse\Chat\Services\UserSearchService;
 use Converse\Chat\Services\UserSettingsService;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
@@ -122,6 +123,12 @@ class ChatServiceProvider extends PackageServiceProvider
      * EnsureFrontendRequestsAreStateful on the 'api' middleware group. Registering it here
      * (rather than asking the host app to call $middleware->statefulApi() in bootstrap/app.php)
      * keeps the package self-contained — installing it is enough, no host wiring required.
+     *
+     * Pushed onto the HTTP Kernel (not the Router) deliberately: the Kernel is the source of
+     * truth for middleware groups and re-syncs its own copy to the Router whenever any provider
+     * booting after us — Sanctum's own service provider included — touches the Kernel's
+     * middleware priority list. A push made directly on the Router gets silently overwritten by
+     * that later re-sync since the Router's array is just a mirror of the Kernel's.
      */
     protected function registerStatefulApiMiddleware(): void
     {
@@ -129,7 +136,7 @@ class ChatServiceProvider extends PackageServiceProvider
             return;
         }
 
-        $this->app['router']->pushMiddlewareToGroup('api', EnsureFrontendRequestsAreStateful::class);
+        $this->app[Kernel::class]->prependMiddlewareToGroup('api', EnsureFrontendRequestsAreStateful::class);
     }
 
     protected function registerDefaultDisk(): void
