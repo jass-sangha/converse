@@ -20,7 +20,8 @@ class ChatPageController extends Controller
         return view('chat::chat', [
             'chatConfig' => [
                 'apiBaseUrl' => '/'.ltrim(config('chat.route_prefix', 'api/chat'), '/'),
-                'userId' => $request->user()?->getAuthIdentifier(),
+                'chatableType' => $request->user()?->getMorphClass(),
+                'chatableId' => $request->user()?->getAuthIdentifier(),
                 'reverb' => [
                     'key' => $reverb['key'] ?? null,
                     'host' => $reverb['options']['host'] ?? null,

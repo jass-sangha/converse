@@ -4,7 +4,7 @@ namespace Converse\Chat\Policies;
 
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Models\Conversation;
-use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 
 class ConversationPolicy
 {
@@ -12,17 +12,17 @@ class ConversationPolicy
         protected ParticipantRepositoryInterface $participants,
     ) {}
 
-    public function view(Authenticatable $user, Conversation $conversation): bool
+    public function view(Model $user, Conversation $conversation): bool
     {
-        return $this->participants->isActiveParticipant($conversation->id, $user->getAuthIdentifier());
+        return $this->participants->isActiveParticipant($conversation->id, $user);
     }
 
-    public function create(Authenticatable $user): bool
+    public function create(Model $user): bool
     {
         return true;
     }
 
-    public function update(Authenticatable $user, Conversation $conversation): bool
+    public function update(Model $user, Conversation $conversation): bool
     {
         if ($conversation->isPrivate()) {
             return false;
@@ -31,19 +31,19 @@ class ConversationPolicy
         return $this->isAdmin($user, $conversation);
     }
 
-    public function updateAvatar(Authenticatable $user, Conversation $conversation): bool
+    public function updateAvatar(Model $user, Conversation $conversation): bool
     {
         return $this->update($user, $conversation);
     }
 
-    public function manageParticipants(Authenticatable $user, Conversation $conversation): bool
+    public function manageParticipants(Model $user, Conversation $conversation): bool
     {
         return $this->isAdmin($user, $conversation);
     }
 
-    protected function isAdmin(Authenticatable $user, Conversation $conversation): bool
+    protected function isAdmin(Model $user, Conversation $conversation): bool
     {
-        $participant = $this->participants->findForUser($conversation->id, $user->getAuthIdentifier());
+        $participant = $this->participants->findFor($conversation->id, $user);
 
         return $participant !== null && $participant->left_at === null && $participant->isAdmin();
     }

@@ -11,7 +11,7 @@ function privateConversationBetween(User $a, User $b): int
 {
     return test()->actingAs($a)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$b->id],
+        'participants' => [chatableRef($b)],
     ])->json('data.id');
 }
 

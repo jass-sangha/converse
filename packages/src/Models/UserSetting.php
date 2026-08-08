@@ -3,18 +3,14 @@
 namespace Converse\Chat\Models;
 
 use Converse\Chat\Chat;
-use Converse\Chat\Traits\BelongsToChatUser;
+use Converse\Chat\Traits\BelongsToChatable;
 use Illuminate\Database\Eloquent\Model;
 
 class UserSetting extends Model
 {
-    use BelongsToChatUser;
+    use BelongsToChatable;
 
-    public $incrementing = false;
-
-    protected $primaryKey = 'user_id';
-
-    protected $fillable = ['user_id', 'show_last_seen', 'show_read_receipts'];
+    protected $fillable = ['chatable_id', 'chatable_type', 'show_last_seen', 'show_read_receipts'];
 
     protected $casts = [
         'show_last_seen' => 'boolean',

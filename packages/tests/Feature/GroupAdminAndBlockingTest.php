@@ -16,30 +16,30 @@ it('lets the group admin add and remove members but rejects a non-admin', functi
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'group',
         'name' => 'Admins Only',
-        'participant_ids' => [$bob->id, $carol->id],
+        'participants' => chatableRefs([$bob, $carol]),
     ])->json('data.id');
 
     $this->actingAs($bob)
-        ->postJson("/api/chat/conversations/{$conversationId}/participants", ['user_ids' => [$dave->id]])
+        ->postJson("/api/chat/conversations/{$conversationId}/participants", ['participants' => [chatableRef($dave)]])
         ->assertForbidden();
 
     $this->actingAs($alice)
-        ->postJson("/api/chat/conversations/{$conversationId}/participants", ['user_ids' => [$dave->id]])
+        ->postJson("/api/chat/conversations/{$conversationId}/participants", ['participants' => [chatableRef($dave)]])
         ->assertOk();
 
     $this->actingAs($bob)
-        ->deleteJson("/api/chat/conversations/{$conversationId}/participants/{$carol->id}")
+        ->deleteJson("/api/chat/conversations/{$conversationId}/participants/user/{$carol->id}")
         ->assertForbidden();
 
     $this->actingAs($alice)
-        ->deleteJson("/api/chat/conversations/{$conversationId}/participants/{$carol->id}")
+        ->deleteJson("/api/chat/conversations/{$conversationId}/participants/user/{$carol->id}")
         ->assertNoContent();
 
     $participants = $this->actingAs($alice)
         ->getJson("/api/chat/conversations/{$conversationId}/participants")
         ->assertOk();
 
-    expect(collect($participants->json('data'))->pluck('user_id'))
+    expect(collect($participants->json('data'))->pluck('chatable_id'))
         ->toContain($bob->id, $dave->id)
         ->not->toContain($carol->id);
 });
@@ -51,11 +51,11 @@ it('prevents the sole admin from demoting themselves or leaving without promotin
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'group',
         'name' => 'Solo Admin',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $this->actingAs($alice)
-        ->patchJson("/api/chat/conversations/{$conversationId}/participants/{$alice->id}/role", ['role' => 'member'])
+        ->patchJson("/api/chat/conversations/{$conversationId}/participants/user/{$alice->id}/role", ['role' => 'member'])
         ->assertUnprocessable();
 
     $this->actingAs($alice)
@@ -63,7 +63,7 @@ it('prevents the sole admin from demoting themselves or leaving without promotin
         ->assertUnprocessable();
 
     $this->actingAs($alice)
-        ->patchJson("/api/chat/conversations/{$conversationId}/participants/{$bob->id}/role", ['role' => 'admin'])
+        ->patchJson("/api/chat/conversations/{$conversationId}/participants/user/{$bob->id}/role", ['role' => 'admin'])
         ->assertNoContent();
 
     $this->actingAs($alice)
@@ -77,10 +77,13 @@ it('prevents blocked users from messaging each other in a private conversation',
 
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
-    $this->actingAs($alice)->postJson('/api/chat/blocked-users', ['user_id' => $bob->id])->assertNoContent();
+    $this->actingAs($alice)->postJson('/api/chat/blocked-users', [
+        'chatable_type' => 'user',
+        'chatable_id' => $bob->id,
+    ])->assertNoContent();
 
     $this->actingAs($bob)
         ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'hi'])
@@ -90,7 +93,7 @@ it('prevents blocked users from messaging each other in a private conversation',
         ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'hi'])
         ->assertForbidden();
 
-    $this->actingAs($alice)->deleteJson("/api/chat/blocked-users/{$bob->id}")->assertNoContent();
+    $this->actingAs($alice)->deleteJson("/api/chat/blocked-users/user/{$bob->id}")->assertNoContent();
 
     $this->actingAs($bob)
         ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'unblocked now'])

@@ -3,14 +3,15 @@
 namespace Converse\Chat\Contracts;
 
 use Converse\Chat\Models\UserSetting;
+use Illuminate\Database\Eloquent\Model;
 
 interface UserSettingsServiceInterface
 {
-    public function get(int $userId): UserSetting;
+    public function get(Model $chatable): UserSetting;
 
-    public function update(int $userId, array $data): UserSetting;
+    public function update(Model $chatable, array $data): UserSetting;
 
-    public function allowsLastSeen(int $userId): bool;
+    public function allowsLastSeen(Model $chatable): bool;
 
-    public function allowsReadReceipts(int $userId): bool;
+    public function allowsReadReceipts(Model $chatable): bool;
 }

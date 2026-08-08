@@ -3,17 +3,17 @@
 namespace Converse\Chat\Models;
 
 use Converse\Chat\Chat;
-use Converse\Chat\Traits\BelongsToChatUser;
+use Converse\Chat\Traits\BelongsToChatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MessageReceipt extends Model
 {
-    use BelongsToChatUser;
+    use BelongsToChatable;
 
     public $timestamps = false;
 
-    protected $fillable = ['message_id', 'user_id', 'delivered_at', 'read_at'];
+    protected $fillable = ['message_id', 'chatable_id', 'chatable_type', 'delivered_at', 'read_at'];
 
     protected $casts = [
         'delivered_at' => 'datetime',

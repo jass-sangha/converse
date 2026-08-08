@@ -2,6 +2,7 @@
 
 namespace Converse\Chat\Http\Resources;
 
+use Converse\Chat\Models\ConversationParticipant;
 use Converse\Chat\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -11,8 +12,10 @@ class ConversationResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $userId = $request->user()?->getAuthIdentifier();
-        $me = $this->participants->firstWhere('user_id', $userId);
+        $viewer = $request->user();
+        $me = $viewer ? $this->participants->first(
+            fn (ConversationParticipant $p) => $p->chatable_type === $viewer->getMorphClass() && $p->chatable_id === $viewer->getKey()
+        ) : null;
 
         return [
             'id' => $this->id,
@@ -37,7 +40,7 @@ class ConversationResource extends JsonResource
         ];
     }
 
-    protected function unreadCountFor($participant): int
+    protected function unreadCountFor(ConversationParticipant $participant): int
     {
         $query = Message::query()->where('conversation_id', $this->id);
 
@@ -45,6 +48,10 @@ class ConversationResource extends JsonResource
             $query->where('id', '>', $participant->last_read_message_id);
         }
 
-        return $query->where('user_id', '!=', $participant->user_id)->count();
+        return $query
+            ->where(fn ($q) => $q
+                ->where('chatable_type', '!=', $participant->chatable_type)
+                ->orWhere('chatable_id', '!=', $participant->chatable_id))
+            ->count();
     }
 }

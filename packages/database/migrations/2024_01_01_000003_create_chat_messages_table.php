@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create($messages, function (Blueprint $table) use ($conversations) {
             $table->id();
             $table->foreignId('conversation_id')->constrained($conversations)->cascadeOnDelete();
-            $table->unsignedBigInteger('user_id')->nullable();
+            $table->nullableMorphs('chatable');
             $table->string('type')->default('text');
             $table->text('body')->nullable();
             $table->unsignedBigInteger('reply_to_message_id')->nullable();
@@ -28,7 +28,6 @@ return new class extends Migration
 
             $table->index(['conversation_id', 'created_at']);
             $table->index('expires_at');
-            $table->index('user_id');
         });
 
         Schema::table($messages, function (Blueprint $table) use ($messages) {

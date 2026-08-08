@@ -18,7 +18,7 @@ class StarredMessageController extends Controller
     {
         $perPage = (int) config('chat.pagination.messages_per_page', 50);
 
-        $starred = $this->starred->listForUser($request->user()->getAuthIdentifier(), $perPage);
+        $starred = $this->starred->listForUser($request->user(), $perPage);
 
         return MessageResource::collection($starred->through(fn ($starredMessage) => $starredMessage->message));
     }
@@ -27,7 +27,7 @@ class StarredMessageController extends Controller
     {
         Gate::authorize('star', $message);
 
-        $this->starred->star($message, $request->user()->getAuthIdentifier());
+        $this->starred->star($message, $request->user());
 
         return response()->noContent();
     }
@@ -36,7 +36,7 @@ class StarredMessageController extends Controller
     {
         Gate::authorize('star', $message);
 
-        $this->starred->unstar($message, $request->user()->getAuthIdentifier());
+        $this->starred->unstar($message, $request->user());
 
         return response()->noContent();
     }

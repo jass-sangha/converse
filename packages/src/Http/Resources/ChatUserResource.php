@@ -14,6 +14,7 @@ class ChatUserResource extends JsonResource
         $avatarField = config('chat.user_search.avatar_field', 'avatar');
 
         return [
+            'type' => $this->resource->getMorphClass(),
             'id' => $this->getKey(),
             'name' => data_get($this->resource, $nameField),
             'avatar_url' => $this->resolveAvatarUrl(data_get($this->resource, $avatarField)),

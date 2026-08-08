@@ -2,6 +2,7 @@
 
 namespace Converse\Chat\Http\Controllers;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Contracts\ConversationServiceInterface;
 use Converse\Chat\Http\Requests\MuteConversationRequest;
 use Converse\Chat\Http\Requests\StoreConversationRequest;
@@ -32,7 +33,7 @@ class ConversationController extends Controller
         }
 
         $conversations = $this->conversations->listForUser(
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $filters,
         );
 
@@ -43,13 +44,14 @@ class ConversationController extends Controller
     {
         Gate::authorize('create', Conversation::class);
 
-        $userId = $request->user()->getAuthIdentifier();
+        $actor = $request->user();
         $data = $request->validated();
+        $participants = Chat::resolveMany($data['participants']);
 
         if ($data['type'] === 'private') {
-            $otherUserId = (int) $data['participant_ids'][0];
+            $other = $participants->first();
 
-            $result = $this->conversations->findOrCreatePrivate($userId, $otherUserId);
+            $result = $this->conversations->findOrCreatePrivate($actor, $other);
 
             return (new ConversationResource($result['conversation']->load(['participants', 'lastMessage'])))
                 ->response()
@@ -58,8 +60,8 @@ class ConversationController extends Controller
 
         $conversation = $this->conversations->createGroup(
             ['name' => $data['name'] ?? null, 'description' => $data['description'] ?? null],
-            array_map('intval', $data['participant_ids']),
-            $userId,
+            $participants,
+            $actor,
         );
 
         return (new ConversationResource($conversation->load(['participants', 'lastMessage'])))
@@ -100,7 +102,7 @@ class ConversationController extends Controller
 
         $this->conversations->mute(
             $conversation,
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $request->validated()['muted_until'] ?? null,
         );
 
@@ -113,7 +115,7 @@ class ConversationController extends Controller
 
         $this->conversations->setArchived(
             $conversation,
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $request->boolean('archived', true),
         );
 
@@ -126,7 +128,7 @@ class ConversationController extends Controller
 
         $this->conversations->setPinned(
             $conversation,
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $request->boolean('pinned', true),
         );
 
@@ -139,7 +141,7 @@ class ConversationController extends Controller
 
         $this->conversations->setHidden(
             $conversation,
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $request->boolean('hidden', true),
         );
 
@@ -154,7 +156,7 @@ class ConversationController extends Controller
 
         $this->conversations->setWallpaper(
             $conversation,
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $request->input('wallpaper'),
         );
 

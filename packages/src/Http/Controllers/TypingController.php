@@ -19,12 +19,12 @@ class TypingController extends Controller
             'state' => ['required', Rule::in(['start', 'stop'])],
         ]);
 
-        $userId = $request->user()->getAuthIdentifier();
+        $chatable = $request->user();
 
         if ($data['state'] === 'start') {
-            broadcast(new UserTyping($conversation->id, $userId))->toOthers();
+            broadcast(new UserTyping($conversation->id, $chatable))->toOthers();
         } else {
-            broadcast(new UserStoppedTyping($conversation->id, $userId))->toOthers();
+            broadcast(new UserStoppedTyping($conversation->id, $chatable))->toOthers();
         }
 
         return response()->noContent();

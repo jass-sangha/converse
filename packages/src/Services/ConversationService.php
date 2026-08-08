@@ -2,11 +2,13 @@
 
 namespace Converse\Chat\Services;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Contracts\ConversationRepositoryInterface;
 use Converse\Chat\Contracts\ConversationServiceInterface;
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Events\ConversationCreated;
 use Converse\Chat\Models\Conversation;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -18,9 +20,9 @@ class ConversationService implements ConversationServiceInterface
         protected ParticipantRepositoryInterface $participants,
     ) {}
 
-    public function listForUser(int $userId, array $filters = []): Collection
+    public function listForUser(Model $chatable, array $filters = []): Collection
     {
-        return $this->conversations->getForUser($userId, $filters);
+        return $this->conversations->getForUser($chatable, $filters);
     }
 
     public function find(int $id): Conversation
@@ -28,28 +30,33 @@ class ConversationService implements ConversationServiceInterface
         return $this->conversations->findById($id);
     }
 
-    public function findOrCreatePrivate(int $userId, int $otherUserId): array
+    public function findOrCreatePrivate(Model $chatable, Model $other): array
     {
-        $existing = $this->conversations->findPrivateBetween($userId, $otherUserId);
+        $existing = $this->conversations->findPrivateBetween($chatable, $other);
 
         if ($existing) {
             return ['conversation' => $existing, 'created' => false];
         }
 
-        $conversation = $this->conversations->create([], [$userId, $otherUserId], $userId);
+        $participants = collect([$chatable, $other]);
 
-        broadcast(new ConversationCreated($conversation->id, [$userId, $otherUserId]))->toOthers();
+        $conversation = $this->conversations->create([], $participants, $chatable);
+
+        broadcast(new ConversationCreated($conversation->id, $participants))->toOthers();
 
         return ['conversation' => $conversation, 'created' => true];
     }
 
-    public function createGroup(array $data, array $participantUserIds, int $creatorId): Conversation
+    public function createGroup(array $data, Collection $participants, Model $creator): Conversation
     {
-        $participantUserIds = array_values(array_unique([...$participantUserIds, $creatorId]));
+        $participants = $participants
+            ->push($creator)
+            ->unique(fn (Model $chatable) => Chat::identify($chatable))
+            ->values();
 
-        $conversation = $this->conversations->create($data, $participantUserIds, $creatorId);
+        $conversation = $this->conversations->create($data, $participants, $creator);
 
-        broadcast(new ConversationCreated($conversation->id, $participantUserIds))->toOthers();
+        broadcast(new ConversationCreated($conversation->id, $participants))->toOthers();
 
         return $conversation;
     }
@@ -72,45 +79,45 @@ class ConversationService implements ConversationServiceInterface
         return $this->conversations->update($conversation, ['avatar_path' => $path]);
     }
 
-    public function mute(Conversation $conversation, int $userId, ?string $mutedUntil): void
+    public function mute(Conversation $conversation, Model $chatable, ?string $mutedUntil): void
     {
-        $participant = $this->participants->findForUser($conversation->id, $userId);
+        $participant = $this->participants->findFor($conversation->id, $chatable);
 
         abort_if($participant === null, 403);
 
         $participant->update(['muted_until' => $mutedUntil]);
     }
 
-    public function setArchived(Conversation $conversation, int $userId, bool $archived): void
+    public function setArchived(Conversation $conversation, Model $chatable, bool $archived): void
     {
-        $participant = $this->participants->findForUser($conversation->id, $userId);
+        $participant = $this->participants->findFor($conversation->id, $chatable);
 
         abort_if($participant === null, 403);
 
         $participant->update(['archived_at' => $archived ? now() : null]);
     }
 
-    public function setPinned(Conversation $conversation, int $userId, bool $pinned): void
+    public function setPinned(Conversation $conversation, Model $chatable, bool $pinned): void
     {
-        $participant = $this->participants->findForUser($conversation->id, $userId);
+        $participant = $this->participants->findFor($conversation->id, $chatable);
 
         abort_if($participant === null, 403);
 
         $participant->update(['pinned_at' => $pinned ? now() : null]);
     }
 
-    public function setHidden(Conversation $conversation, int $userId, bool $hidden): void
+    public function setHidden(Conversation $conversation, Model $chatable, bool $hidden): void
     {
-        $participant = $this->participants->findForUser($conversation->id, $userId);
+        $participant = $this->participants->findFor($conversation->id, $chatable);
 
         abort_if($participant === null, 403);
 
         $participant->update(['hidden_at' => $hidden ? now() : null]);
     }
 
-    public function setWallpaper(Conversation $conversation, int $userId, ?string $wallpaper): void
+    public function setWallpaper(Conversation $conversation, Model $chatable, ?string $wallpaper): void
     {
-        $participant = $this->participants->findForUser($conversation->id, $userId);
+        $participant = $this->participants->findFor($conversation->id, $chatable);
 
         abort_if($participant === null, 403);
 

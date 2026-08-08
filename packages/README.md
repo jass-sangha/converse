@@ -5,34 +5,31 @@ A WhatsApp-style real-time chat package for Laravel. Ships conversations (privat
 ## Requirements
 
 - PHP 8.2+
-- Laravel 11 or 12
+- Laravel 11, 12, or 13
 - A broadcasting driver — [Laravel Reverb](https://reverb.laravel.com) is the first-class target, but anything built on Laravel's standard broadcasting contracts (Pusher, Ably) works too
-- [Laravel Sanctum](https://laravel.com/docs/sanctum) for API authentication — the package's routes don't hard-depend on it (`chat.middleware` is just a default you can override), but the bundled UI's same-origin cookie auth assumes it
+
+Laravel Sanctum ships as a direct dependency of this package (not something you add yourself), so `composer require jass-sangha/converse` is enough to get a working `auth:sanctum` guard — no `composer require laravel/sanctum` or `php artisan install:api` step, and no `bootstrap/app.php` edit either: the package's service provider pushes `EnsureFrontendRequestsAreStateful` onto the `api` middleware group itself, so same-origin cookie auth (what the bundled UI and any first-party SPA use) works out of the box. Set `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` in `.env` to match the domain you'll serve the chat page from. If you also want Bearer-token auth for non-browser clients, run `php artisan vendor:publish --tag=sanctum-migrations && php artisan migrate` once to get the `personal_access_tokens` table, then issue tokens the normal Sanctum way.
 
 ## Installation
 
 ```bash
 composer require jass-sangha/converse
-php artisan vendor:publish --tag=chat-config
 php artisan migrate
 ```
 
-Point the package at your own user model in `config/chat.php` (or via `.env`):
+## Chatable models
 
-```env
-CHAT_USER_MODEL=App\Models\User
+Every `chat_*` table stores a polymorphic `chatable_type` / `chatable_id` pair rather than a plain `user_id`, so more than one Authenticatable model can hold conversations — with each other, not just within their own model. Configure which models are allowed, keyed by a short alias (persisted in `chatable_type` instead of the FQCN, via a Laravel morph map, so renaming a model class later doesn't orphan rows):
+
+```php
+// config/chat.php (publish with php artisan vendor:publish --tag=chat-config to override)
+'chatable_models' => [
+    'user' => App\Models\User::class,
+    // 'agent' => App\Models\Agent::class,
+],
 ```
 
-Every `chat_*` table stores a plain `user_id` referencing this model's primary key. There is no DB-level foreign key constraint and no polymorphism — the package works with any single Authenticatable model.
-
-If you want the bundled chat UI (see below), also wire up Sanctum's stateful (cookie) auth for your API middleware — a fresh Laravel app needs:
-
-```bash
-composer require laravel/sanctum
-php artisan install:api
-```
-
-and confirm `bootstrap/app.php` calls `$middleware->statefulApi();` inside `withMiddleware()` (`install:api` should add this automatically). Set `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` in `.env` to match the domain you'll serve the chat page from.
+Anywhere the API accepts a participant (creating a conversation, adding members, blocking someone), it takes a `{type, id}` pair using these aliases, e.g. `{"type": "user", "id": 5}`. Anywhere a chatable appears in a URL, it's `.../{type}/{id}`, e.g. `DELETE /conversations/{id}/participants/user/5`.
 
 ### Broadcasting (Reverb)
 
@@ -59,7 +56,7 @@ Key options in `config/chat.php`:
 
 | Key | Purpose |
 |---|---|
-| `user_model` | The Authenticatable model to bind chat participants to |
+| `chatable_models` | Alias => Authenticatable model map of who's allowed to participate in chat (see "Chatable models" above) |
 | `table_names` | Override any table name if it collides with your app |
 | `route_prefix` / `middleware` | Where the API mounts and what protects it (default `api/chat`, `['api','auth:sanctum']`) |
 | `media.disk` | Filesystem disk for attachments/avatars (defaults to a package-registered local disk; override in `config/filesystems.php` to switch to S3 etc.) |
@@ -75,15 +72,15 @@ All routes are prefixed with `config('chat.route_prefix')` (default `api/chat`).
 
 **Conversations** — `GET|POST /conversations`, `GET|PATCH /conversations/{id}`, `POST /conversations/{id}/avatar`, `PATCH /conversations/{id}/{mute,archive,pin,disappearing}`, `POST /conversations/{id}/leave`
 
-**Participants** — `GET|POST /conversations/{id}/participants`, `DELETE /conversations/{id}/participants/{userId}`, `PATCH /conversations/{id}/participants/{userId}/role`
+**Participants** — `GET|POST /conversations/{id}/participants`, `DELETE /conversations/{id}/participants/{type}/{id}`, `PATCH /conversations/{id}/participants/{type}/{id}/role`
 
 **Messages** — `GET|POST /conversations/{id}/messages`, `PATCH|DELETE /messages/{id}`, `DELETE /messages/{id}/me`, `POST /messages/{id}/forward`, `GET /messages/search`
 
 **Reactions & starring** — `POST|DELETE /messages/{id}/reactions`, `GET /starred-messages`, `POST|DELETE /messages/{id}/star`
 
-**Receipts, typing, presence** — `POST /conversations/{id}/receipts/{delivered,read}`, `POST /conversations/{id}/typing`, `POST /presence/heartbeat`, `GET /users/{id}/presence`
+**Receipts, typing, presence** — `POST /conversations/{id}/receipts/{delivered,read}`, `POST /conversations/{id}/typing`, `POST /presence/heartbeat`, `GET /users/{type}/{id}/presence`
 
-**Blocking** — `GET|POST /blocked-users`, `DELETE /blocked-users/{userId}`
+**Blocking** — `GET|POST /blocked-users`, `DELETE /blocked-users/{type}/{id}`
 
 **Media & link previews** — `POST /attachments`, `POST /link-preview`
 

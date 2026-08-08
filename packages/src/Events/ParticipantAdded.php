@@ -6,26 +6,33 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 
 class ParticipantAdded implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    /**
+     * @param  Collection<int, Model>  $chatables
+     */
     public function __construct(
         public int $conversationId,
-        public array $userIds,
-        public int $actorId,
+        public Collection $chatables,
+        public Model $actor,
     ) {}
 
     public function broadcastOn(): array
     {
         return [
             new PresenceChannel("conversation.{$this->conversationId}"),
-            // Newly-added users aren't subscribed to the conversation channel yet
+            // Newly-added participants aren't subscribed to the conversation channel yet
             // (they don't know it exists) — push to their personal channel too.
-            ...array_map(fn (int $userId) => new PrivateChannel("user.{$userId}"), $this->userIds),
+            ...$this->chatables
+                ->map(fn (Model $chatable) => new PrivateChannel("chatable.{$chatable->getMorphClass()}.{$chatable->getKey()}"))
+                ->all(),
         ];
     }
 
@@ -38,8 +45,11 @@ class ParticipantAdded implements ShouldBroadcast
     {
         return [
             'conversation_id' => $this->conversationId,
-            'user_ids' => $this->userIds,
-            'actor_id' => $this->actorId,
+            'chatables' => $this->chatables
+                ->map(fn (Model $chatable) => ['type' => $chatable->getMorphClass(), 'id' => $chatable->getKey()])
+                ->values(),
+            'actor_type' => $this->actor->getMorphClass(),
+            'actor_id' => $this->actor->getKey(),
         ];
     }
 }

@@ -18,12 +18,12 @@ it('searches messages scoped to conversations the user participates in', functio
 
     $convoAB = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $convoAE = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$eve->id],
+        'participants' => [chatableRef($eve)],
     ])->json('data.id');
 
     $this->actingAs($alice)->postJson("/api/chat/conversations/{$convoAB}/messages", [
@@ -50,7 +50,7 @@ it('prunes disappearing messages once their ttl has elapsed', function () {
 
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $this->actingAs($alice)
@@ -82,7 +82,7 @@ it('notifies other participants when a message is sent', function () {
 
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $this->actingAs($alice)
@@ -99,7 +99,7 @@ it('hides archived conversations from the default list and includes them when re
 
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $this->actingAs($alice)->patchJson("/api/chat/conversations/{$conversationId}/archive", ['archived' => true])->assertOk();

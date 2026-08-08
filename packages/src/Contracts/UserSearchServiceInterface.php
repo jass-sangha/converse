@@ -2,15 +2,19 @@
 
 namespace Converse\Chat\Contracts;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 interface UserSearchServiceInterface
 {
-    public function search(int $excludeUserId, ?string $q, int $perPage): LengthAwarePaginator;
+    /**
+     * @param  string  $type  Morph alias of the chatable model to search (see chat.chatable_models).
+     */
+    public function search(Model $exclude, string $type, ?string $q, int $perPage): LengthAwarePaginator;
 
     /**
      * @param  int[]  $ids
      */
-    public function findMany(array $ids): Collection;
+    public function findMany(string $type, array $ids): Collection;
 }

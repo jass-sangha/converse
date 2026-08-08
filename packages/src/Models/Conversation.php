@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Conversation extends Model
 {
@@ -19,7 +20,8 @@ class Conversation extends Model
         'name',
         'description',
         'avatar_path',
-        'created_by',
+        'creator_id',
+        'creator_type',
         'disappearing_messages_ttl',
         'last_activity_at',
     ];
@@ -37,6 +39,11 @@ class Conversation extends Model
     protected static function newFactory(): ConversationFactory
     {
         return ConversationFactory::new();
+    }
+
+    public function creator(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     public function participants(): HasMany

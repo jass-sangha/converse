@@ -2,15 +2,16 @@
 
 namespace Converse\Chat\Contracts;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface BlockedUserServiceInterface
 {
-    public function block(int $blockerId, int $blockedId): void;
+    public function block(Model $blocker, Model $blocked): void;
 
-    public function unblock(int $blockerId, int $blockedId): void;
+    public function unblock(Model $blocker, Model $blocked): void;
 
-    public function isBlockedEitherWay(int $userIdA, int $userIdB): bool;
+    public function isBlockedEitherWay(Model $a, Model $b): bool;
 
-    public function listForUser(int $blockerId, int $perPage): LengthAwarePaginator;
+    public function listForUser(Model $blocker, int $perPage): LengthAwarePaginator;
 }

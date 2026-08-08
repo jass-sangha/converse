@@ -7,7 +7,8 @@ use Converse\Chat\Notifications\NewChatMessageNotification;
 it('always includes the broadcast channel and appends configured extra channels', function () {
     $message = new Message([
         'conversation_id' => 1,
-        'user_id' => 1,
+        'chatable_type' => 'user',
+        'chatable_id' => 1,
         'type' => MessageType::Text->value,
         'body' => 'hi',
     ]);

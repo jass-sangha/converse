@@ -55,7 +55,7 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::post('conversations/{conversation}/typing', [TypingController::class, 'update']);
 
         Route::post('presence/heartbeat', [PresenceController::class, 'heartbeat']);
-        Route::get('users/{userId}/presence', [PresenceController::class, 'show']);
+        Route::get('users/{chatableType}/{chatableId}/presence', [PresenceController::class, 'show']);
         Route::get('users', [UserSearchController::class, 'index']);
         Route::post('profile/avatar', [ProfileController::class, 'updateAvatar']);
         Route::get('profile/settings', [ProfileController::class, 'showSettings']);
@@ -63,13 +63,13 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
 
         Route::get('conversations/{conversation}/participants', [ParticipantController::class, 'index']);
         Route::post('conversations/{conversation}/participants', [ParticipantController::class, 'store']);
-        Route::delete('conversations/{conversation}/participants/{userId}', [ParticipantController::class, 'destroy']);
-        Route::patch('conversations/{conversation}/participants/{userId}/role', [ParticipantController::class, 'updateRole']);
+        Route::delete('conversations/{conversation}/participants/{chatableType}/{chatableId}', [ParticipantController::class, 'destroy']);
+        Route::patch('conversations/{conversation}/participants/{chatableType}/{chatableId}/role', [ParticipantController::class, 'updateRole']);
         Route::post('conversations/{conversation}/leave', [ParticipantController::class, 'leave']);
 
         Route::get('blocked-users', [BlockedUserController::class, 'index']);
         Route::post('blocked-users', [BlockedUserController::class, 'store']);
-        Route::delete('blocked-users/{userId}', [BlockedUserController::class, 'destroy']);
+        Route::delete('blocked-users/{chatableType}/{chatableId}', [BlockedUserController::class, 'destroy']);
 
         Route::post('attachments', [AttachmentController::class, 'store']);
 

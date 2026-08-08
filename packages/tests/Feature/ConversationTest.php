@@ -17,14 +17,14 @@ it('creates a private conversation and dedupes on repeat', function () {
 
     $first = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->assertCreated();
 
     $conversationId = $first->json('data.id');
 
     $second = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->assertOk();
 
     expect($second->json('data.id'))->toBe($conversationId);
@@ -38,7 +38,7 @@ it('creates a group conversation with all participants admin-free except creator
     $response = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'group',
         'name' => 'Trip planning',
-        'participant_ids' => [$bob->id, $carol->id],
+        'participants' => chatableRefs([$bob, $carol]),
     ])->assertCreated();
 
     expect($response->json('data.name'))->toBe('Trip planning')
@@ -52,7 +52,7 @@ it('prevents a non-participant from viewing a conversation', function () {
 
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $this->actingAs($eve)

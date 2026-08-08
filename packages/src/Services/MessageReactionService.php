@@ -6,22 +6,24 @@ use Converse\Chat\Contracts\MessageReactionServiceInterface;
 use Converse\Chat\Events\MessageReacted;
 use Converse\Chat\Models\Message;
 use Converse\Chat\Models\MessageReaction;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class MessageReactionService implements MessageReactionServiceInterface
 {
-    public function toggle(Message $message, int $userId, ?string $emoji): Collection
+    public function toggle(Message $message, Model $chatable, ?string $emoji): Collection
     {
         $existing = MessageReaction::query()
             ->where('message_id', $message->id)
-            ->where('user_id', $userId)
+            ->where('chatable_type', $chatable->getMorphClass())
+            ->where('chatable_id', $chatable->getKey())
             ->first();
 
         if ($emoji === null || $existing?->emoji === $emoji) {
             $existing?->delete();
         } else {
             MessageReaction::query()->updateOrCreate(
-                ['message_id' => $message->id, 'user_id' => $userId],
+                ['message_id' => $message->id, 'chatable_type' => $chatable->getMorphClass(), 'chatable_id' => $chatable->getKey()],
                 ['emoji' => $emoji],
             );
         }
@@ -40,7 +42,10 @@ class MessageReactionService implements MessageReactionServiceInterface
             ->map(fn ($group, $emoji) => [
                 'emoji' => $emoji,
                 'count' => $group->count(),
-                'user_ids' => $group->pluck('user_id')->values(),
+                'chatables' => $group->map(fn (MessageReaction $reaction) => [
+                    'type' => $reaction->chatable_type,
+                    'id' => $reaction->chatable_id,
+                ])->values(),
             ])
             ->values();
     }

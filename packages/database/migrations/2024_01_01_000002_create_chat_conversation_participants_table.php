@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('conversation_id')
                 ->constrained(config('chat.table_names.conversations', 'chat_conversations'))
                 ->cascadeOnDelete();
-            $table->unsignedBigInteger('user_id');
+            $table->morphs('chatable');
             $table->string('role')->default('member');
             $table->timestamp('joined_at')->nullable();
             $table->timestamp('left_at')->nullable();
@@ -23,8 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('last_read_message_id')->nullable();
             $table->timestamps();
 
-            $table->unique(['conversation_id', 'user_id']);
-            $table->index('user_id');
+            $table->unique(['conversation_id', 'chatable_type', 'chatable_id']);
             $table->index('left_at');
         });
     }

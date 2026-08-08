@@ -4,24 +4,24 @@ namespace Converse\Chat\Models;
 
 use Converse\Chat\Chat;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class BlockedUser extends Model
 {
-    protected $fillable = ['blocker_id', 'blocked_id'];
+    protected $fillable = ['blocker_id', 'blocker_type', 'blocked_id', 'blocked_type'];
 
     public function getTable(): string
     {
         return Chat::table('blocked_users');
     }
 
-    public function blocker(): BelongsTo
+    public function blocker(): MorphTo
     {
-        return $this->belongsTo(Chat::userModel(), 'blocker_id');
+        return $this->morphTo();
     }
 
-    public function blocked(): BelongsTo
+    public function blocked(): MorphTo
     {
-        return $this->belongsTo(Chat::userModel(), 'blocked_id');
+        return $this->morphTo();
     }
 }

@@ -37,7 +37,7 @@ class ProfileController extends Controller
 
     public function showSettings(Request $request)
     {
-        $setting = $this->settings->get($request->user()->getAuthIdentifier());
+        $setting = $this->settings->get($request->user());
 
         return response()->json(['data' => [
             'show_last_seen' => $setting->show_last_seen,
@@ -52,7 +52,7 @@ class ProfileController extends Controller
             'show_read_receipts' => ['sometimes', 'boolean'],
         ]);
 
-        $setting = $this->settings->update($request->user()->getAuthIdentifier(), $data);
+        $setting = $this->settings->update($request->user(), $data);
 
         return response()->json(['data' => [
             'show_last_seen' => $setting->show_last_seen,

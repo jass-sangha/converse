@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->text('description')->nullable();
             $table->string('avatar_path')->nullable();
-            $table->unsignedBigInteger('created_by')->nullable();
+            $table->nullableMorphs('creator');
             $table->unsignedInteger('disappearing_messages_ttl')->nullable();
             $table->timestamp('last_activity_at')->nullable();
             $table->timestamps();

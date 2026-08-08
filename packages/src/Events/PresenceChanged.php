@@ -5,6 +5,7 @@ namespace Converse\Chat\Events;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -13,10 +14,10 @@ class PresenceChanged implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
-     * @param  int[]  $conversationIds  Conversations the user is an active participant of.
+     * @param  int[]  $conversationIds  Conversations the chatable is an active participant of.
      */
     public function __construct(
-        public int $userId,
+        public Model $chatable,
         public bool $isOnline,
         public ?string $lastSeenAt,
         public array $conversationIds,
@@ -38,7 +39,8 @@ class PresenceChanged implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'user_id' => $this->userId,
+            'chatable_type' => $this->chatable->getMorphClass(),
+            'chatable_id' => $this->chatable->getKey(),
             'is_online' => $this->isOnline,
             'last_seen_at' => $this->lastSeenAt,
         ];

@@ -9,10 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create(config('chat.table_names.user_settings', 'chat_user_settings'), function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id')->primary();
+            $table->id();
+            $table->string('chatable_type');
+            $table->unsignedBigInteger('chatable_id');
             $table->boolean('show_last_seen')->default(true);
             $table->boolean('show_read_receipts')->default(true);
             $table->timestamps();
+
+            $table->unique(['chatable_type', 'chatable_id']);
         });
     }
 

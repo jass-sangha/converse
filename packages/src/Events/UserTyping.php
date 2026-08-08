@@ -5,6 +5,7 @@ namespace Converse\Chat\Events;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -14,7 +15,7 @@ class UserTyping implements ShouldBroadcastNow
 
     public function __construct(
         public int $conversationId,
-        public int $userId,
+        public Model $chatable,
     ) {}
 
     public function broadcastOn(): array
@@ -31,7 +32,8 @@ class UserTyping implements ShouldBroadcastNow
     {
         return [
             'conversation_id' => $this->conversationId,
-            'user_id' => $this->userId,
+            'chatable_type' => $this->chatable->getMorphClass(),
+            'chatable_id' => $this->chatable->getKey(),
         ];
     }
 }

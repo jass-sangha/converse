@@ -4,17 +4,18 @@ namespace Converse\Chat\Models;
 
 use Converse\Chat\Chat;
 use Converse\Chat\Enums\ParticipantRole;
-use Converse\Chat\Traits\BelongsToChatUser;
+use Converse\Chat\Traits\BelongsToChatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ConversationParticipant extends Model
 {
-    use BelongsToChatUser;
+    use BelongsToChatable;
 
     protected $fillable = [
         'conversation_id',
-        'user_id',
+        'chatable_id',
+        'chatable_type',
         'role',
         'joined_at',
         'left_at',

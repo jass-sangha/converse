@@ -2,9 +2,11 @@
 
 namespace Converse\Chat\Repositories;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Contracts\MessageRepositoryInterface;
 use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\Message;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class MessageRepository implements MessageRepositoryInterface
@@ -21,14 +23,14 @@ class MessageRepository implements MessageRepositoryInterface
 
     public function paginateForConversation(
         Conversation $conversation,
-        int $userId,
+        Model $chatable,
         int $perPage,
         ?int $beforeId = null
     ): LengthAwarePaginator {
         $query = Message::query()
             ->where('conversation_id', $conversation->id)
-            ->whereDoesntHave('deletions', fn ($q) => $q->where('user_id', $userId))
-            ->with(['user', 'attachments', 'reactions', 'replyTo', 'receipts', 'starredBy', 'pinnedIn'])
+            ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
+            ->with(['chatable', 'attachments', 'reactions', 'replyTo', 'receipts.chatable', 'starredBy', 'pinnedIn'])
             ->orderByDesc('id');
 
         if ($beforeId !== null) {
@@ -38,16 +40,14 @@ class MessageRepository implements MessageRepositoryInterface
         return $query->paginate($perPage);
     }
 
-    public function search(int $userId, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator
+    public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator
     {
         $builder = Message::query()
-            ->whereHas('conversation.participants', function ($q) use ($userId) {
-                $q->where('user_id', $userId)->whereNull('left_at');
-            })
-            ->whereDoesntHave('deletions', fn ($q) => $q->where('user_id', $userId))
+            ->whereHas('conversation.participants', fn ($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
+            ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
             ->whereNull('deleted_for_everyone_at')
             ->where('body', 'like', '%'.$query.'%')
-            ->with(['user', 'attachments', 'reactions', 'replyTo', 'receipts', 'starredBy', 'pinnedIn'])
+            ->with(['chatable', 'attachments', 'reactions', 'replyTo', 'receipts.chatable', 'starredBy', 'pinnedIn'])
             ->orderByDesc('id');
 
         if ($conversationId !== null) {

@@ -4,7 +4,7 @@ namespace Converse\Chat\Models;
 
 use Converse\Chat\Chat;
 use Converse\Chat\Enums\MessageType;
-use Converse\Chat\Traits\BelongsToChatUser;
+use Converse\Chat\Traits\BelongsToChatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,11 +12,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Message extends Model
 {
-    use BelongsToChatUser;
+    use BelongsToChatable;
 
     protected $fillable = [
         'conversation_id',
-        'user_id',
+        'chatable_id',
+        'chatable_type',
         'type',
         'body',
         'reply_to_message_id',
@@ -94,6 +95,6 @@ class Message extends Model
 
     public function isSystemMessage(): bool
     {
-        return $this->type === MessageType::System || $this->user_id === null;
+        return $this->type === MessageType::System || $this->chatable_id === null;
     }
 }

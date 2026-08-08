@@ -6,7 +6,7 @@ use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Enums\MessageType;
 use Converse\Chat\Enums\ParticipantRole;
 use Converse\Chat\Models\Message;
-use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 
 class MessagePolicy
 {
@@ -14,39 +14,39 @@ class MessagePolicy
         protected ParticipantRepositoryInterface $participants,
     ) {}
 
-    public function view(Authenticatable $user, Message $message): bool
+    public function view(Model $user, Message $message): bool
     {
         return $this->isActiveParticipant($message, $user);
     }
 
-    public function react(Authenticatable $user, Message $message): bool
+    public function react(Model $user, Message $message): bool
     {
         return $this->isActiveParticipant($message, $user);
     }
 
-    public function star(Authenticatable $user, Message $message): bool
+    public function star(Model $user, Message $message): bool
     {
         return $this->isActiveParticipant($message, $user);
     }
 
-    public function pin(Authenticatable $user, Message $message): bool
+    public function pin(Model $user, Message $message): bool
     {
         return $this->isActiveParticipant($message, $user);
     }
 
-    public function forward(Authenticatable $user, Message $message): bool
+    public function forward(Model $user, Message $message): bool
     {
         return $this->isActiveParticipant($message, $user);
     }
 
-    public function deleteForMe(Authenticatable $user, Message $message): bool
+    public function deleteForMe(Model $user, Message $message): bool
     {
         return $this->isActiveParticipant($message, $user);
     }
 
-    public function update(Authenticatable $user, Message $message): bool
+    public function update(Model $user, Message $message): bool
     {
-        if ($message->user_id !== $user->getAuthIdentifier()) {
+        if (! $this->isSender($message, $user)) {
             return false;
         }
 
@@ -57,11 +57,9 @@ class MessagePolicy
         return ! $this->pastWindow($message, config('chat.message.edit_window_minutes'));
     }
 
-    public function delete(Authenticatable $user, Message $message): bool
+    public function delete(Model $user, Message $message): bool
     {
-        $userId = $user->getAuthIdentifier();
-
-        if ($message->user_id === $userId) {
+        if ($this->isSender($message, $user)) {
             $window = config('chat.message.delete_for_everyone_window_minutes');
 
             if (! $this->pastWindow($message, $window)) {
@@ -69,17 +67,23 @@ class MessagePolicy
             }
         }
 
-        return $this->isAdmin($message, $userId);
+        return $this->isAdmin($message, $user);
     }
 
-    protected function isActiveParticipant(Message $message, Authenticatable $user): bool
+    protected function isSender(Message $message, Model $user): bool
     {
-        return $this->participants->isActiveParticipant($message->conversation_id, $user->getAuthIdentifier());
+        return $message->chatable_type === $user->getMorphClass()
+            && $message->chatable_id === $user->getKey();
     }
 
-    protected function isAdmin(Message $message, int $userId): bool
+    protected function isActiveParticipant(Message $message, Model $user): bool
     {
-        $participant = $this->participants->findForUser($message->conversation_id, $userId);
+        return $this->participants->isActiveParticipant($message->conversation_id, $user);
+    }
+
+    protected function isAdmin(Message $message, Model $user): bool
+    {
+        $participant = $this->participants->findFor($message->conversation_id, $user);
 
         return $participant !== null
             && $participant->left_at === null

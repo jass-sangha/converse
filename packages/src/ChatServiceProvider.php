@@ -19,8 +19,8 @@ use Converse\Chat\Contracts\ParticipantServiceInterface;
 use Converse\Chat\Contracts\PinnedMessageServiceInterface;
 use Converse\Chat\Contracts\PresenceServiceInterface;
 use Converse\Chat\Contracts\StarredMessageServiceInterface;
-use Converse\Chat\Contracts\UserSettingsServiceInterface;
 use Converse\Chat\Contracts\UserSearchServiceInterface;
+use Converse\Chat\Contracts\UserSettingsServiceInterface;
 use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\Message;
 use Converse\Chat\Policies\ConversationPolicy;
@@ -42,7 +42,9 @@ use Converse\Chat\Services\PresenceService;
 use Converse\Chat\Services\StarredMessageService;
 use Converse\Chat\Services\UserSearchService;
 use Converse\Chat\Services\UserSettingsService;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -105,11 +107,29 @@ class ChatServiceProvider extends PackageServiceProvider
             Gate::policy($model, $policy);
         }
 
+        Relation::enforceMorphMap(Chat::chatableModels());
+
         $this->registerDefaultDisk();
+        $this->registerStatefulApiMiddleware();
 
         $this->publishes([
             __DIR__.'/../resources/css/theme.css' => public_path('vendor/chat/theme.css'),
         ], 'chat-theme');
+    }
+
+    /**
+     * The bundled chat UI authenticates via Sanctum's session-cookie flow, which needs
+     * EnsureFrontendRequestsAreStateful on the 'api' middleware group. Registering it here
+     * (rather than asking the host app to call $middleware->statefulApi() in bootstrap/app.php)
+     * keeps the package self-contained — installing it is enough, no host wiring required.
+     */
+    protected function registerStatefulApiMiddleware(): void
+    {
+        if (! (bool) env('CHAT_STATEFUL_API', true)) {
+            return;
+        }
+
+        $this->app['router']->pushMiddlewareToGroup('api', EnsureFrontendRequestsAreStateful::class);
     }
 
     protected function registerDefaultDisk(): void

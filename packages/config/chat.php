@@ -6,16 +6,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | User Model
+    | Chatable Models
     |--------------------------------------------------------------------------
     |
-    | The Authenticatable model chat participants are resolved against.
-    | Every chat_* table stores a plain `user_id` referencing this model's
-    | primary key — no polymorphism, no DB-level foreign key constraint,
-    | so the package never needs to know the host app's users table shape.
+    | Every Authenticatable model allowed to participate in chat, keyed by a
+    | short alias. Every chat_* table stores a polymorphic `chatable_type` /
+    | `chatable_id` pair instead of a plain `user_id`, so more than one model
+    | (e.g. users and support agents) can hold conversations with each other.
+    | The alias — not the FQCN — is what's persisted (see morph map below),
+    | so renaming a model class later doesn't orphan existing rows.
+    |
+    | The first entry is the default used wherever a single fallback model is
+    | needed (e.g. CHAT_USER_MODEL-style env overrides, user search defaults).
     |
     */
-    'user_model' => env('CHAT_USER_MODEL', User::class),
+    'chatable_models' => [
+        'user' => env('CHAT_USER_MODEL', User::class),
+    ],
 
     /*
     |--------------------------------------------------------------------------

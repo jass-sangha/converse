@@ -13,11 +13,11 @@ return new class extends Migration
             $table->foreignId('message_id')
                 ->constrained(config('chat.table_names.messages', 'chat_messages'))
                 ->cascadeOnDelete();
-            $table->unsignedBigInteger('user_id');
+            $table->morphs('chatable');
             $table->string('emoji', 16);
             $table->timestamps();
 
-            $table->unique(['message_id', 'user_id']);
+            $table->unique(['message_id', 'chatable_type', 'chatable_id']);
         });
     }
 

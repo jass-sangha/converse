@@ -32,7 +32,8 @@ class NewChatMessageNotification extends Notification implements ShouldQueue
         return new BroadcastMessage([
             'conversation_id' => $this->message->conversation_id,
             'message_id' => $this->message->id,
-            'sender_id' => $this->message->user_id,
+            'sender_type' => $this->message->chatable_type,
+            'sender_id' => $this->message->chatable_id,
             'type' => $this->message->type?->value,
             'preview' => str($this->message->body ?? '')->limit(120)->toString(),
         ]);
@@ -43,7 +44,8 @@ class NewChatMessageNotification extends Notification implements ShouldQueue
         return [
             'conversation_id' => $this->message->conversation_id,
             'message_id' => $this->message->id,
-            'sender_id' => $this->message->user_id,
+            'sender_type' => $this->message->chatable_type,
+            'sender_id' => $this->message->chatable_id,
         ];
     }
 }

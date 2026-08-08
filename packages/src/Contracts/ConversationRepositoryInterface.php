@@ -3,17 +3,21 @@
 namespace Converse\Chat\Contracts;
 
 use Converse\Chat\Models\Conversation;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 interface ConversationRepositoryInterface
 {
-    public function getForUser(int $userId, array $filters = []): Collection;
+    public function getForUser(Model $chatable, array $filters = []): Collection;
 
     public function findById(int $id): Conversation;
 
-    public function findPrivateBetween(int $userIdA, int $userIdB): ?Conversation;
+    public function findPrivateBetween(Model $a, Model $b): ?Conversation;
 
-    public function create(array $data, array $participantUserIds, int $creatorId): Conversation;
+    /**
+     * @param  Collection<int, Model>  $participants
+     */
+    public function create(array $data, Collection $participants, Model $creator): Conversation;
 
     public function update(Conversation $conversation, array $data): Conversation;
 }

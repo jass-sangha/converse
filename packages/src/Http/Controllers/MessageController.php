@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Gate;
 
 class MessageController extends Controller
 {
-    protected const EAGER = ['user', 'attachments', 'reactions', 'replyTo', 'receipts', 'starredBy', 'pinnedIn'];
+    protected const EAGER = ['chatable', 'attachments', 'reactions', 'replyTo', 'receipts.chatable', 'starredBy', 'pinnedIn'];
 
     public function __construct(
         protected MessageServiceInterface $messages,
@@ -29,7 +29,7 @@ class MessageController extends Controller
 
         $messages = $this->messages->listForConversation(
             $conversation,
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $perPage,
             $beforeId,
         );
@@ -43,7 +43,7 @@ class MessageController extends Controller
 
         $message = $this->messages->send(
             $conversation,
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $request->validated(),
         );
 
@@ -74,7 +74,7 @@ class MessageController extends Controller
     {
         Gate::authorize('deleteForMe', $message);
 
-        $this->messages->deleteForMe($message, $request->user()->getAuthIdentifier());
+        $this->messages->deleteForMe($message, $request->user());
 
         return response()->noContent();
     }
@@ -86,7 +86,7 @@ class MessageController extends Controller
         $forwarded = $this->messages->forward(
             $message,
             array_map('intval', $request->validated()['conversation_ids']),
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
         );
 
         return MessageResource::collection(collect($forwarded)->map(fn (Message $m) => $m->load(self::EAGER)));
@@ -100,7 +100,7 @@ class MessageController extends Controller
         $conversationId = $request->integer('conversation_id') ?: null;
 
         $messages = $this->messages->search(
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $request->string('q')->toString(),
             $conversationId,
             $perPage,

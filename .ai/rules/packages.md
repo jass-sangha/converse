@@ -1,0 +1,9 @@
+---
+paths:
+  - 'packages/**'
+---
+
+# Packages
+
+## Converse chat package: polymorphic chatables, no user_id
+The `jass-sangha/converse` package (in packages/) never stores a plain `user_id`. Every chat_* table uses polymorphic `chatable_type`/`chatable_id` columns, backed by a Laravel morph map registered from `config('chat.chatable_models')` (alias => Authenticatable model class, e.g. `'user' => App\Models\User::class`). Repositories/services/contracts take the actual `Illuminate\Database\Eloquent\Model` instance as the actor (e.g. `Model $chatable`), never a bare int id — use `Chat::identify()`/`Chat::whereChatable()`/`Chat::resolveChatable()`/`Chat::resolveMany()` helpers (packages/src/Chat.php) instead of hand-rolling type+id comparisons. API routes/requests reference a chatable as `{type}/{id}` in URLs and `{"type": ..., "id": ...}` in request bodies — never `{userId}` or a bare `user_id` field. Laravel Sanctum is a direct dependency of the package's own composer.json (not the host app's) — ChatServiceProvider self-registers the `EnsureFrontendRequestsAreStateful` middleware, so the host app needs zero bootstrap/app.php or composer.json changes for chat auth to work. The bundled Vue UI under packages/resources/js still assumes the old single-`user_id` wire format and has not been updated to the polymorphic scheme — treat it as known-stale until someone does that pass; the JSON API itself is fully polymorphic and correct.

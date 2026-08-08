@@ -14,7 +14,7 @@ return new class extends Migration
                 ->nullable()
                 ->constrained(config('chat.table_names.messages', 'chat_messages'))
                 ->cascadeOnDelete();
-            $table->unsignedBigInteger('uploaded_by');
+            $table->morphs('uploader');
             $table->string('disk');
             $table->string('path');
             $table->string('original_filename')->nullable();

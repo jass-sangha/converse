@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('message_id')
                 ->constrained(config('chat.table_names.messages', 'chat_messages'))
                 ->cascadeOnDelete();
-            $table->unsignedBigInteger('pinned_by');
+            $table->morphs('pinner');
             $table->timestamps();
 
             $table->unique(['conversation_id', 'message_id']);

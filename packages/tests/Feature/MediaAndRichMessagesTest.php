@@ -18,7 +18,7 @@ it('uploads an attachment and sends it as an image message', function () {
 
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $upload = $this->actingAs($alice)->postJson('/api/chat/attachments', [
@@ -62,7 +62,7 @@ it('sends a location message and a contact message', function () {
 
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $location = $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [

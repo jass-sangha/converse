@@ -2,42 +2,53 @@
 
 namespace Converse\Chat\Services;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Contracts\BlockedUserServiceInterface;
 use Converse\Chat\Models\BlockedUser;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class BlockedUserService implements BlockedUserServiceInterface
 {
-    public function block(int $blockerId, int $blockedId): void
+    public function block(Model $blocker, Model $blocked): void
     {
-        abort_if($blockerId === $blockedId, 422, 'You cannot block yourself.');
+        abort_if(Chat::identify($blocker) === Chat::identify($blocked), 422, 'You cannot block yourself.');
 
         BlockedUser::query()->firstOrCreate([
-            'blocker_id' => $blockerId,
-            'blocked_id' => $blockedId,
+            'blocker_type' => $blocker->getMorphClass(),
+            'blocker_id' => $blocker->getKey(),
+            'blocked_type' => $blocked->getMorphClass(),
+            'blocked_id' => $blocked->getKey(),
         ]);
     }
 
-    public function unblock(int $blockerId, int $blockedId): void
+    public function unblock(Model $blocker, Model $blocked): void
     {
         BlockedUser::query()
-            ->where('blocker_id', $blockerId)
-            ->where('blocked_id', $blockedId)
+            ->where('blocker_type', $blocker->getMorphClass())
+            ->where('blocker_id', $blocker->getKey())
+            ->where('blocked_type', $blocked->getMorphClass())
+            ->where('blocked_id', $blocked->getKey())
             ->delete();
     }
 
-    public function isBlockedEitherWay(int $userIdA, int $userIdB): bool
+    public function isBlockedEitherWay(Model $a, Model $b): bool
     {
         return BlockedUser::query()
-            ->where(fn ($q) => $q->where('blocker_id', $userIdA)->where('blocked_id', $userIdB))
-            ->orWhere(fn ($q) => $q->where('blocker_id', $userIdB)->where('blocked_id', $userIdA))
+            ->where(fn ($q) => $q
+                ->where('blocker_type', $a->getMorphClass())->where('blocker_id', $a->getKey())
+                ->where('blocked_type', $b->getMorphClass())->where('blocked_id', $b->getKey()))
+            ->orWhere(fn ($q) => $q
+                ->where('blocker_type', $b->getMorphClass())->where('blocker_id', $b->getKey())
+                ->where('blocked_type', $a->getMorphClass())->where('blocked_id', $a->getKey()))
             ->exists();
     }
 
-    public function listForUser(int $blockerId, int $perPage): LengthAwarePaginator
+    public function listForUser(Model $blocker, int $perPage): LengthAwarePaginator
     {
         return BlockedUser::query()
-            ->where('blocker_id', $blockerId)
+            ->where('blocker_type', $blocker->getMorphClass())
+            ->where('blocker_id', $blocker->getKey())
             ->latest('id')
             ->paginate($perPage);
     }

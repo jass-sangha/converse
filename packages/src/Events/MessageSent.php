@@ -32,7 +32,8 @@ class MessageSent implements ShouldBroadcast
         return [
             'id' => $this->message->id,
             'conversation_id' => $this->message->conversation_id,
-            'user_id' => $this->message->user_id,
+            'chatable_type' => $this->message->chatable_type,
+            'chatable_id' => $this->message->chatable_id,
             'type' => $this->message->type?->value,
             'body' => $this->message->body,
             'metadata' => $this->message->metadata,

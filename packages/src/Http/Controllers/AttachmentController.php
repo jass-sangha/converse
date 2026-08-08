@@ -16,7 +16,7 @@ class AttachmentController extends Controller
     {
         $attachment = $this->attachments->upload(
             $request->file('file'),
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
         );
 
         return (new AttachmentResource($attachment))->response()->setStatusCode(201);

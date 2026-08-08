@@ -2,11 +2,13 @@
 
 namespace Converse\Chat\Repositories;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Contracts\ConversationRepositoryInterface;
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Enums\ConversationType;
 use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\ConversationParticipant;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -16,19 +18,20 @@ class ConversationRepository implements ConversationRepositoryInterface
         protected ParticipantRepositoryInterface $participants,
     ) {}
 
-    public function getForUser(int $userId, array $filters = []): Collection
+    public function getForUser(Model $chatable, array $filters = []): Collection
     {
         $participantTable = (new ConversationParticipant)->getTable();
         $conversationTable = (new Conversation)->getTable();
 
         $query = Conversation::query()
-            ->whereHas('participants', function ($query) use ($userId) {
-                $query->where('user_id', $userId)->whereNull('left_at');
+            ->whereHas('participants', function ($query) use ($chatable) {
+                Chat::whereChatable($query, $chatable)->whereNull('left_at');
             })
             ->with(['participants' => fn ($query) => $query->whereNull('left_at'), 'lastMessage'])
-            ->leftJoin("{$participantTable} as my_participation", function ($join) use ($userId, $conversationTable) {
+            ->leftJoin("{$participantTable} as my_participation", function ($join) use ($chatable, $conversationTable) {
                 $join->on('my_participation.conversation_id', '=', "{$conversationTable}.id")
-                    ->where('my_participation.user_id', '=', $userId);
+                    ->where('my_participation.chatable_type', '=', $chatable->getMorphClass())
+                    ->where('my_participation.chatable_id', '=', $chatable->getKey());
             })
             ->select("{$conversationTable}.*");
 
@@ -66,32 +69,38 @@ class ConversationRepository implements ConversationRepositoryInterface
         return Conversation::query()->findOrFail($id);
     }
 
-    public function findPrivateBetween(int $userIdA, int $userIdB): ?Conversation
+    public function findPrivateBetween(Model $a, Model $b): ?Conversation
     {
         return Conversation::query()
             ->where('type', ConversationType::Private->value)
-            ->whereHas('participants', fn ($q) => $q->where('user_id', $userIdA)->whereNull('left_at'))
-            ->whereHas('participants', fn ($q) => $q->where('user_id', $userIdB)->whereNull('left_at'))
-            ->whereDoesntHave('participants', function ($query) use ($userIdA, $userIdB) {
-                $query->whereNull('left_at')->whereNotIn('user_id', [$userIdA, $userIdB]);
+            ->whereHas('participants', fn ($q) => Chat::whereChatable($q, $a)->whereNull('left_at'))
+            ->whereHas('participants', fn ($q) => Chat::whereChatable($q, $b)->whereNull('left_at'))
+            ->whereDoesntHave('participants', function ($query) use ($a, $b) {
+                $query->whereNull('left_at')
+                    ->where(function ($query) use ($a, $b) {
+                        $query
+                            ->where(fn ($q) => $q->where('chatable_type', '!=', $a->getMorphClass())->orWhere('chatable_id', '!=', $a->getKey()))
+                            ->where(fn ($q) => $q->where('chatable_type', '!=', $b->getMorphClass())->orWhere('chatable_id', '!=', $b->getKey()));
+                    });
             })
             ->first();
     }
 
-    public function create(array $data, array $participantUserIds, int $creatorId): Conversation
+    public function create(array $data, Collection $participants, Model $creator): Conversation
     {
-        return DB::transaction(function () use ($data, $participantUserIds, $creatorId) {
-            $type = count($participantUserIds) > 2 ? ConversationType::Group : ConversationType::Private;
+        return DB::transaction(function () use ($data, $participants, $creator) {
+            $type = $participants->count() > 2 ? ConversationType::Group : ConversationType::Private;
 
             $conversation = Conversation::query()->create([
                 ...$data,
                 'type' => $type,
                 'name' => $type === ConversationType::Group ? ($data['name'] ?? null) : null,
-                'created_by' => $creatorId,
+                'creator_type' => $creator->getMorphClass(),
+                'creator_id' => $creator->getKey(),
                 'last_activity_at' => now(),
             ]);
 
-            $this->participants->addMany($conversation->id, $participantUserIds, $creatorId);
+            $this->participants->addMany($conversation->id, $participants, $creator);
 
             return $conversation->load('participants');
         });

@@ -6,6 +6,7 @@ use Converse\Chat\Contracts\AttachmentServiceInterface;
 use Converse\Chat\Contracts\MediaProcessor;
 use Converse\Chat\Models\Message;
 use Converse\Chat\Models\MessageAttachment;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 
 class AttachmentService implements AttachmentServiceInterface
@@ -14,7 +15,7 @@ class AttachmentService implements AttachmentServiceInterface
         protected MediaProcessor $mediaProcessor,
     ) {}
 
-    public function upload(UploadedFile $file, int $userId): MessageAttachment
+    public function upload(UploadedFile $file, Model $chatable): MessageAttachment
     {
         $mimeType = $file->getMimeType();
         $category = $this->resolveCategory($mimeType);
@@ -28,7 +29,8 @@ class AttachmentService implements AttachmentServiceInterface
         $path = $file->store("attachments/{$category}", $disk);
 
         $attachment = MessageAttachment::query()->create([
-            'uploaded_by' => $userId,
+            'uploader_type' => $chatable->getMorphClass(),
+            'uploader_id' => $chatable->getKey(),
             'disk' => $disk,
             'path' => $path,
             'original_filename' => $file->getClientOriginalName(),
@@ -43,12 +45,15 @@ class AttachmentService implements AttachmentServiceInterface
         return $attachment;
     }
 
-    public function attachToMessage(array $attachmentIds, Message $message, int $userId): void
+    public function attachToMessage(array $attachmentIds, Message $message, Model $chatable): void
     {
         $attachments = MessageAttachment::query()->whereIn('id', array_unique($attachmentIds))->get();
 
         foreach ($attachments as $attachment) {
-            abort_if($attachment->uploaded_by !== $userId, 403);
+            $uploadedByChatable = $attachment->uploader_type === $chatable->getMorphClass()
+                && $attachment->uploader_id === $chatable->getKey();
+
+            abort_if(! $uploadedByChatable, 403);
             abort_if($attachment->message_id !== null, 422, 'Attachment already attached to a message.');
         }
 

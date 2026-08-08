@@ -2,14 +2,16 @@
 
 namespace Converse\Chat\Contracts;
 
+use Illuminate\Database\Eloquent\Model;
+
 interface PresenceServiceInterface
 {
-    public function heartbeat(int $userId): void;
+    public function heartbeat(Model $chatable): void;
 
-    public function status(int $userId, ?int $viewerUserId = null): array;
+    public function status(Model $chatable, ?Model $viewer = null): array;
 
     /**
-     * Mark stale online users offline and broadcast the change. Returns the count swept.
+     * Mark stale online chatables offline and broadcast the change. Returns the count swept.
      */
     public function sweepStale(): int;
 }

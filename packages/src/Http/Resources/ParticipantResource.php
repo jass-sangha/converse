@@ -10,7 +10,8 @@ class ParticipantResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'user_id' => $this->user_id,
+            'chatable_type' => $this->chatable_type,
+            'chatable_id' => $this->chatable_id,
             'role' => $this->role?->value,
             'joined_at' => $this->joined_at,
             'left_at' => $this->left_at,

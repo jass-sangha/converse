@@ -5,6 +5,7 @@ namespace Converse\Chat\Events;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -14,8 +15,8 @@ class ParticipantRemoved implements ShouldBroadcast
 
     public function __construct(
         public int $conversationId,
-        public int $userId,
-        public int $actorId,
+        public Model $target,
+        public Model $actor,
     ) {}
 
     public function broadcastOn(): array
@@ -32,8 +33,10 @@ class ParticipantRemoved implements ShouldBroadcast
     {
         return [
             'conversation_id' => $this->conversationId,
-            'user_id' => $this->userId,
-            'actor_id' => $this->actorId,
+            'chatable_type' => $this->target->getMorphClass(),
+            'chatable_id' => $this->target->getKey(),
+            'actor_type' => $this->actor->getMorphClass(),
+            'actor_id' => $this->actor->getKey(),
         ];
     }
 }

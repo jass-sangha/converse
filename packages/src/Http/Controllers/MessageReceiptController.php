@@ -17,7 +17,7 @@ class MessageReceiptController extends Controller
     {
         Gate::authorize('view', $conversation);
 
-        $this->receipts->markDelivered($conversation, $request->user()->getAuthIdentifier());
+        $this->receipts->markDelivered($conversation, $request->user());
 
         return response()->noContent();
     }
@@ -28,7 +28,7 @@ class MessageReceiptController extends Controller
 
         $upToMessageId = $request->integer('up_to_message_id') ?: null;
 
-        $this->receipts->markRead($conversation, $request->user()->getAuthIdentifier(), $upToMessageId);
+        $this->receipts->markRead($conversation, $request->user(), $upToMessageId);
 
         return response()->noContent();
     }

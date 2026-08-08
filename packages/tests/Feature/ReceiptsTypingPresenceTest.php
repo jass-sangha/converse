@@ -17,7 +17,7 @@ it('marks messages delivered and read, and never regresses on an earlier read ca
 
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $ids = [];
@@ -35,7 +35,8 @@ it('marks messages delivered and read, and never regresses on an earlier read ca
 
     $participant = ConversationParticipant::query()
         ->where('conversation_id', $conversationId)
-        ->where('user_id', $bob->id)
+        ->where('chatable_type', 'user')
+        ->where('chatable_id', $bob->id)
         ->first();
 
     expect($participant->last_read_message_id)->toBe($ids[9]);
@@ -55,7 +56,7 @@ it('never writes to the database when broadcasting a typing indicator', function
 
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     Event::fake();
@@ -83,7 +84,7 @@ it('debounces presence heartbeat db writes and reports online status', function 
 
     $this->actingAs($alice)->postJson('/api/chat/presence/heartbeat')->assertNoContent();
 
-    $status = $this->actingAs($alice)->getJson("/api/chat/users/{$alice->id}/presence")->assertOk();
+    $status = $this->actingAs($alice)->getJson("/api/chat/users/user/{$alice->id}/presence")->assertOk();
     expect($status->json('data.is_online'))->toBeTrue();
 
     DB::enableQueryLog();

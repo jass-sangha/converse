@@ -2,6 +2,7 @@
 
 namespace Converse\Chat\Http\Controllers;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Contracts\ParticipantServiceInterface;
 use Converse\Chat\Http\Requests\AddParticipantsRequest;
@@ -31,27 +32,31 @@ class ParticipantController extends Controller
 
         $this->participantService->addParticipants(
             $conversation,
-            array_map('intval', $request->validated()['user_ids']),
-            $request->user()->getAuthIdentifier(),
+            Chat::resolveMany($request->validated()['participants']),
+            $request->user(),
         );
 
         return ParticipantResource::collection($this->participants->activeForConversation($conversation->id));
     }
 
-    public function destroy(Conversation $conversation, int $userId, Request $request)
+    public function destroy(Conversation $conversation, string $chatableType, int $chatableId, Request $request)
     {
         Gate::authorize('manageParticipants', $conversation);
 
-        $this->participantService->removeParticipant($conversation, $userId, $request->user()->getAuthIdentifier());
+        $target = Chat::resolveChatable($chatableType, $chatableId);
+
+        $this->participantService->removeParticipant($conversation, $target, $request->user());
 
         return response()->noContent();
     }
 
-    public function updateRole(ChangeParticipantRoleRequest $request, Conversation $conversation, int $userId)
+    public function updateRole(ChangeParticipantRoleRequest $request, Conversation $conversation, string $chatableType, int $chatableId)
     {
         Gate::authorize('manageParticipants', $conversation);
 
-        $this->participantService->changeRole($conversation, $userId, $request->validated()['role']);
+        $target = Chat::resolveChatable($chatableType, $chatableId);
+
+        $this->participantService->changeRole($conversation, $target, $request->validated()['role']);
 
         return response()->noContent();
     }
@@ -60,7 +65,7 @@ class ParticipantController extends Controller
     {
         Gate::authorize('view', $conversation);
 
-        $this->participantService->leaveGroup($conversation, $request->user()->getAuthIdentifier());
+        $this->participantService->leaveGroup($conversation, $request->user());
 
         return response()->noContent();
     }

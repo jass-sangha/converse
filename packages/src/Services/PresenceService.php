@@ -2,11 +2,13 @@
 
 namespace Converse\Chat\Services;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Contracts\PresenceServiceInterface;
 use Converse\Chat\Contracts\UserSettingsServiceInterface;
 use Converse\Chat\Events\PresenceChanged;
 use Converse\Chat\Models\ConversationParticipant;
 use Converse\Chat\Models\UserPresence;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class PresenceService implements PresenceServiceInterface
@@ -15,39 +17,41 @@ class PresenceService implements PresenceServiceInterface
         protected UserSettingsServiceInterface $settings,
     ) {}
 
-    public function heartbeat(int $userId): void
+    public function heartbeat(Model $chatable): void
     {
         $ttl = config('chat.presence.heartbeat_ttl_seconds', 60) + config('chat.presence.online_grace_seconds', 90);
-        $onlineKey = $this->onlineKey($userId);
+        $onlineKey = $this->onlineKey($chatable);
         $wasOnline = Cache::has($onlineKey);
 
         Cache::put($onlineKey, true, $ttl);
 
         if (! $wasOnline) {
-            $this->markOnlineAndBroadcast($userId);
+            $this->markOnlineAndBroadcast($chatable);
 
             return;
         }
 
         // Debounce durable last_seen_at writes to at most once per heartbeat window.
-        $lockKey = $this->lastSeenLockKey($userId);
+        $lockKey = $this->lastSeenLockKey($chatable);
 
         if (Cache::add($lockKey, true, config('chat.presence.heartbeat_ttl_seconds', 60))) {
             UserPresence::query()->updateOrCreate(
-                ['user_id' => $userId],
+                ['chatable_type' => $chatable->getMorphClass(), 'chatable_id' => $chatable->getKey()],
                 ['last_seen_at' => now(), 'is_online' => true],
             );
         }
     }
 
-    public function status(int $userId, ?int $viewerUserId = null): array
+    public function status(Model $chatable, ?Model $viewer = null): array
     {
-        $isOnline = Cache::has($this->onlineKey($userId));
-        $row = UserPresence::query()->find($userId);
+        $isOnline = Cache::has($this->onlineKey($chatable));
+        $row = Chat::whereChatable(UserPresence::query(), $chatable)->first();
 
-        $sharingAllowed = $viewerUserId === null
-            || $viewerUserId === $userId
-            || ($this->settings->allowsLastSeen($userId) && $this->settings->allowsLastSeen($viewerUserId));
+        $viewerIsSelf = $viewer !== null && Chat::identify($viewer) === Chat::identify($chatable);
+
+        $sharingAllowed = $viewer === null
+            || $viewerIsSelf
+            || ($this->settings->allowsLastSeen($chatable) && $this->settings->allowsLastSeen($viewer));
 
         if (! $sharingAllowed) {
             return [
@@ -71,23 +75,31 @@ class PresenceService implements PresenceServiceInterface
         $stale = UserPresence::query()
             ->where('is_online', true)
             ->where('last_seen_at', '<', $threshold)
+            ->with('chatable')
             ->get();
 
         foreach ($stale as $presence) {
-            Cache::forget($this->onlineKey($presence->user_id));
+            $chatable = $presence->chatable;
+
+            if ($chatable === null) {
+                $presence->update(['is_online' => false]);
+
+                continue;
+            }
+
+            Cache::forget($this->onlineKey($chatable));
             $presence->update(['is_online' => false]);
 
-            $conversationIds = ConversationParticipant::query()
-                ->where('user_id', $presence->user_id)
+            $conversationIds = Chat::whereChatable(ConversationParticipant::query(), $chatable)
                 ->whereNull('left_at')
                 ->pluck('conversation_id')
                 ->all();
 
             if (! empty($conversationIds)) {
                 broadcast(new PresenceChanged(
-                    $presence->user_id,
+                    $chatable,
                     false,
-                    $this->settings->allowsLastSeen($presence->user_id) ? $presence->last_seen_at?->toIso8601String() : null,
+                    $this->settings->allowsLastSeen($chatable) ? $presence->last_seen_at?->toIso8601String() : null,
                     $conversationIds,
                 ));
             }
@@ -96,33 +108,32 @@ class PresenceService implements PresenceServiceInterface
         return $stale->count();
     }
 
-    protected function markOnlineAndBroadcast(int $userId): void
+    protected function markOnlineAndBroadcast(Model $chatable): void
     {
         $presence = UserPresence::query()->updateOrCreate(
-            ['user_id' => $userId],
+            ['chatable_type' => $chatable->getMorphClass(), 'chatable_id' => $chatable->getKey()],
             ['is_online' => true, 'last_seen_at' => now()],
         );
 
-        $conversationIds = ConversationParticipant::query()
-            ->where('user_id', $userId)
+        $conversationIds = Chat::whereChatable(ConversationParticipant::query(), $chatable)
             ->whereNull('left_at')
             ->pluck('conversation_id')
             ->all();
 
         if (! empty($conversationIds)) {
-            $lastSeenAt = $this->settings->allowsLastSeen($userId) ? $presence->last_seen_at?->toIso8601String() : null;
+            $lastSeenAt = $this->settings->allowsLastSeen($chatable) ? $presence->last_seen_at?->toIso8601String() : null;
 
-            broadcast(new PresenceChanged($userId, true, $lastSeenAt, $conversationIds));
+            broadcast(new PresenceChanged($chatable, true, $lastSeenAt, $conversationIds));
         }
     }
 
-    protected function onlineKey(int $userId): string
+    protected function onlineKey(Model $chatable): string
     {
-        return "chat:presence:online:{$userId}";
+        return 'chat:presence:online:'.Chat::identify($chatable);
     }
 
-    protected function lastSeenLockKey(int $userId): string
+    protected function lastSeenLockKey(Model $chatable): string
     {
-        return "chat:presence:lastseen-lock:{$userId}";
+        return 'chat:presence:lastseen-lock:'.Chat::identify($chatable);
     }
 }

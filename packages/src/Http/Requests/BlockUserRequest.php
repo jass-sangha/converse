@@ -2,7 +2,9 @@
 
 namespace Converse\Chat\Http\Requests;
 
+use Converse\Chat\Chat;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class BlockUserRequest extends FormRequest
 {
@@ -14,7 +16,8 @@ class BlockUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'integer'],
+            'chatable_type' => ['required', 'string', Rule::in(array_keys(Chat::chatableModels()))],
+            'chatable_id' => ['required', 'integer'],
         ];
     }
 }

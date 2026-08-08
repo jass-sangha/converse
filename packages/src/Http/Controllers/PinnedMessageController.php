@@ -30,7 +30,7 @@ class PinnedMessageController extends Controller
     {
         Gate::authorize('pin', $message);
 
-        $this->pinnedMessages->pin($message, $request->user()->getAuthIdentifier());
+        $this->pinnedMessages->pin($message, $request->user());
 
         broadcast(new MessagePinned($message))->toOthers();
 

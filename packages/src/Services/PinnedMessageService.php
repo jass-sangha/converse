@@ -6,13 +6,14 @@ use Converse\Chat\Contracts\PinnedMessageServiceInterface;
 use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\Message;
 use Converse\Chat\Models\PinnedMessage;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class PinnedMessageService implements PinnedMessageServiceInterface
 {
     public const MAX_PINNED_PER_CONVERSATION = 3;
 
-    public function pin(Message $message, int $userId): void
+    public function pin(Message $message, Model $chatable): void
     {
         $existing = PinnedMessage::query()
             ->where('conversation_id', $message->conversation_id)
@@ -36,7 +37,8 @@ class PinnedMessageService implements PinnedMessageServiceInterface
         PinnedMessage::query()->create([
             'conversation_id' => $message->conversation_id,
             'message_id' => $message->id,
-            'pinned_by' => $userId,
+            'pinner_type' => $chatable->getMorphClass(),
+            'pinner_id' => $chatable->getKey(),
         ]);
     }
 

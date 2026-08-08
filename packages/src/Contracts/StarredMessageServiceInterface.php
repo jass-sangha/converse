@@ -3,13 +3,14 @@
 namespace Converse\Chat\Contracts;
 
 use Converse\Chat\Models\Message;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface StarredMessageServiceInterface
 {
-    public function star(Message $message, int $userId): void;
+    public function star(Message $message, Model $chatable): void;
 
-    public function unstar(Message $message, int $userId): void;
+    public function unstar(Message $message, Model $chatable): void;
 
-    public function listForUser(int $userId, int $perPage): LengthAwarePaginator;
+    public function listForUser(Model $chatable, int $perPage): LengthAwarePaginator;
 }

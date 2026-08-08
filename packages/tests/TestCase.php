@@ -3,6 +3,7 @@
 namespace Converse\Chat\Tests;
 
 use Converse\Chat\ChatServiceProvider;
+use Converse\Chat\Tests\Fixtures\Agent;
 use Converse\Chat\Tests\Fixtures\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -25,7 +26,7 @@ class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
-        $app['config']->set('chat.user_model', User::class);
+        $app['config']->set('chat.chatable_models', ['user' => User::class, 'agent' => Agent::class]);
         $app['config']->set('chat.middleware', ['api']);
         $app['config']->set('database.default', 'testing');
         $app['config']->set('auth.providers.users.model', User::class);

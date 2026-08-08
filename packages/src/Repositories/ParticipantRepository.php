@@ -2,58 +2,68 @@
 
 namespace Converse\Chat\Repositories;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Enums\ParticipantRole;
 use Converse\Chat\Models\ConversationParticipant;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class ParticipantRepository implements ParticipantRepositoryInterface
 {
-    public function addMany(int $conversationId, array $userIds, ?int $adminUserId = null): void
+    public function addMany(int $conversationId, Collection $chatables, ?Model $admin = null): void
     {
         $now = now();
+        $adminIdentity = $admin ? Chat::identify($admin) : null;
 
-        $rows = array_map(fn (int $userId) => [
-            'conversation_id' => $conversationId,
-            'user_id' => $userId,
-            'role' => $userId === $adminUserId ? ParticipantRole::Admin->value : ParticipantRole::Member->value,
-            'joined_at' => $now,
-            'left_at' => null,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ], array_unique($userIds));
+        $rows = $chatables
+            ->unique(fn (Model $chatable) => Chat::identify($chatable))
+            ->map(fn (Model $chatable) => [
+                'conversation_id' => $conversationId,
+                'chatable_type' => $chatable->getMorphClass(),
+                'chatable_id' => $chatable->getKey(),
+                'role' => Chat::identify($chatable) === $adminIdentity ? ParticipantRole::Admin->value : ParticipantRole::Member->value,
+                'joined_at' => $now,
+                'left_at' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])
+            ->values()
+            ->all();
 
         ConversationParticipant::query()->upsert(
             $rows,
-            ['conversation_id', 'user_id'],
+            ['conversation_id', 'chatable_type', 'chatable_id'],
             ['role', 'left_at', 'joined_at', 'updated_at']
         );
     }
 
-    public function findForUser(int $conversationId, int $userId): ?ConversationParticipant
+    public function findFor(int $conversationId, Model $chatable): ?ConversationParticipant
     {
-        return ConversationParticipant::query()
-            ->where('conversation_id', $conversationId)
-            ->where('user_id', $userId)
-            ->first();
+        return Chat::whereChatable(
+            ConversationParticipant::query()->where('conversation_id', $conversationId),
+            $chatable
+        )->first();
     }
 
-    public function isActiveParticipant(int $conversationId, int $userId): bool
+    public function isActiveParticipant(int $conversationId, Model $chatable): bool
     {
-        return ConversationParticipant::query()
-            ->where('conversation_id', $conversationId)
-            ->where('user_id', $userId)
-            ->whereNull('left_at')
-            ->exists();
+        return Chat::whereChatable(
+            ConversationParticipant::query()->where('conversation_id', $conversationId),
+            $chatable
+        )->whereNull('left_at')->exists();
     }
 
-    public function activeUserIds(int $conversationId): array
+    public function activeChatables(int $conversationId): Collection
     {
         return ConversationParticipant::query()
             ->where('conversation_id', $conversationId)
             ->whereNull('left_at')
-            ->pluck('user_id')
-            ->all();
+            ->with('chatable')
+            ->get()
+            ->pluck('chatable')
+            ->filter()
+            ->values();
     }
 
     public function activeForConversation(int $conversationId): Collection
@@ -64,19 +74,22 @@ class ParticipantRepository implements ParticipantRepositoryInterface
             ->get();
     }
 
-    public function remove(int $conversationId, int $userId): void
+    public function remove(int $conversationId, Model $chatable): void
     {
-        ConversationParticipant::query()
-            ->where('conversation_id', $conversationId)
-            ->where('user_id', $userId)
-            ->update(['left_at' => now()]);
+        Chat::whereChatable(
+            ConversationParticipant::query()->where('conversation_id', $conversationId),
+            $chatable
+        )->update(['left_at' => now()]);
     }
 
-    public function clearHiddenForOthers(int $conversationId, int $exceptUserId): void
+    public function clearHiddenForOthers(int $conversationId, Model $except): void
     {
         ConversationParticipant::query()
             ->where('conversation_id', $conversationId)
-            ->where('user_id', '!=', $exceptUserId)
+            ->where(fn ($q) => $q
+                ->where('chatable_type', '!=', $except->getMorphClass())
+                ->orWhere('chatable_id', '!=', $except->getKey())
+            )
             ->whereNotNull('hidden_at')
             ->update(['hidden_at' => null]);
     }

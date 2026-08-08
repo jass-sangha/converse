@@ -20,7 +20,7 @@ class MessageReactionController extends Controller
 
         $reactions = $this->reactions->toggle(
             $message,
-            $request->user()->getAuthIdentifier(),
+            $request->user(),
             $request->validated()['emoji'],
         );
 
@@ -31,7 +31,7 @@ class MessageReactionController extends Controller
     {
         Gate::authorize('react', $message);
 
-        $reactions = $this->reactions->toggle($message, $request->user()->getAuthIdentifier(), null);
+        $reactions = $this->reactions->toggle($message, $request->user(), null);
 
         return response()->json(['data' => $reactions]);
     }

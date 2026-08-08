@@ -4,15 +4,16 @@ namespace Converse\Chat\Contracts;
 
 use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\Message;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface MessageServiceInterface
 {
-    public function send(Conversation $conversation, int $userId, array $data): Message;
+    public function send(Conversation $conversation, Model $chatable, array $data): Message;
 
     public function listForConversation(
         Conversation $conversation,
-        int $userId,
+        Model $chatable,
         int $perPage,
         ?int $beforeId = null
     ): LengthAwarePaginator;
@@ -23,13 +24,13 @@ interface MessageServiceInterface
 
     public function deleteForEveryone(Message $message): void;
 
-    public function deleteForMe(Message $message, int $userId): void;
+    public function deleteForMe(Message $message, Model $chatable): void;
 
     /**
      * @param  int[]  $conversationIds
      * @return Message[]
      */
-    public function forward(Message $message, array $conversationIds, int $userId): array;
+    public function forward(Message $message, array $conversationIds, Model $chatable): array;
 
-    public function search(int $userId, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator;
+    public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator;
 }

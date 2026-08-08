@@ -18,7 +18,9 @@ use Converse\Chat\Models\Message;
 use Converse\Chat\Models\MessageDeletion;
 use Converse\Chat\Models\MessageReceipt;
 use Converse\Chat\Notifications\NewChatMessageNotification;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
@@ -32,14 +34,15 @@ class MessageService implements MessageServiceInterface
         protected AttachmentServiceInterface $attachments,
     ) {}
 
-    public function send(Conversation $conversation, int $userId, array $data): Message
+    public function send(Conversation $conversation, Model $chatable, array $data): Message
     {
-        $this->guardAgainstBlockedPrivateSend($conversation, $userId);
+        $this->guardAgainstBlockedPrivateSend($conversation, $chatable);
 
-        return DB::transaction(function () use ($conversation, $userId, $data) {
+        return DB::transaction(function () use ($conversation, $chatable, $data) {
             $message = $this->messages->create([
                 'conversation_id' => $conversation->id,
-                'user_id' => $userId,
+                'chatable_type' => $chatable->getMorphClass(),
+                'chatable_id' => $chatable->getKey(),
                 'type' => $data['type'] ?? MessageType::Text->value,
                 'body' => $data['body'] ?? null,
                 'reply_to_message_id' => $data['reply_to_message_id'] ?? null,
@@ -48,16 +51,18 @@ class MessageService implements MessageServiceInterface
             ]);
 
             if (! empty($data['attachment_ids'])) {
-                $this->attachments->attachToMessage($data['attachment_ids'], $message, $userId);
+                $this->attachments->attachToMessage($data['attachment_ids'], $message, $chatable);
             }
 
-            $this->createReceiptsForOthers($message, $conversation, $userId);
+            $others = $this->otherActiveChatables($conversation, $chatable);
+
+            $this->createReceiptsForOthers($message, $others);
 
             $conversation->forceFill(['last_activity_at' => now()])->save();
 
             broadcast(new MessageSent($message))->toOthers();
 
-            $this->notifyOthers($message, $conversation, $userId);
+            $this->notifyOthers($message, $others);
 
             return $message;
         });
@@ -65,11 +70,11 @@ class MessageService implements MessageServiceInterface
 
     public function listForConversation(
         Conversation $conversation,
-        int $userId,
+        Model $chatable,
         int $perPage,
         ?int $beforeId = null
     ): LengthAwarePaginator {
-        return $this->messages->paginateForConversation($conversation, $userId, $perPage, $beforeId);
+        return $this->messages->paginateForConversation($conversation, $chatable, $perPage, $beforeId);
     }
 
     public function find(int $id): Message
@@ -77,9 +82,9 @@ class MessageService implements MessageServiceInterface
         return $this->messages->findById($id);
     }
 
-    public function search(int $userId, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator
+    public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator
     {
-        return $this->messages->search($userId, $query, $conversationId, $perPage);
+        return $this->messages->search($chatable, $query, $conversationId, $perPage);
     }
 
     public function update(Message $message, string $body): Message
@@ -105,32 +110,32 @@ class MessageService implements MessageServiceInterface
         broadcast(new MessageDeleted($message->id, $message->conversation_id))->toOthers();
     }
 
-    public function deleteForMe(Message $message, int $userId): void
+    public function deleteForMe(Message $message, Model $chatable): void
     {
         MessageDeletion::query()->updateOrCreate(
-            ['message_id' => $message->id, 'user_id' => $userId],
+            ['message_id' => $message->id, 'chatable_type' => $chatable->getMorphClass(), 'chatable_id' => $chatable->getKey()],
             ['deleted_at' => now()],
         );
     }
 
-    public function forward(Message $message, array $conversationIds, int $userId): array
+    public function forward(Message $message, array $conversationIds, Model $chatable): array
     {
         if ($message->isDeletedForEveryone()) {
             abort(422, 'Cannot forward a deleted message.');
         }
 
-        return DB::transaction(function () use ($message, $conversationIds, $userId) {
+        return DB::transaction(function () use ($message, $conversationIds, $chatable) {
             $forwarded = [];
 
             foreach (array_unique($conversationIds) as $conversationId) {
                 $conversation = $this->conversations->findById($conversationId);
 
                 abort_unless(
-                    $this->participants->isActiveParticipant($conversationId, $userId),
+                    $this->participants->isActiveParticipant($conversationId, $chatable),
                     403
                 );
 
-                $forwarded[] = $this->send($conversation, $userId, [
+                $forwarded[] = $this->send($conversation, $chatable, [
                     'type' => $message->type->value,
                     'body' => $message->body,
                     'metadata' => $message->metadata,
@@ -146,56 +151,62 @@ class MessageService implements MessageServiceInterface
         });
     }
 
-    protected function createReceiptsForOthers(Message $message, Conversation $conversation, int $senderId): void
+    /**
+     * @return Collection<int, Model>
+     */
+    protected function otherActiveChatables(Conversation $conversation, Model $sender): Collection
     {
-        $otherUserIds = array_values(array_diff(
-            $this->participants->activeUserIds($conversation->id),
-            [$senderId]
-        ));
+        $senderIdentity = Chat::identify($sender);
 
-        if (empty($otherUserIds)) {
+        return $this->participants->activeChatables($conversation->id)
+            ->reject(fn (Model $chatable) => Chat::identify($chatable) === $senderIdentity)
+            ->values();
+    }
+
+    /**
+     * @param  Collection<int, Model>  $others
+     */
+    protected function createReceiptsForOthers(Message $message, Collection $others): void
+    {
+        if ($others->isEmpty()) {
             return;
         }
 
-        MessageReceipt::query()->insert(array_map(fn (int $userId) => [
+        MessageReceipt::query()->insert($others->map(fn (Model $chatable) => [
             'message_id' => $message->id,
-            'user_id' => $userId,
+            'chatable_type' => $chatable->getMorphClass(),
+            'chatable_id' => $chatable->getKey(),
             'delivered_at' => null,
             'read_at' => null,
-        ], $otherUserIds));
+        ])->all());
     }
 
-    protected function notifyOthers(Message $message, Conversation $conversation, int $senderId): void
+    /**
+     * @param  Collection<int, Model>  $others
+     */
+    protected function notifyOthers(Message $message, Collection $others): void
     {
-        $otherUserIds = array_values(array_diff(
-            $this->participants->activeUserIds($conversation->id),
-            [$senderId]
-        ));
-
-        if (empty($otherUserIds)) {
+        if ($others->isEmpty()) {
             return;
         }
 
-        $notifiables = Chat::userModel()::query()->whereIn('id', $otherUserIds)->get();
-
-        Notification::send($notifiables, new NewChatMessageNotification($message));
+        Notification::send($others, new NewChatMessageNotification($message));
     }
 
-    protected function guardAgainstBlockedPrivateSend(Conversation $conversation, int $userId): void
+    protected function guardAgainstBlockedPrivateSend(Conversation $conversation, Model $chatable): void
     {
         if (! $conversation->isPrivate()) {
             return;
         }
 
-        $otherUserId = collect($this->participants->activeUserIds($conversation->id))
-            ->first(fn (int $id) => $id !== $userId);
+        $other = $this->otherActiveChatables($conversation, $chatable)->first();
 
-        if ($otherUserId === null) {
+        if ($other === null) {
             return;
         }
 
         abort_if(
-            $this->blockedUsers->isBlockedEitherWay($userId, $otherUserId),
+            $this->blockedUsers->isBlockedEitherWay($chatable, $other),
             403,
             'You cannot message this user.'
         );

@@ -10,12 +10,11 @@ return new class extends Migration
     {
         Schema::create(config('chat.table_names.blocked_users', 'chat_blocked_users'), function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('blocker_id');
-            $table->unsignedBigInteger('blocked_id');
+            $table->morphs('blocker');
+            $table->morphs('blocked');
             $table->timestamps();
 
-            $table->unique(['blocker_id', 'blocked_id']);
-            $table->index('blocked_id');
+            $table->unique(['blocker_type', 'blocker_id', 'blocked_type', 'blocked_id'], 'chat_blocked_users_blocker_blocked_unique');
         });
     }
 

@@ -11,7 +11,7 @@ function pushUser(string $email): User
     return User::query()->create(['name' => $email, 'email' => $email, 'password' => bcrypt('secret')]);
 }
 
-it('broadcasts ConversationCreated onto each participants private user channel', function () {
+it('broadcasts ConversationCreated onto each participants private chatable channel', function () {
     Event::fake([ConversationCreated::class]);
 
     $alice = pushUser('alice-push@example.com');
@@ -19,14 +19,14 @@ it('broadcasts ConversationCreated onto each participants private user channel',
 
     $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'private',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->assertCreated();
 
     Event::assertDispatched(ConversationCreated::class, function (ConversationCreated $event) use ($alice, $bob) {
         $channelNames = collect($event->broadcastOn())->map(fn (PrivateChannel $c) => $c->name);
 
-        return $channelNames->contains("private-user.{$alice->id}")
-            && $channelNames->contains("private-user.{$bob->id}");
+        return $channelNames->contains("private-chatable.user.{$alice->id}")
+            && $channelNames->contains("private-chatable.user.{$bob->id}");
     });
 });
 
@@ -40,16 +40,16 @@ it('broadcasts ParticipantAdded onto the conversation channel and each new parti
     $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'group',
         'name' => 'Push test',
-        'participant_ids' => [$bob->id],
+        'participants' => [chatableRef($bob)],
     ])->json('data.id');
 
     $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/participants", [
-        'user_ids' => [$carol->id],
+        'participants' => [chatableRef($carol)],
     ])->assertOk();
 
     Event::assertDispatched(ParticipantAdded::class, function (ParticipantAdded $event) use ($carol) {
         $channelNames = collect($event->broadcastOn())->map(fn ($c) => $c->name);
 
-        return $channelNames->contains("private-user.{$carol->id}");
+        return $channelNames->contains("private-chatable.user.{$carol->id}");
     });
 });

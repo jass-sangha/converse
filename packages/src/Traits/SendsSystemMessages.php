@@ -17,7 +17,8 @@ trait SendsSystemMessages
     {
         $message = Message::query()->create([
             'conversation_id' => $conversation->id,
-            'user_id' => null,
+            'chatable_type' => null,
+            'chatable_id' => null,
             'type' => MessageType::System->value,
             'metadata' => ['event' => $event, ...$metadata],
         ]);
