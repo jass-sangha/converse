@@ -18,6 +18,20 @@ window.Pusher = Pusher;
 let echo = null;
 const joinedChannels = new Map();
 
+// Echo/Pusher throws synchronously when broadcasting isn't configured (e.g. no Reverb key).
+// A `noop` channel keeps every call site's chained `.listen()`/`.whisper()` API working so a
+// missing realtime setup only disables live updates instead of breaking sending, typing, etc.
+function noopChannel() {
+    const channel = { listen: () => channel, whisper: () => channel };
+    return channel;
+}
+
+const noopEcho = {
+    private: () => noopChannel(),
+    join: () => noopChannel(),
+    leave: () => {},
+};
+
 export function useEcho() {
     if (echo) {
         return build();
@@ -26,30 +40,35 @@ export function useEcho() {
     const config = window.ConverseConfig ?? {};
     const reverb = config.reverb ?? {};
 
-    echo = new Echo({
-        broadcaster: 'reverb',
-        key: reverb.key,
-        wsHost: reverb.host,
-        wsPort: reverb.port ?? 80,
-        wssPort: reverb.port ?? 443,
-        forceTLS: (reverb.scheme ?? 'https') === 'https',
-        enabledTransports: ['ws', 'wss'],
-    });
+    try {
+        echo = new Echo({
+            broadcaster: 'reverb',
+            key: reverb.key,
+            wsHost: reverb.host,
+            wsPort: reverb.port ?? 80,
+            wssPort: reverb.port ?? 443,
+            forceTLS: (reverb.scheme ?? 'https') === 'https',
+            enabledTransports: ['ws', 'wss'],
+        });
 
-    if (config.chatableType && config.chatableId) {
-        echo.private(`chatable.${config.chatableType}.${config.chatableId}`)
-            .listen('.conversation.created', () => {
-                useConversations().refresh();
-            })
-            .listen('.participant.added', (payload) => {
-                const iWasAdded = payload.chatables?.some(
-                    (c) => c.type === config.chatableType && c.id === config.chatableId
-                );
-
-                if (iWasAdded) {
+        if (config.chatableType && config.chatableId) {
+            echo.private(`chatable.${config.chatableType}.${config.chatableId}`)
+                .listen('.conversation.created', () => {
                     useConversations().refresh();
-                }
-            });
+                })
+                .listen('.participant.added', (payload) => {
+                    const iWasAdded = payload.chatables?.some(
+                        (c) => c.type === config.chatableType && c.id === config.chatableId
+                    );
+
+                    if (iWasAdded) {
+                        useConversations().refresh();
+                    }
+                });
+        }
+    } catch (error) {
+        console.warn('[converse] Realtime broadcasting is unavailable; live updates are disabled.', error);
+        echo = noopEcho;
     }
 
     return build();

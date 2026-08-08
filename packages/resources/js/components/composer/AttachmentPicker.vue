@@ -39,7 +39,15 @@ async function onChange(event) {
 
 <template>
     <div class="cv-attachment-picker">
-        <button type="button" class="text-xl text-converse-textMuted hover:text-converse-accent" :disabled="uploading" @click="open">📎</button>
+        <button
+            type="button"
+            title="Attach"
+            class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-accent disabled:opacity-50"
+            :disabled="uploading"
+            @click="open"
+        >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
+        </button>
         <input ref="inputEl" type="file" multiple class="hidden" @change="onChange">
     </div>
 </template>

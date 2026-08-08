@@ -24,8 +24,16 @@ const replyTo = ref(null);
 const editing = ref(null);
 const showInfo = ref(false);
 const searchResults = ref([]);
+const chatSearchOpen = ref(false);
+const chatSearchQuery = ref('');
 
 const conversation = computed(() => store.conversations.find((c) => c.id === store.activeConversationId));
+const activeSearchQuery = computed(() => (chatSearchOpen.value ? chatSearchQuery.value : props.messageSearchQuery));
+
+function onToggleChatSearch() {
+    chatSearchOpen.value = !chatSearchOpen.value;
+    if (!chatSearchOpen.value) chatSearchQuery.value = '';
+}
 
 watch(() => store.activeConversationId, async (newId, oldId) => {
     replyTo.value = null;
@@ -56,7 +64,7 @@ async function onUnpinFromBanner(message) {
     await unpin(message);
 }
 
-watch(() => props.messageSearchQuery, async (q) => {
+watch(activeSearchQuery, async (q) => {
     if (q && conversation.value) {
         searchResults.value = await search(q, conversation.value.id);
     } else {
@@ -90,13 +98,29 @@ async function saveEdit(newBody) {
 </script>
 
 <template>
-    <div v-if="!conversation" class="cv-chat-window-empty flex h-full items-center justify-center bg-converse-bg text-converse-textMuted">
+    <div v-if="!conversation" class="cv-chat-window-empty flex h-full items-center justify-center bg-converse-chatBg text-converse-textMuted">
         <p>Select a conversation to start chatting.</p>
     </div>
 
     <div v-else class="cv-chat-window flex h-full">
         <div class="cv-chat-window__main flex h-full flex-1 flex-col">
-            <ChatHeader :conversation="conversation" @back="onBack" @open-info="showInfo = !showInfo" />
+            <ChatHeader
+                :conversation="conversation"
+                :search-open="chatSearchOpen"
+                @back="onBack"
+                @open-info="showInfo = !showInfo"
+                @toggle-search="onToggleChatSearch"
+            />
+
+            <div v-if="chatSearchOpen" class="cv-chat-window__inline-search border-b border-converse-border bg-converse-surface px-3 py-2">
+                <input
+                    v-model="chatSearchQuery"
+                    type="text"
+                    autofocus
+                    placeholder="Search in this chat"
+                    class="w-full rounded-full bg-converse-surfaceHover px-4 py-1.5 text-sm text-converse-text focus:outline-none"
+                >
+            </div>
 
             <div v-if="pinnedMessages.length" class="cv-chat-window__pinned-banner border-b border-converse-border bg-converse-surface">
                 <div
@@ -111,8 +135,8 @@ async function saveEdit(newBody) {
                 </div>
             </div>
 
-            <div v-if="messageSearchQuery" class="cv-chat-window__search-results flex-1 overflow-y-auto p-3">
-                <p class="mb-2 text-xs text-converse-textMuted">Results for "{{ messageSearchQuery }}"</p>
+            <div v-if="activeSearchQuery" class="cv-chat-window__search-results flex-1 overflow-y-auto bg-converse-chatBg p-3">
+                <p class="mb-2 text-xs text-converse-textMuted">Results for "{{ activeSearchQuery }}"</p>
                 <MessageBubble v-for="message in searchResults" :key="message.id" :message="message" />
                 <p v-if="!searchResults.length" class="text-sm text-converse-textMuted">No messages found.</p>
             </div>

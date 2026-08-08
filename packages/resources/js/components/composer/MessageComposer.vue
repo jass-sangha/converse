@@ -109,14 +109,14 @@ async function submit() {
         </div>
 
         <form class="cv-composer__form flex items-center gap-2" @submit.prevent="submit">
+            <AttachmentPicker @uploaded="onAttachmentUploaded" />
+
             <div class="cv-composer__emoji-wrap relative">
                 <button type="button" class="text-xl text-converse-textMuted hover:text-converse-accent" @click="showEmoji = !showEmoji">😊</button>
                 <div v-if="showEmoji" class="absolute bottom-10 left-0 z-10">
                     <EmojiPicker @pick="onEmojiPick" />
                 </div>
             </div>
-
-            <AttachmentPicker @uploaded="onAttachmentUploaded" />
 
             <input
                 v-model="body"

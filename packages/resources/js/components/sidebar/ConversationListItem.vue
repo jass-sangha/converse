@@ -3,6 +3,7 @@ import { computed, onMounted, watch } from 'vue';
 import Avatar from '../shared/Avatar.vue';
 import PresenceDot from '../shared/PresenceDot.vue';
 import ConversationMenu from './ConversationMenu.vue';
+import ReadReceiptTicks from '../chat/ReadReceiptTicks.vue';
 import { useUsers } from '../../composables/useUsers';
 import { useConversations } from '../../composables/useConversations';
 import { useChatStore } from '../../store';
@@ -77,46 +78,79 @@ const lastMessagePreview = computed(() => {
     if (message.type !== 'text') return `[${message.type}]`;
     return message.body ?? '';
 });
+
+const isLastMessageOwn = computed(() => {
+    const message = props.conversation.last_message;
+    return !!message && chatableKeyOf(message) === store.currentKey;
+});
+
+const lastActivityLabel = computed(() => {
+    const at = props.conversation.last_message?.created_at ?? props.conversation.last_activity_at;
+    if (!at) return '';
+
+    const date = new Date(at);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+
+    if (isToday) {
+        return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+
+    const daysAgo = Math.floor((now.setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86400000);
+    if (daysAgo === 1) return 'Yesterday';
+    if (daysAgo < 7) return date.toLocaleDateString([], { weekday: 'long' });
+    return date.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' });
+});
 </script>
 
 <template>
     <li
-        class="cv-conversation-item flex cursor-pointer items-center gap-3 border-b border-converse-border px-3 py-2 hover:bg-converse-surfaceHover"
-        :class="{ 'bg-converse-bubbleOut': active }"
+        class="cv-conversation-item group flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-converse-surfaceHover"
+        :class="{ 'bg-converse-surfaceHover': active }"
         @click="$emit('select', conversation.id)"
     >
-        <Avatar :name="displayName" :avatar-url="avatarUrl" :size="44" />
+        <Avatar :name="displayName" :avatar-url="avatarUrl" :size="48" />
 
-        <div class="cv-conversation-item__body min-w-0 flex-1">
+        <div class="cv-conversation-item__body min-w-0 flex-1 border-b border-converse-border pb-2.5">
             <div class="cv-conversation-item__title-row flex items-center justify-between gap-2">
-                <span class="truncate font-medium text-converse-text">{{ displayName }}</span>
-                <span class="cv-conversation-item__badges flex items-center gap-1">
-                    <span v-if="isMuted" title="Muted">🔇</span>
-                    <span v-if="isPinned" title="Pinned">📌</span>
-                </span>
+                <span class="truncate text-[15px] text-converse-text">{{ displayName }}</span>
+                <span v-if="lastActivityLabel" class="shrink-0 text-xs text-converse-textMuted">{{ lastActivityLabel }}</span>
             </div>
             <div class="cv-conversation-item__preview-row flex items-center justify-between gap-2">
-                <span class="truncate text-sm text-converse-textMuted">{{ lastMessagePreview }}</span>
-                <span
-                    v-if="conversation.unread_count > 0"
-                    class="cv-conversation-item__unread flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-converse-accent px-1 text-xs text-converse-accentContrast"
-                >
-                    {{ conversation.unread_count }}
+                <span class="flex min-w-0 items-center truncate text-sm text-converse-textMuted">
+                    <ReadReceiptTicks v-if="isLastMessageOwn && !conversation.last_message?.deleted_for_everyone" :status="conversation.last_message.status" />
+                    <span class="truncate">{{ lastMessagePreview }}</span>
+                </span>
+                <span class="cv-conversation-item__badges flex shrink-0 items-center gap-1">
+                    <span v-if="isMuted" class="text-converse-textMuted" title="Muted">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16.5 12A4.5 4.5 0 0 0 14 8.03v1.66l2.45 2.45c.03-.14.05-.28.05-.14ZM19 12c0 .94-.2 1.82-.54 2.63l1.51 1.51A8.93 8.93 0 0 0 21 12h-2ZM4.27 3 3 4.27l6 6V12a3 3 0 0 0 4.7 2.46l1.32 1.32A4.48 4.48 0 0 1 12 16.5 4.5 4.5 0 0 1 7.5 12H5.5a6.5 6.5 0 0 0 6 6.48V21h2v-2.02a6.46 6.46 0 0 0 2.79-1.05L19.73 21 21 19.73 4.27 3Z"/></svg>
+                    </span>
+                    <span
+                        v-if="conversation.unread_count > 0"
+                        class="cv-conversation-item__unread flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-converse-accent px-1.5 text-xs font-medium text-converse-accentContrast"
+                    >
+                        {{ conversation.unread_count }}
+                    </span>
+                    <span v-else-if="isPinned" class="text-converse-textMuted" title="Pinned">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 3v6.5l2 3V15h-6v6l-1 1-1-1v-6H4v-2.5l2-3V3Z"/></svg>
+                    </span>
                 </span>
             </div>
             <PresenceDot v-if="otherParticipant" :chatable-key="chatableKey(otherParticipant.type, otherParticipant.id)" />
         </div>
 
-        <ConversationMenu
-            :pinned="isPinned"
-            :muted="isMuted"
-            :is-group="isGroup"
-            @mute="onMenuAction('mute')"
-            @unmute="onMenuAction('unmute')"
-            @pin="onMenuAction('pin')"
-            @unpin="onMenuAction('unpin')"
-            @delete="onMenuAction('delete')"
-            @leave="onMenuAction('leave')"
-        />
+        <div class="cv-conversation-item__menu-wrap opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+            <ConversationMenu
+                :pinned="isPinned"
+                :muted="isMuted"
+                :is-group="isGroup"
+                @mute="onMenuAction('mute')"
+                @unmute="onMenuAction('unmute')"
+                @pin="onMenuAction('pin')"
+                @unpin="onMenuAction('unpin')"
+                @delete="onMenuAction('delete')"
+                @leave="onMenuAction('leave')"
+            />
+        </div>
     </li>
 </template>

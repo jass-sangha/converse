@@ -115,8 +115,8 @@ async function onDeleteForEveryone() {
 
     <div v-else class="cv-message-bubble group flex" :class="isOwn ? 'justify-end' : 'justify-start'">
         <div
-            class="cv-message-bubble__content relative max-w-[70%] rounded-cv px-3 py-2 shadow-sm"
-            :class="isOwn ? 'bg-converse-bubbleOut' : 'bg-converse-bubbleIn'"
+            class="cv-message-bubble__content relative max-w-[70%] rounded-cv px-3 py-1.5 shadow-sm"
+            :class="isOwn ? 'rounded-tr-sm bg-converse-bubbleOut' : 'rounded-tl-sm bg-converse-bubbleIn'"
         >
             <span v-if="message.is_pinned" class="cv-message-bubble__pin-indicator absolute -top-2 -left-2 text-xs" title="Pinned">📌</span>
 

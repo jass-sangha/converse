@@ -30,6 +30,8 @@ export default {
                     overlay: withOpacity('--cv-overlay'),
                     warning: withOpacity('--cv-warning'),
                     info: withOpacity('--cv-info'),
+                    railBg: withOpacity('--cv-rail-bg'),
+                    chatBg: withOpacity('--cv-chat-bg'),
                 },
             },
             borderRadius: {

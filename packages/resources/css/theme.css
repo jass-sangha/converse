@@ -22,6 +22,8 @@
     --cv-warning: 254 252 232;
     --cv-info: 96 165 250;
     --cv-radius: 0.75rem;
+    --cv-rail-bg: 240 242 245;
+    --cv-chat-bg: 239 234 226;
 }
 
 :root[data-theme='dark'] {
@@ -35,4 +37,6 @@
     --cv-bubble-in: 32 44 51;
     --cv-danger: 248 113 113;
     --cv-warning: 63 58 26;
+    --cv-rail-bg: 32 44 51;
+    --cv-chat-bg: 11 20 26;
 }

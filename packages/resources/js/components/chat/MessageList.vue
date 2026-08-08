@@ -79,14 +79,14 @@ function onScroll() {
 <template>
     <div
         ref="scrollEl"
-        class="cv-message-list h-full overflow-y-auto px-3 py-2"
-        :class="{ 'bg-converse-bg': !wallpaperCss }"
+        class="cv-message-list h-full overflow-y-auto px-3 py-2 sm:px-12"
+        :class="{ 'cv-message-list--pattern bg-converse-chatBg': !wallpaperCss }"
         :style="wallpaperCss ? { backgroundColor: wallpaperCss } : {}"
         @scroll="onScroll"
     >
         <div ref="sentinelEl" class="cv-message-list__sentinel h-1" />
 
-        <div class="cv-message-list__messages flex flex-col gap-2">
+        <div class="cv-message-list__messages mx-auto flex max-w-3xl flex-col gap-2">
             <MessageBubble
                 v-for="message in messages"
                 :id="`cv-message-${message.id}`"
@@ -98,3 +98,10 @@ function onScroll() {
         </div>
     </div>
 </template>
+
+<style scoped>
+.cv-message-list--pattern {
+    background-image: radial-gradient(rgb(var(--cv-border)) 0.5px, transparent 0.5px);
+    background-size: 16px 16px;
+}
+</style>
