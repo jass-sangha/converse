@@ -10,9 +10,16 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "jass-sangha/converse": "dev-main",
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages"
+        }
+    ],
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^2.5",
