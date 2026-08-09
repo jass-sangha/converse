@@ -253,7 +253,7 @@ function logout() {
                             <span class="text-sm text-converse-text">Show my last seen &amp; online status</span>
                             <button
                                 type="button"
-                                class="relative h-6 w-11 shrink-0 rounded-full transition-colors"
+                                class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
                                 :class="showLastSeen ? 'bg-converse-accent' : 'bg-converse-border'"
                                 role="switch"
                                 :aria-checked="showLastSeen"
@@ -266,7 +266,7 @@ function logout() {
                             <span class="text-sm text-converse-text">Show my read receipts</span>
                             <button
                                 type="button"
-                                class="relative h-6 w-11 shrink-0 rounded-full transition-colors"
+                                class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
                                 :class="showReadReceipts ? 'bg-converse-accent' : 'bg-converse-border'"
                                 role="switch"
                                 :aria-checked="showReadReceipts"
@@ -286,7 +286,7 @@ function logout() {
                         <span class="text-sm text-converse-text">Dark mode</span>
                         <button
                             type="button"
-                            class="relative h-6 w-11 rounded-full transition-colors"
+                            class="relative h-6 w-11 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
                             :class="theme === 'dark' ? 'bg-converse-accent' : 'bg-converse-border'"
                             role="switch"
                             :aria-checked="theme === 'dark'"

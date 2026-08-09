@@ -234,7 +234,7 @@ function goCreateList() {
                 <span class="flex-1 text-[15px] text-converse-text">Mute notifications</span>
                 <button
                     type="button"
-                    class="relative h-6 w-11 shrink-0 rounded-full transition-colors"
+                    class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
                     :class="isMuted ? 'bg-converse-accent' : 'bg-converse-border'"
                     role="switch"
                     :aria-checked="isMuted"
