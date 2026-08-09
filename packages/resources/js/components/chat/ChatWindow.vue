@@ -119,14 +119,23 @@ function onEdit(message) {
                 @toggle-search="onToggleChatSearch"
             />
 
-            <div v-if="chatSearchOpen" class="cv-chat-window__inline-search border-b border-converse-border bg-converse-surface px-3 py-2">
+            <div v-if="chatSearchOpen" class="cv-chat-window__inline-search flex items-center gap-2 border-b border-converse-border bg-converse-surface px-3 py-2">
                 <input
                     v-model="chatSearchQuery"
                     type="text"
                     autofocus
                     placeholder="Search in this chat"
-                    class="w-full rounded-full bg-converse-surfaceHover px-4 py-1.5 text-sm text-converse-text focus:outline-none"
+                    class="flex-1 rounded-full bg-converse-surfaceHover px-4 py-1.5 text-sm text-converse-text focus:outline-none"
+                    @keydown.escape="onToggleChatSearch"
                 >
+                <button
+                    type="button"
+                    title="Close search"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    @click="onToggleChatSearch"
+                >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"/></svg>
+                </button>
             </div>
 
             <div v-if="pinnedMessages.length" class="cv-chat-window__pinned-banner border-b border-converse-border bg-converse-surface">

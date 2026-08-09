@@ -63,6 +63,8 @@ async function onChange(event) {
 
     uploading.value = true;
     try {
+        const uploaded = [];
+
         for (const file of files) {
             const attachment = await uploadAttachment(file);
             const type = attachment.mime_type.startsWith('image/')
@@ -73,8 +75,10 @@ async function onChange(event) {
                         ? 'audio'
                         : 'document';
 
-            emit('uploaded', { attachment, type });
+            uploaded.push({ attachment, type });
         }
+
+        emit('uploaded', uploaded);
     } finally {
         uploading.value = false;
     }
@@ -115,6 +119,6 @@ async function onChange(event) {
 
         <input ref="inputEl" type="file" multiple class="hidden" @change="onChange">
 
-        <CameraCapture v-if="showCamera" @close="showCamera = false" @uploaded="(payload) => emit('uploaded', payload)" />
+        <CameraCapture v-if="showCamera" @close="showCamera = false" @uploaded="(payload) => emit('uploaded', [payload])" />
     </div>
 </template>

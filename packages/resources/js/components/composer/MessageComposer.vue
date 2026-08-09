@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import ReplyPreview from '../chat/ReplyPreview.vue';
 import EmojiPicker from './EmojiPicker.vue';
 import AttachmentPicker from './AttachmentPicker.vue';
@@ -25,7 +25,10 @@ const showEmoji = ref(false);
 const linkPreview = ref(null);
 const recording = ref(false);
 const inputEl = ref(null);
+const stagedAttachments = ref([]);
 let linkDebounce = null;
+
+const hasStaged = computed(() => stagedAttachments.value.length > 0);
 
 watch(body, (value) => {
     if (value.trim()) {
@@ -74,14 +77,17 @@ function onEmojiPick(emoji) {
     focusInput();
 }
 
-async function onAttachmentUploaded({ attachment, type }) {
-    await send(props.conversationId, {
-        type,
-        attachment_ids: [attachment.id],
-        reply_to_message_id: props.replyTo?.id ?? null,
-    });
-    emit('sent');
-    emit('dismiss-reply');
+function onAttachmentUploaded(uploaded) {
+    stagedAttachments.value = [...stagedAttachments.value, ...uploaded];
+    focusInput();
+}
+
+function removeStaged(attachment) {
+    stagedAttachments.value = stagedAttachments.value.filter((item) => item.attachment.id !== attachment.id);
+}
+
+function clearStaged() {
+    stagedAttachments.value = [];
 }
 
 async function onVoiceRecorded({ attachment, durationSeconds }) {
@@ -101,21 +107,60 @@ function cancelEdit() {
 function onInputEscape() {
     if (props.editing) {
         cancelEdit();
+    } else if (hasStaged.value) {
+        clearStaged();
     } else if (props.replyTo) {
         emit('dismiss-reply');
     }
 }
 
-async function submit() {
+async function sendStagedAttachments() {
     const trimmed = body.value.trim();
-    if (!trimmed) return;
 
+    // Attachments of different message types (image/video/document/audio) can't share a
+    // single message — group same-type ones together so e.g. 4 photos picked at once
+    // collapse into one message, while a photo + a document still send as two.
+    const groups = new Map();
+    for (const item of stagedAttachments.value) {
+        if (!groups.has(item.type)) groups.set(item.type, []);
+        groups.get(item.type).push(item.attachment.id);
+    }
+
+    let captionUsed = false;
+    for (const [type, attachmentIds] of groups) {
+        await send(props.conversationId, {
+            type,
+            attachment_ids: attachmentIds,
+            body: !captionUsed && trimmed ? trimmed : null,
+            reply_to_message_id: !captionUsed ? (props.replyTo?.id ?? null) : null,
+        });
+        captionUsed = true;
+    }
+
+    stagedAttachments.value = [];
+    body.value = '';
+    emit('sent');
+    emit('dismiss-reply');
+}
+
+async function submit() {
     if (props.editing) {
+        const trimmed = body.value.trim();
+        if (!trimmed) return;
+
         await update(props.editing.id, props.editing.conversation_id, trimmed);
         body.value = '';
         emit('dismiss-edit');
         return;
     }
+
+    if (hasStaged.value) {
+        await sendStagedAttachments();
+        return;
+    }
+
+    const trimmed = body.value.trim();
+    if (!trimmed) return;
 
     stopTyping(props.conversationId);
 
@@ -155,6 +200,29 @@ async function submit() {
             Link preview: {{ linkPreview.title || linkPreview.url }}
         </div>
 
+        <div v-if="hasStaged" class="cv-composer__staged mb-2 flex items-center gap-2 overflow-x-auto rounded-cv border border-converse-border bg-converse-surfaceHover p-2">
+            <div v-for="item in stagedAttachments" :key="item.attachment.id" class="relative shrink-0">
+                <img
+                    v-if="item.type === 'image'"
+                    :src="item.attachment.thumbnail_url || item.attachment.url"
+                    class="h-16 w-16 rounded object-cover"
+                >
+                <video v-else-if="item.type === 'video'" :src="item.attachment.url" class="h-16 w-16 rounded object-cover" muted />
+                <div v-else class="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded bg-converse-surface p-1 text-center">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="text-converse-textMuted"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"/></svg>
+                    <span class="w-full truncate text-[10px] text-converse-textMuted">{{ item.attachment.original_filename }}</span>
+                </div>
+                <button
+                    type="button"
+                    title="Remove"
+                    class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-converse-overlay/70 text-white"
+                    @click="removeStaged(item.attachment)"
+                >
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"/></svg>
+                </button>
+            </div>
+        </div>
+
         <form class="cv-composer__form flex items-center gap-2" @submit.prevent="submit">
             <template v-if="!recording">
                 <AttachmentPicker @uploaded="onAttachmentUploaded" />
@@ -170,14 +238,14 @@ async function submit() {
                     ref="inputEl"
                     v-model="body"
                     type="text"
-                    :placeholder="editing ? 'Edit message' : 'Type a message'"
+                    :placeholder="hasStaged ? 'Add a caption' : editing ? 'Edit message' : 'Type a message'"
                     class="cv-composer__input flex-1 rounded-full bg-converse-surfaceHover px-4 py-2 text-sm text-converse-text focus:outline-none"
                     @keydown.escape="onInputEscape"
                 >
             </template>
 
             <VoiceRecorder
-                v-if="!body.trim() && !editing"
+                v-if="!body.trim() && !editing && !hasStaged"
                 @recorded="onVoiceRecorded"
                 @recording-change="recording = $event"
             />
