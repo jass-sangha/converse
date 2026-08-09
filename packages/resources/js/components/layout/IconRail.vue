@@ -4,15 +4,14 @@ import Avatar from "../shared/Avatar.vue";
 import { useChatStore } from "../../store";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 
-const emit = defineEmits(["open-profile"]);
-
 const store = useChatStore();
-const { view, setView, setFilter } = useSidebarUi();
+const { view, setView, filter, setFilter } = useSidebarUi();
 
 const me = computed(() => store.usersById[store.currentKey] ?? null);
 
 function openChats() {
     setView("chats");
+    setFilter("all");
 }
 
 function openGroups() {
@@ -22,6 +21,10 @@ function openGroups() {
 
 function openMedia() {
     setView("media");
+}
+
+function openProfile() {
+    setView("profile");
 }
 </script>
 
@@ -34,7 +37,7 @@ function openMedia() {
             title="Chats"
             class="cv-icon-rail__button flex h-10 w-10 items-center justify-center rounded-lg"
             :class="
-                view === 'chats'
+                view === 'chats' && filter !== 'groups'
                     ? 'bg-converse-accent/15 text-converse-accent'
                     : 'text-converse-textMuted hover:bg-converse-surfaceHover'
             "
@@ -52,8 +55,8 @@ function openMedia() {
             title="Groups"
             class="cv-icon-rail__button flex h-10 w-10 items-center justify-center rounded-lg"
             :class="
-                view === 'chats'
-                    ? 'text-converse-textMuted hover:bg-converse-surfaceHover'
+                view === 'chats' && filter === 'groups'
+                    ? 'bg-converse-accent/15 text-converse-accent'
                     : 'text-converse-textMuted hover:bg-converse-surfaceHover'
             "
             @click="openGroups"
@@ -87,7 +90,8 @@ function openMedia() {
             type="button"
             title="Profile"
             class="cv-icon-rail__button mt-auto flex h-10 w-10 items-center justify-center rounded-full hover:ring-2 hover:ring-converse-border"
-            @click="emit('open-profile')"
+            :class="{ 'ring-2 ring-converse-accent': view === 'profile' }"
+            @click="openProfile"
         >
             <Avatar
                 :name="me?.name ?? ''"

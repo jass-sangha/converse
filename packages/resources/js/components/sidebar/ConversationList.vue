@@ -11,12 +11,12 @@ import { usePreferences } from '../../composables/usePreferences';
 import { useSidebarUi } from '../../composables/useSidebarUi';
 import { useChatStore } from '../../store';
 
-const emit = defineEmits(['message-search', 'open-settings']);
+const emit = defineEmits(['message-search']);
 
 const store = useChatStore();
 const { refresh, setActive } = useConversations();
 const { theme, toggleTheme } = usePreferences();
-const { filter, setFilter, searchOpen, toggleSearch } = useSidebarUi();
+const { filter, setFilter, searchOpen, toggleSearch, setView } = useSidebarUi();
 
 const FILTERS = [
     { key: 'all', label: 'All' },
@@ -120,7 +120,7 @@ const filteredConversations = computed(() => {
                         <button type="button" class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover" @click="showBlocked = true; showMenu = false">Blocked contacts</button>
                         <button type="button" class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover" @click="toggleArchived(); showMenu = false">{{ showArchived ? 'Back to chats' : 'Archived chats' }}</button>
                         <button type="button" class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover" @click="toggleTheme(); showMenu = false">{{ theme === 'dark' ? 'Light mode' : 'Dark mode' }}</button>
-                        <button type="button" class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover" @click="emit('open-settings'); showMenu = false">Settings</button>
+                        <button type="button" class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover" @click="setView('profile'); showMenu = false">Settings</button>
                     </div>
                 </div>
             </div>

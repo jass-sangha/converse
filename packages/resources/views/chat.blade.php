@@ -11,6 +11,9 @@
 </head>
 <body>
     <div id="converse-chat-app"></div>
+    <form id="cv-logout-form" method="POST" action="{{ route('logout') }}" class="hidden">
+        @csrf
+    </form>
     <script>window.ConverseConfig = @json($chatConfig);</script>
     <script src="{{ url(config('chat.asset_route_prefix', 'converse/assets').'/app.js') }}?v={{ $chatConfig['assetVersion'] }}" defer></script>
 </body>

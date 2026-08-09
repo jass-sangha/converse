@@ -3,8 +3,9 @@ import { ref } from 'vue';
 import IconRail from './IconRail.vue';
 import ConversationList from '../sidebar/ConversationList.vue';
 import MediaPanel from '../panels/MediaPanel.vue';
-import ChatWindow from '../chat/ChatWindow.vue';
 import SettingsPanel from '../panels/SettingsPanel.vue';
+import ProfileEmptyState from '../panels/ProfileEmptyState.vue';
+import ChatWindow from '../chat/ChatWindow.vue';
 import { useChatStore } from '../../store';
 import { usePreferences } from '../../composables/usePreferences';
 import { useResizable } from '../../composables/useResizable';
@@ -12,7 +13,6 @@ import { useSidebarUi } from '../../composables/useSidebarUi';
 
 const store = useChatStore();
 const messageSearchQuery = ref('');
-const showSettings = ref(false);
 
 const { sidebarWidth } = usePreferences();
 const { startDrag } = useResizable(sidebarWidth, { invert: false });
@@ -29,7 +29,7 @@ function onMessageSearch(query) {
             class="cv-app-shell__rail-wrap shrink-0"
             :class="{ hidden: store.activeConversationId, 'sm:block': true }"
         >
-            <IconRail @open-profile="showSettings = true" />
+            <IconRail />
         </div>
 
         <!-- Mobile: show sidebar only when no conversation is active. Desktop: always show both. -->
@@ -38,8 +38,9 @@ function onMessageSearch(query) {
             :class="{ hidden: store.activeConversationId, 'sm:block': true }"
             :style="{ '--sidebar-width': sidebarWidth + 'px' }"
         >
-            <ConversationList v-if="view === 'chats'" @message-search="onMessageSearch" @open-settings="showSettings = true" />
-            <MediaPanel v-else />
+            <ConversationList v-if="view === 'chats'" @message-search="onMessageSearch" />
+            <MediaPanel v-else-if="view === 'media'" />
+            <SettingsPanel v-else />
             <div class="cv-app-shell__sidebar-resize-handle absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize sm:block" @pointerdown="startDrag" />
         </div>
 
@@ -47,9 +48,8 @@ function onMessageSearch(query) {
             class="cv-app-shell__main flex-1"
             :class="{ hidden: !store.activeConversationId, 'sm:block': true }"
         >
-            <ChatWindow :message-search-query="messageSearchQuery" />
+            <ProfileEmptyState v-if="view === 'profile'" />
+            <ChatWindow v-else :message-search-query="messageSearchQuery" />
         </div>
-
-        <SettingsPanel v-if="showSettings" @close="showSettings = false" />
     </div>
 </template>
