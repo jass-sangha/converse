@@ -24,6 +24,8 @@ const text = computed(() => {
             return `${target?.name ?? 'Someone'} left`;
         case 'participant_role_changed':
             return `${target?.name ?? 'Someone'} is now ${meta.role === 'admin' ? 'an admin' : 'a member'}`;
+        case 'group_created':
+            return `${actor} created this group`;
         default:
             return 'Group updated';
     }
@@ -31,5 +33,7 @@ const text = computed(() => {
 </script>
 
 <template>
-    <p class="cv-system-message text-center text-xs text-converse-textMuted">{{ text }}</p>
+    <div class="cv-system-message flex justify-center py-1">
+        <p class="max-w-[85%] rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-center text-xs text-converse-textMuted shadow-sm">{{ text }}</p>
+    </div>
 </template>

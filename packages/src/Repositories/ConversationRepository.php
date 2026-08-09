@@ -54,7 +54,26 @@ class ConversationRepository implements ConversationRepositoryInterface
         }
 
         if (! empty($filters['q'])) {
-            $query->where("{$conversationTable}.name", 'like', '%'.$filters['q'].'%');
+            $term = $filters['q'];
+            $matches = $this->matchingChatablePairs($term);
+
+            $query->where(function ($outer) use ($conversationTable, $term, $matches) {
+                $outer->where("{$conversationTable}.name", 'like', '%'.$term.'%');
+
+                // Private conversations have no stored `name` — their display name is the
+                // other participant's, resolved client-side — so matching only the column
+                // above never finds a private chat by contact name. Also match conversations
+                // where a participant's own chatable record has a matching name.
+                if (! empty($matches)) {
+                    $outer->orWhereHas('participants', function ($participantQuery) use ($matches) {
+                        $participantQuery->where(function ($inner) use ($matches) {
+                            foreach ($matches as [$type, $id]) {
+                                $inner->orWhere(fn ($q) => $q->where('chatable_type', $type)->where('chatable_id', $id));
+                            }
+                        });
+                    });
+                }
+            });
         }
 
         return $query
@@ -62,6 +81,30 @@ class ConversationRepository implements ConversationRepositoryInterface
             ->orderByDesc('my_participation.pinned_at')
             ->orderByDesc("{$conversationTable}.last_activity_at")
             ->get();
+    }
+
+    /**
+     * @return array<int, array{0: string, 1: int|string}> [morphType, key] pairs for every
+     *                                                     chatable (across every configured chatable model) whose name matches the term.
+     */
+    protected function matchingChatablePairs(string $term): array
+    {
+        $nameField = config('chat.user_search.name_field', 'name');
+        $pairs = [];
+
+        foreach (array_keys(Chat::chatableModels()) as $morphType) {
+            $model = Chat::modelForAlias($morphType);
+            $instance = new $model;
+
+            $model::query()
+                ->where($nameField, 'like', '%'.$term.'%')
+                ->pluck($instance->getKeyName())
+                ->each(function ($id) use ($morphType, &$pairs) {
+                    $pairs[] = [$morphType, $id];
+                });
+        }
+
+        return $pairs;
     }
 
     public function findById(int $id): Conversation

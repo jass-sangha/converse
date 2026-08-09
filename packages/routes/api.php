@@ -8,6 +8,7 @@ use Converse\Chat\Http\Controllers\LinkPreviewController;
 use Converse\Chat\Http\Controllers\MessageController;
 use Converse\Chat\Http\Controllers\MessageReactionController;
 use Converse\Chat\Http\Controllers\MessageReceiptController;
+use Converse\Chat\Http\Controllers\NotificationController;
 use Converse\Chat\Http\Controllers\ParticipantController;
 use Converse\Chat\Http\Controllers\PinnedMessageController;
 use Converse\Chat\Http\Controllers\PresenceController;
@@ -55,6 +56,8 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::post('conversations/{conversation}/receipts/read', [MessageReceiptController::class, 'markRead']);
 
         Route::post('conversations/{conversation}/typing', [TypingController::class, 'update']);
+
+        Route::patch('notifications/mute', [NotificationController::class, 'muteAll']);
 
         Route::post('presence/heartbeat', [PresenceController::class, 'heartbeat']);
         Route::get('users/{chatableType}/{chatableId}/presence', [PresenceController::class, 'show']);

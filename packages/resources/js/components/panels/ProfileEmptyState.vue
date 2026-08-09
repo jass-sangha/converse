@@ -8,10 +8,6 @@ const ACTIONS = [
         label: "Add contact",
         path: "M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2Zm9 4c-3.31 0-9 1.66-9 5v1h18v-1c0-3.34-5.69-5-9-5Z",
     },
-    {
-        label: "Ask Meta AI",
-        path: "M12 2 9.7 8.3 3 10l6.7 1.7L12 18l2.3-6.3L21 10l-6.7-1.7Z",
-    },
 ];
 </script>
 

@@ -5,6 +5,7 @@ import { setCurrentChatable } from './store';
 import { useEcho } from './composables/useEcho';
 import { usePresence } from './composables/usePresence';
 import { useProfile } from './composables/useProfile';
+import { useBlockedUsers } from './composables/useBlockedUsers';
 
 const config = window.ConverseConfig ?? {};
 
@@ -16,6 +17,7 @@ onMounted(() => {
     useEcho();
     presence.start();
     useProfile().ensureSelfCached();
+    useBlockedUsers().loadBlocked();
 });
 
 onUnmounted(() => {

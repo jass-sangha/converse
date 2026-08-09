@@ -10,11 +10,14 @@ import { useConversations } from '../../composables/useConversations';
 import { useMessages } from '../../composables/useMessages';
 import { useMessagePins } from '../../composables/useMessagePins';
 import { useEcho } from '../../composables/useEcho';
+import { useBlockedUsers } from '../../composables/useBlockedUsers';
+import { chatableKey, chatableKeyOf } from '../../chatable';
 
 const store = useChatStore();
 const { setActive } = useConversations();
 const { load, markDelivered, markRead, search } = useMessages();
 const { list: listPinned, unpin, pinnedFor } = useMessagePins();
+const { unblock } = useBlockedUsers();
 
 const replyTo = ref(null);
 const editing = ref(null);
@@ -25,6 +28,22 @@ const chatSearchQuery = ref('');
 
 const conversation = computed(() => store.conversations.find((c) => c.id === store.activeConversationId));
 const activeSearchQuery = computed(() => (chatSearchOpen.value ? chatSearchQuery.value : ''));
+
+const otherParticipant = computed(() => {
+    if (!conversation.value || conversation.value.type !== 'private') return null;
+    const other = (conversation.value.participants ?? []).find((p) => chatableKeyOf(p) !== store.currentKey);
+    return other ? { type: other.chatable_type, id: other.chatable_id } : null;
+});
+
+const isBlocked = computed(() => (
+    !!otherParticipant.value && store.blockedKeys.includes(chatableKey(otherParticipant.value.type, otherParticipant.value.id))
+));
+
+async function onUnblock() {
+    if (otherParticipant.value) {
+        await unblock(otherParticipant.value.type, otherParticipant.value.id);
+    }
+}
 
 function onToggleChatSearch() {
     chatSearchOpen.value = !chatSearchOpen.value;
@@ -55,6 +74,18 @@ watch(() => store.activeConversationId, async (newId, oldId) => {
         }
     }
 }, { immediate: true });
+
+// Handles jumping to a message within the conversation that's already open — a switch to a
+// different conversation is instead handled inside the activeConversationId watcher above,
+// once that conversation's messages have actually loaded into the DOM.
+watch(() => store.pendingScrollMessageId, (id) => {
+    if (!id) return;
+
+    if (document.getElementById(`cv-message-${id}`)) {
+        store.pendingScrollMessageId = null;
+        scrollToMessage(id);
+    }
+});
 
 const pinnedMessages = computed(() => (conversation.value ? pinnedFor(conversation.value.id) : []));
 
@@ -167,7 +198,13 @@ function onEdit(message) {
                 @edit="onEdit"
             />
 
+            <div v-if="isBlocked" class="cv-chat-window__blocked-bar flex items-center justify-between gap-2 border-t border-converse-border bg-converse-surface px-4 py-3">
+                <span class="text-sm text-converse-textMuted">You blocked this contact. New messages won't be sent.</span>
+                <button type="button" class="shrink-0 text-sm font-medium text-converse-accent" @click="onUnblock">Unblock</button>
+            </div>
+
             <MessageComposer
+                v-else
                 :conversation-id="conversation.id"
                 :reply-to="replyTo"
                 :editing="editing"

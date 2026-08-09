@@ -62,6 +62,16 @@ export function useConversations() {
         }
     }
 
+    async function updateAvatar(conversationId, file) {
+        const form = new FormData();
+        form.append('avatar', file);
+        const { data } = await api.post(`/conversations/${conversationId}/avatar`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        upsertConversation(data.data);
+        return data.data;
+    }
+
     async function setWallpaper(conversationId, wallpaper) {
         const { data } = await api.patch(`/conversations/${conversationId}/wallpaper`, { wallpaper });
         upsertConversation(data.data);
@@ -90,6 +100,7 @@ export function useConversations() {
         setArchived,
         setPinned,
         setHidden,
+        updateAvatar,
         setWallpaper,
         leave,
         setDisappearing,

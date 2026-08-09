@@ -8,6 +8,8 @@ use Converse\Chat\Contracts\ConversationServiceInterface;
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Events\ConversationCreated;
 use Converse\Chat\Models\Conversation;
+use Converse\Chat\Models\ConversationParticipant;
+use Converse\Chat\Traits\SendsSystemMessages;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -15,6 +17,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ConversationService implements ConversationServiceInterface
 {
+    use SendsSystemMessages;
+
     public function __construct(
         protected ConversationRepositoryInterface $conversations,
         protected ParticipantRepositoryInterface $participants,
@@ -56,6 +60,11 @@ class ConversationService implements ConversationServiceInterface
 
         $conversation = $this->conversations->create($data, $participants, $creator);
 
+        $this->sendSystemMessage($conversation, 'group_created', [
+            'actor_type' => $creator->getMorphClass(),
+            'actor_id' => $creator->getKey(),
+        ]);
+
         broadcast(new ConversationCreated($conversation->id, $participants))->toOthers();
 
         return $conversation;
@@ -86,6 +95,20 @@ class ConversationService implements ConversationServiceInterface
         abort_if($participant === null, 403);
 
         $participant->update(['muted_until' => $mutedUntil]);
+    }
+
+    public function muteAllOfType(Model $chatable, ?string $type, ?string $mutedUntil): void
+    {
+        $query = ConversationParticipant::query()
+            ->where('chatable_type', $chatable->getMorphClass())
+            ->where('chatable_id', $chatable->getKey())
+            ->whereNull('left_at');
+
+        if ($type !== null) {
+            $query->whereHas('conversation', fn ($q) => $q->where('type', $type));
+        }
+
+        $query->update(['muted_until' => $mutedUntil]);
     }
 
     public function setArchived(Conversation $conversation, Model $chatable, bool $archived): void

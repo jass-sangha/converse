@@ -28,7 +28,7 @@ onMounted(refresh);
 
 async function addBlock() {
     if (!picked.value.length) return;
-    await block(picked.value[0]);
+    await Promise.all(picked.value.map((user) => block(user)));
     picked.value = [];
     showAdd.value = false;
     await refresh();
@@ -47,14 +47,14 @@ async function removeBlock(row) {
         </button>
 
         <div v-if="showAdd" class="cv-blocked-users-panel__add-form mb-3">
-            <UserPicker v-model="picked" :multiple="false" />
+            <UserPicker v-model="picked" :multiple="true" />
             <button
                 type="button"
                 class="mt-2 w-full rounded bg-converse-danger py-1.5 text-sm text-white disabled:opacity-50"
                 :disabled="!picked.length"
                 @click="addBlock"
             >
-                Block
+                Block {{ picked.length > 1 ? `${picked.length} people` : '' }}
             </button>
         </div>
 

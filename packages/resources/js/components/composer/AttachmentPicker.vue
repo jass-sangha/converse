@@ -10,10 +10,10 @@ const OPTIONS = [
     { key: 'photos', label: 'Photos & videos', accept: 'image/*,video/*', color: 'bg-fuchsia-500', path: 'M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm11 10.5-2.5-3-3.5 4.5H16Zm-8-6.5A1.5 1.5 0 1 0 7 9.5 1.5 1.5 0 0 0 7 6Z' },
     { key: 'camera', label: 'Camera', color: 'bg-rose-500', path: 'M9 4 7.5 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.5L15 4Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z' },
     { key: 'audio', label: 'Audio', accept: 'audio/*', color: 'bg-orange-500', path: 'M12 3v10.55A4 4 0 1 0 14 17V7h4V3Z' },
+    { key: 'sticker', label: 'Sticker', accept: 'image/png,image/webp,image/gif', forcedType: 'sticker', color: 'bg-teal-500', path: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-3.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 17c-2.5 0-4.6-1.5-5.4-3.6h10.8C16.6 15.5 14.5 17 12 17Z' },
     { key: 'contact', label: 'Contact', color: 'bg-sky-500', disabled: true, path: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-3.87 0-8 1.95-8 5v2h16v-2c0-3.05-4.13-5-8-5Z' },
     { key: 'poll', label: 'Poll', color: 'bg-amber-500', disabled: true, path: 'M4 4h2v16H4Zm14 6h2v10h-2Zm-7-3h2v13h-2Z' },
     { key: 'event', label: 'Event', color: 'bg-red-500', disabled: true, path: 'M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z' },
-    { key: 'sticker', label: 'New sticker', color: 'bg-teal-500', disabled: true, path: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-3.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 17c-2.5 0-4.6-1.5-5.4-3.6h10.8C16.6 15.5 14.5 17 12 17Z' },
 ];
 
 const { uploadAttachment } = useMessages();
@@ -22,6 +22,7 @@ const uploading = ref(false);
 const showMenu = ref(false);
 const showCamera = ref(false);
 const root = ref(null);
+let forcedType = null;
 
 function toggleMenu() {
     showMenu.value = !showMenu.value;
@@ -52,8 +53,18 @@ function pick(option) {
         return;
     }
 
+    forcedType = option.forcedType ?? null;
     inputEl.value.accept = option.accept ?? '';
     inputEl.value.click();
+}
+
+function resolveType(mimeType) {
+    if (forcedType) return forcedType;
+    if (mimeType === 'image/gif') return 'gif';
+    if (mimeType.startsWith('image/')) return 'image';
+    if (mimeType.startsWith('video/')) return 'video';
+    if (mimeType.startsWith('audio/')) return 'audio';
+    return 'document';
 }
 
 async function onChange(event) {
@@ -67,20 +78,13 @@ async function onChange(event) {
 
         for (const file of files) {
             const attachment = await uploadAttachment(file);
-            const type = attachment.mime_type.startsWith('image/')
-                ? 'image'
-                : attachment.mime_type.startsWith('video/')
-                    ? 'video'
-                    : attachment.mime_type.startsWith('audio/')
-                        ? 'audio'
-                        : 'document';
-
-            uploaded.push({ attachment, type });
+            uploaded.push({ attachment, type: resolveType(attachment.mime_type) });
         }
 
         emit('uploaded', uploaded);
     } finally {
         uploading.value = false;
+        forcedType = null;
     }
 }
 </script>

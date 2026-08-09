@@ -12,5 +12,7 @@ enum MessageType: string
     case Document = 'document';
     case Location = 'location';
     case Contact = 'contact';
+    case Gif = 'gif';
+    case Sticker = 'sticker';
     case System = 'system';
 }

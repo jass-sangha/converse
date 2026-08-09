@@ -42,6 +42,13 @@ const searchQuery = ref("");
 const messageHits = ref([]);
 const searching = ref(false);
 const lists = ref([]);
+const showListsMenu = ref(false);
+const listsMenuRoot = ref(null);
+
+const activeList = computed(() => {
+    if (!filter.value.startsWith("list:")) return null;
+    return lists.value.find((l) => l.id === Number(filter.value.slice(5))) ?? null;
+});
 
 onMounted(() => {
     refresh();
@@ -59,6 +66,22 @@ async function deleteList(list) {
     }
     await loadLists();
 }
+
+function onListsMenuDocumentClick(event) {
+    if (listsMenuRoot.value && !listsMenuRoot.value.contains(event.target)) {
+        showListsMenu.value = false;
+    }
+}
+
+watch(showListsMenu, (open) => {
+    if (open) {
+        document.addEventListener("click", onListsMenuDocumentClick);
+    } else {
+        document.removeEventListener("click", onListsMenuDocumentClick);
+    }
+});
+
+onBeforeUnmount(() => document.removeEventListener("click", onListsMenuDocumentClick));
 
 function onDocumentClick(event) {
     if (menuRoot.value && !menuRoot.value.contains(event.target)) {
@@ -120,11 +143,20 @@ async function onSearchQuery(q) {
 
     searching.value = true;
     try {
-        const [, hits] = await Promise.all([refresh({ q }), searchMessages(q, null)]);
+        const [, hits] = await Promise.all([
+            refresh({ q }),
+            searchMessages(q, null),
+        ]);
 
-        const refs = hits.map((hit) => otherParticipantOf(hit.conversation)).filter(Boolean);
+        const refs = hits
+            .map((hit) => otherParticipantOf(hit.conversation))
+            .filter(Boolean);
         if (refs.length) {
-            const unique = [...new Map(refs.map((r) => [chatableKey(r.type, r.id), r])).values()];
+            const unique = [
+                ...new Map(
+                    refs.map((r) => [chatableKey(r.type, r.id), r]),
+                ).values(),
+            ];
             await resolve(unique);
         }
 
@@ -136,12 +168,17 @@ async function onSearchQuery(q) {
 
 function otherParticipantOf(conversation) {
     if (!conversation || conversation.type !== "private") return null;
-    return (conversation.participants ?? []).find((p) => chatableKey(p.type, p.id) !== store.currentKey) ?? null;
+    return (
+        (conversation.participants ?? []).find(
+            (p) => chatableKey(p.type, p.id) !== store.currentKey,
+        ) ?? null
+    );
 }
 
 function hitLabel(hit) {
     if (!hit.conversation) return "";
-    if (hit.conversation.type === "group") return hit.conversation.name || "Group";
+    if (hit.conversation.type === "group")
+        return hit.conversation.name || "Group";
     const other = otherParticipantOf(hit.conversation);
     return other ? get(other).name : "Unknown";
 }
@@ -158,6 +195,7 @@ function hitSnippet(hit) {
 }
 
 function openHit(hit) {
+    store.pendingScrollMessageId = hit.id;
     setActive(hit.conversation_id);
     onSearchQuery("");
     toggleSearch();
@@ -340,12 +378,20 @@ watch(searchOpen, (open) => {
                 v-for="list in lists"
                 :key="list.id"
                 class="group/list shrink-0 rounded-full"
-                :class="filter === `list:${list.id}` ? 'bg-converse-accent/15' : 'bg-converse-surfaceHover hover:bg-converse-border/50'"
+                :class="
+                    filter === `list:${list.id}`
+                        ? 'bg-converse-accent/15'
+                        : 'bg-converse-surfaceHover hover:bg-converse-border/50'
+                "
             >
                 <button
                     type="button"
                     class="rounded-full py-1 pl-3 pr-1 text-sm font-medium"
-                    :class="filter === `list:${list.id}` ? 'text-converse-accent' : 'text-converse-text'"
+                    :class="
+                        filter === `list:${list.id}`
+                            ? 'text-converse-accent'
+                            : 'text-converse-text'
+                    "
                     @click="setFilter(`list:${list.id}`)"
                 >
                     {{ list.name }}
@@ -354,14 +400,15 @@ watch(searchOpen, (open) => {
                         title="Delete list"
                         class="ml-1 hidden rounded-full px-1 text-converse-textMuted opacity-0 hover:text-converse-danger group-hover/list:inline group-hover/list:opacity-100"
                         @click.stop="deleteList(list)"
-                    >×</span>
+                        >×</span
+                    >
                 </button>
             </div>
 
             <button
                 type="button"
                 title="Create new list"
-                class="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-converse-surfaceHover text-converse-textMuted hover:bg-converse-border/50"
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-converse-surfaceHover text-converse-textMuted hover:bg-converse-border/50"
                 @click="setView('create-list')"
             >
                 <svg
@@ -375,11 +422,24 @@ watch(searchOpen, (open) => {
             </button>
         </div>
 
-        <div v-if="searchQuery" class="cv-conversation-list__search-results flex-1 overflow-y-auto">
-            <p v-if="searching" class="p-4 text-center text-sm text-converse-textMuted">Searching&hellip;</p>
+        <div
+            v-if="searchQuery"
+            class="cv-conversation-list__search-results flex-1 overflow-y-auto"
+        >
+            <p
+                v-if="searching"
+                class="p-4 text-center text-sm text-converse-textMuted"
+            >
+                Searching&hellip;
+            </p>
 
             <template v-else>
-                <h3 v-if="filteredConversations.length" class="px-4 pb-1 pt-3 text-xs font-medium uppercase text-converse-textMuted">Chats</h3>
+                <h3
+                    v-if="filteredConversations.length"
+                    class="px-4 pb-1 pt-3 text-xs font-medium uppercase text-converse-textMuted"
+                >
+                    Chats
+                </h3>
                 <ul>
                     <ConversationListItem
                         v-for="conversation in filteredConversations"
@@ -390,7 +450,12 @@ watch(searchOpen, (open) => {
                     />
                 </ul>
 
-                <h3 v-if="messageHits.length" class="px-4 pb-1 pt-3 text-xs font-medium uppercase text-converse-textMuted">Messages</h3>
+                <h3
+                    v-if="messageHits.length"
+                    class="px-4 pb-1 pt-3 text-xs font-medium uppercase text-converse-textMuted"
+                >
+                    Messages
+                </h3>
                 <ul>
                     <li
                         v-for="hit in messageHits"
@@ -398,15 +463,28 @@ watch(searchOpen, (open) => {
                         class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-converse-surfaceHover"
                         @click="openHit(hit)"
                     >
-                        <Avatar :name="hitLabel(hit)" :avatar-url="hitAvatar(hit)" :size="44" />
+                        <Avatar
+                            :name="hitLabel(hit)"
+                            :avatar-url="hitAvatar(hit)"
+                            :size="44"
+                        />
                         <div class="min-w-0 flex-1">
-                            <span class="block truncate text-[15px] text-converse-text">{{ hitLabel(hit) }}</span>
-                            <span class="block truncate text-sm text-converse-textMuted">{{ hitSnippet(hit) }}</span>
+                            <span
+                                class="block truncate text-[15px] text-converse-text"
+                                >{{ hitLabel(hit) }}</span
+                            >
+                            <span
+                                class="block truncate text-sm text-converse-textMuted"
+                                >{{ hitSnippet(hit) }}</span
+                            >
                         </div>
                     </li>
                 </ul>
 
-                <p v-if="!filteredConversations.length && !messageHits.length" class="p-4 text-center text-sm text-converse-textMuted">
+                <p
+                    v-if="!filteredConversations.length && !messageHits.length"
+                    class="p-4 text-center text-sm text-converse-textMuted"
+                >
                     No results for "{{ searchQuery }}".
                 </p>
             </template>

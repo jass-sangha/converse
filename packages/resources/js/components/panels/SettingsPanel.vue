@@ -2,12 +2,16 @@
 import { computed, onMounted, ref } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import BlockedUsersPanel from "./BlockedUsersPanel.vue";
+import MuteDurationMenu from "../shared/MuteDurationMenu.vue";
 import { useChatStore } from "../../store";
 import { useProfile } from "../../composables/useProfile";
 import { usePreferences } from "../../composables/usePreferences";
 import { usePrivacySettings } from "../../composables/usePrivacySettings";
+import { useNotifications } from "../../composables/useNotifications";
+import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
 
 const store = useChatStore();
+const { muteAll } = useNotifications();
 const { updateAvatar, removeAvatar } = useProfile();
 const { theme, toggleTheme } = usePreferences();
 const { get: getPrivacySettings, update: updatePrivacySettings } =
@@ -23,6 +27,23 @@ const search = ref("");
 const section = ref(null);
 const about = ref("");
 const savingAbout = ref(false);
+const notifMenu = ref(null);
+const notifStatus = ref("");
+
+const SCOPE_LABELS = { private: "individual chats", group: "groups" };
+
+async function onMuteAll(scope, durationKey) {
+    notifMenu.value = null;
+    const label = MUTE_DURATIONS.find((d) => d.key === durationKey)?.label ?? durationKey;
+    await muteAll(scope, mutedUntilFor(durationKey));
+    notifStatus.value = `Muted ${SCOPE_LABELS[scope]} for ${label.toLowerCase()}.`;
+}
+
+async function onUnmuteAll(scope) {
+    notifMenu.value = null;
+    await muteAll(scope, null);
+    notifStatus.value = `Unmuted ${SCOPE_LABELS[scope]}.`;
+}
 
 const me = computed(() => store.usersById[store.currentKey] ?? null);
 
@@ -57,12 +78,12 @@ const ROWS = [
         hint: "Messages, groups, sounds",
         path: "M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z",
     },
-    {
-        key: "shortcuts",
-        label: "Keyboard shortcuts",
-        hint: "Speed up your workflow",
-        path: "M4 6h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Zm1 3v2h2V9H5Zm4 0v2h2V9H9Zm4 0v2h2V9h-2Zm4 0v2h2V9h-2ZM5 13v2h2v-2H5Zm4 0v2h6v-2H9Zm8 0v2h2v-2h-2Z",
-    },
+    // {
+    //     key: "shortcuts",
+    //     label: "Keyboard shortcuts",
+    //     hint: "Speed up your workflow",
+    //     path: "M4 6h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Zm1 3v2h2V9H5Zm4 0v2h2V9H9Zm4 0v2h2V9h-2Zm4 0v2h2V9h-2ZM5 13v2h2v-2H5Zm4 0v2h6v-2H9Zm8 0v2h2v-2h-2Z",
+    // },
 ];
 
 const filteredRows = computed(() => {
@@ -253,7 +274,7 @@ function logout() {
                     </span>
                 </button>
 
-                <button
+                <!-- <button
                     type="button"
                     class="cv-settings-panel__logout flex w-full items-center gap-4 px-4 py-3 text-left text-converse-danger hover:bg-converse-surfaceHover"
                     @click="logout"
@@ -270,7 +291,7 @@ function logout() {
                         />
                     </svg>
                     <span class="text-[15px]">Log out</span>
-                </button>
+                </button> -->
             </div>
         </template>
 
@@ -465,6 +486,32 @@ function logout() {
                         Per-chat wallpaper can be changed from that chat's info
                         panel.
                     </p>
+                </template>
+
+                <template v-else-if="section === 'notifications'">
+                    <p class="mb-3 text-xs text-converse-textMuted">Mute notifications in bulk across every chat of a kind. This doesn't change any chat you've already muted or unmuted individually.</p>
+
+                    <div class="mb-3 flex items-center justify-between rounded-cv border border-converse-border p-3">
+                        <span class="text-sm text-converse-text">Individual chats</span>
+                        <div class="relative">
+                            <button type="button" class="text-sm text-converse-accent" @click="notifMenu = notifMenu === 'private' ? null : 'private'">Mute&hellip;</button>
+                            <div v-if="notifMenu === 'private'" class="absolute right-0 top-full z-20 mt-1">
+                                <MuteDurationMenu :show-unmute="true" @pick="(d) => onMuteAll('private', d)" @unmute="onUnmuteAll('private')" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between rounded-cv border border-converse-border p-3">
+                        <span class="text-sm text-converse-text">Groups</span>
+                        <div class="relative">
+                            <button type="button" class="text-sm text-converse-accent" @click="notifMenu = notifMenu === 'group' ? null : 'group'">Mute&hellip;</button>
+                            <div v-if="notifMenu === 'group'" class="absolute right-0 top-full z-20 mt-1">
+                                <MuteDurationMenu :show-unmute="true" @pick="(d) => onMuteAll('group', d)" @unmute="onUnmuteAll('group')" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <p v-if="notifStatus" class="mt-3 text-xs text-converse-accent">{{ notifStatus }}</p>
                 </template>
 
                 <template v-else>

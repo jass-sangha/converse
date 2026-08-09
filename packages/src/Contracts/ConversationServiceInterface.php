@@ -26,6 +26,13 @@ interface ConversationServiceInterface
 
     public function mute(Conversation $conversation, Model $chatable, ?string $mutedUntil): void;
 
+    /**
+     * Bulk-mute (or unmute, when $mutedUntil is null) every conversation the chatable
+     * belongs to, optionally scoped to one conversation type. $type is a ConversationType
+     * value ('private'|'group'), or null to affect both.
+     */
+    public function muteAllOfType(Model $chatable, ?string $type, ?string $mutedUntil): void;
+
     public function setArchived(Conversation $conversation, Model $chatable, bool $archived): void;
 
     public function setPinned(Conversation $conversation, Model $chatable, bool $pinned): void;

@@ -24,6 +24,39 @@ let stickToBottom = true;
 
 const messages = computed(() => store.messagesByConversation[props.conversationId] ?? []);
 
+function dateLabel(date) {
+    const now = new Date();
+    if (date.toDateString() === now.toDateString()) return 'Today';
+
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+
+    const daysAgo = Math.floor((now.setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86400000);
+    if (daysAgo < 7) return date.toLocaleDateString([], { weekday: 'long' });
+
+    return date.toLocaleDateString([], { day: 'numeric', month: 'long', year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric' });
+}
+
+const timeline = computed(() => {
+    const items = [];
+    let lastDateKey = null;
+
+    for (const message of messages.value) {
+        const date = new Date(message.created_at);
+        const dateKey = date.toDateString();
+
+        if (dateKey !== lastDateKey) {
+            items.push({ kind: 'date', key: `date-${dateKey}`, label: dateLabel(date) });
+            lastDateKey = dateKey;
+        }
+
+        items.push({ kind: 'message', key: message.id, message });
+    }
+
+    return items;
+});
+
 function isNearBottom() {
     const el = scrollEl.value;
     if (!el) return true;
@@ -86,15 +119,19 @@ function onScroll() {
     >
         <div ref="sentinelEl" class="cv-message-list__sentinel h-1" />
 
-        <div class="cv-message-list__messages mx-auto flex max-w-3xl flex-col gap-2">
-            <MessageBubble
-                v-for="message in messages"
-                :id="`cv-message-${message.id}`"
-                :key="message.id"
-                :message="message"
-                @reply="(m) => emit('reply', m)"
-                @edit="(m) => emit('edit', m)"
-            />
+        <div class="cv-message-list__messages mx-auto flex max-w-5xl flex-col gap-2">
+            <template v-for="item in timeline" :key="item.key">
+                <div v-if="item.kind === 'date'" class="flex justify-center py-1">
+                    <span class="rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-xs font-medium text-converse-textMuted shadow-sm">{{ item.label }}</span>
+                </div>
+                <MessageBubble
+                    v-else
+                    :id="`cv-message-${item.message.id}`"
+                    :message="item.message"
+                    @reply="(m) => emit('reply', m)"
+                    @edit="(m) => emit('edit', m)"
+                />
+            </template>
         </div>
     </div>
 </template>
