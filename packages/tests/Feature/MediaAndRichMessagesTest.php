@@ -85,6 +85,55 @@ it('sends a location message and a contact message', function () {
     ])->assertStatus(422);
 });
 
+it('aggregates media across every conversation the user participates in, not just one', function () {
+    Storage::fake('chat');
+
+    $alice = mediaUser('alice-allmedia@example.com');
+    $bob = mediaUser('bob-allmedia@example.com');
+    $carol = mediaUser('carol-allmedia@example.com');
+    $dave = mediaUser('dave-allmedia@example.com');
+
+    $convoAB = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $convoAC = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($carol)],
+    ])->json('data.id');
+
+    $attachmentInAB = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->image('ab.jpg', 200, 200),
+    ])->json('data.id');
+
+    $attachmentInAC = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->image('ac.jpg', 200, 200),
+    ])->json('data.id');
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$convoAB}/messages", [
+        'type' => 'image', 'attachment_ids' => [$attachmentInAB],
+    ])->assertCreated();
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$convoAC}/messages", [
+        'type' => 'image', 'attachment_ids' => [$attachmentInAC],
+    ])->assertCreated();
+
+    // Alice never opens/lists convoAB or convoAC again before requesting "all media" —
+    // the endpoint must aggregate across both conversations from the database, not a client cache.
+    $all = $this->actingAs($alice)->getJson('/api/chat/messages/media?kind=media')->assertOk();
+    expect($all->json('data'))->toHaveCount(2);
+
+    $scoped = $this->actingAs($alice)
+        ->getJson("/api/chat/messages/media?kind=media&conversation_id={$convoAB}")
+        ->assertOk();
+    expect($scoped->json('data'))->toHaveCount(1);
+
+    // Dave is not a participant of either conversation — he must not see Alice's media.
+    $daveView = $this->actingAs($dave)->getJson('/api/chat/messages/media?kind=media')->assertOk();
+    expect($daveView->json('data'))->toHaveCount(0);
+});
+
 it('fetches and caches a link preview', function () {
     $alice = mediaUser('alice-preview@example.com');
 

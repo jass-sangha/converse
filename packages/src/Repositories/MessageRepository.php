@@ -58,6 +58,28 @@ class MessageRepository implements MessageRepositoryInterface
         return $builder->paginate($perPage);
     }
 
+    public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage): LengthAwarePaginator
+    {
+        $builder = Message::query()
+            ->whereHas('conversation.participants', fn ($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
+            ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
+            ->whereNull('deleted_for_everyone_at')
+            ->with(['chatable', 'attachments', 'conversation'])
+            ->orderByDesc('id');
+
+        match ($kind) {
+            'media' => $builder->whereIn('type', ['image', 'video', 'gif']),
+            'docs' => $builder->where('type', 'document'),
+            'links' => $builder->where('type', 'text')->whereNotNull('metadata->link_preview'),
+        };
+
+        if ($conversationId !== null) {
+            $builder->where('conversation_id', $conversationId);
+        }
+
+        return $builder->paginate($perPage);
+    }
+
     public function clearForChatable(Conversation $conversation, Model $chatable): void
     {
         $ids = Message::query()

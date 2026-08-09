@@ -88,5 +88,6 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::post('link-preview', [LinkPreviewController::class, 'store']);
 
         Route::get('messages/search', [MessageController::class, 'search']);
+        Route::get('messages/media', [MessageController::class, 'media']);
         Route::patch('conversations/{conversation}/disappearing', [ConversationController::class, 'disappearing']);
     });

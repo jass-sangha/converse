@@ -266,13 +266,13 @@ function onMenuAction(key) {
     <div
         v-else
         ref="root"
-        class="cv-message-bubble group flex"
+        class="cv-message-bubble flex"
         :class="isOwn ? 'justify-end' : 'justify-start'"
         title="Double-click to reply"
         @dblclick="!message.deleted_for_everyone && emit('reply', message)"
     >
         <div
-            class="cv-message-bubble__content relative max-w-[70%] rounded-cv px-3 py-1.5 shadow-sm"
+            class="cv-message-bubble__content group relative max-w-[70%] rounded-cv px-3 py-1.5 shadow-sm"
             :class="[
                 isOwn
                     ? 'rounded-tr-sm bg-converse-bubbleOut'

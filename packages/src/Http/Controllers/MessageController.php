@@ -117,4 +117,21 @@ class MessageController extends Controller
 
         return MessageResource::collection($messages);
     }
+
+    public function media(Request $request)
+    {
+        $request->validate(['kind' => ['required', 'string', 'in:media,docs,links']]);
+
+        $perPage = (int) config('chat.pagination.messages_per_page', 50);
+        $conversationId = $request->integer('conversation_id') ?: null;
+
+        $messages = $this->messages->media(
+            $request->user(),
+            $request->string('kind')->toString(),
+            $conversationId,
+            $perPage,
+        );
+
+        return MessageResource::collection($messages);
+    }
 }

@@ -106,22 +106,22 @@ const lastActivityLabel = computed(() => {
 
 <template>
     <li
-        class="cv-conversation-item group flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-converse-surfaceHover"
+        class="cv-conversation-item group flex cursor-pointer items-center gap-2.5 px-3 py-1.5 hover:bg-converse-surfaceHover"
         :class="{ 'bg-converse-surfaceHover': active }"
         @click="$emit('select', conversation.id)"
     >
-        <Avatar :name="displayName" :avatar-url="avatarUrl" :size="48" />
+        <Avatar :name="displayName" :avatar-url="avatarUrl" :size="42" />
 
-        <div class="cv-conversation-item__body min-w-0 flex-1 border-b border-converse-border pb-2.5">
+        <div class="cv-conversation-item__body min-w-0 flex-1 border-b border-converse-border pb-1.5">
             <div class="cv-conversation-item__title-row flex items-center justify-between gap-2">
                 <span class="flex min-w-0 items-center gap-1">
-                    <span class="truncate text-[15px] text-converse-text">{{ displayName }}</span>
-                    <svg v-if="isBlocked" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" class="shrink-0 text-converse-danger" title="Blocked"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.94 7.94 0 0 1 4 12a8 8 0 0 1 8-8Zm0 16c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.94 7.94 0 0 1 20 12a8 8 0 0 1-8 8Z"/></svg>
+                    <span class="truncate text-sm text-converse-text">{{ displayName }}</span>
+                    <svg v-if="isBlocked" viewBox="0 0 24 24" width="12" height="12" fill="currentColor" class="shrink-0 text-converse-danger" title="Blocked"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.94 7.94 0 0 1 4 12a8 8 0 0 1 8-8Zm0 16c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.94 7.94 0 0 1 20 12a8 8 0 0 1-8 8Z"/></svg>
                 </span>
-                <span v-if="lastActivityLabel" class="shrink-0 text-xs text-converse-textMuted">{{ lastActivityLabel }}</span>
+                <span v-if="lastActivityLabel" class="shrink-0 text-[11px] text-converse-textMuted">{{ lastActivityLabel }}</span>
             </div>
             <div class="cv-conversation-item__preview-row flex items-center justify-between gap-2">
-                <span class="flex min-w-0 items-center truncate text-sm text-converse-textMuted">
+                <span class="flex min-w-0 items-center truncate text-[13px] text-converse-textMuted">
                     <ReadReceiptTicks v-if="isLastMessageOwn && !conversation.last_message?.deleted_for_everyone" :status="conversation.last_message.status" />
                     <span class="truncate">{{ lastMessagePreview }}</span>
                 </span>

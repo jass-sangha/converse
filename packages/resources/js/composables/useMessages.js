@@ -143,6 +143,13 @@ export function useMessages() {
         return data.data;
     }
 
+    async function media(kind, conversationId = null, page = 1) {
+        const { data } = await api.get('/messages/media', {
+            params: { kind, conversation_id: conversationId, page },
+        });
+        return data;
+    }
+
     async function clear(conversationId) {
         await api.delete(`/conversations/${conversationId}/messages`);
         setMessages(conversationId, []);
@@ -169,6 +176,7 @@ export function useMessages() {
         markDelivered,
         markRead,
         search,
+        media,
         clear,
     };
 }

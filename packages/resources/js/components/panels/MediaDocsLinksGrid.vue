@@ -1,14 +1,14 @@
 <script setup>
-import { computed, ref } from 'vue';
-import { useChatStore } from '../../store';
+import { computed, reactive, ref, watch } from 'vue';
+import { useMessages } from '../../composables/useMessages';
+import MediaViewerModal from '../shared/MediaViewerModal.vue';
 
 const props = defineProps({
-    // A single conversation's items when set; every loaded conversation's items when null.
+    // A single conversation's items when set; every conversation the user is in when null.
     conversationId: { type: Number, default: null },
 });
 
-const store = useChatStore();
-const tab = ref('media');
+const messagesApi = useMessages();
 
 const TABS = [
     { key: 'media', label: 'Media' },
@@ -16,28 +16,66 @@ const TABS = [
     { key: 'links', label: 'Links' },
 ];
 
-const conversationIds = computed(() => (
-    props.conversationId ? [props.conversationId] : store.conversations.map((c) => c.id)
-));
+const state = reactive({
+    tab: 'media',
+    byKind: {
+        media: { items: [], page: 0, lastPage: 1, loading: false, loaded: false },
+        docs: { items: [], page: 0, lastPage: 1, loading: false, loaded: false },
+        links: { items: [], page: 0, lastPage: 1, loading: false, loaded: false },
+    },
+});
 
-const messages = computed(() => conversationIds.value
-    .flatMap((id) => store.messagesByConversation[id] ?? [])
+async function loadKind(kind, { reset = false } = {}) {
+    const bucket = state.byKind[kind];
+    if (bucket.loading) return;
+    if (!reset && bucket.loaded && bucket.page >= bucket.lastPage) return;
+
+    bucket.loading = true;
+    try {
+        const nextPage = reset ? 1 : bucket.page + 1;
+        const response = await messagesApi.media(kind, props.conversationId, nextPage);
+        bucket.items = reset ? response.data : [...bucket.items, ...response.data];
+        bucket.page = response.meta?.current_page ?? nextPage;
+        bucket.lastPage = response.meta?.last_page ?? bucket.page;
+        bucket.loaded = true;
+    } finally {
+        bucket.loading = false;
+    }
+}
+
+function resetAll() {
+    for (const kind of Object.keys(state.byKind)) {
+        state.byKind[kind] = { items: [], page: 0, lastPage: 1, loading: false, loaded: false };
+    }
+    loadKind(state.tab, { reset: true });
+}
+
+watch(() => props.conversationId, resetAll);
+
+watch(() => state.tab, (kind) => {
+    if (!state.byKind[kind].loaded) {
+        loadKind(kind, { reset: true });
+    }
+});
+
+loadKind(state.tab, { reset: true });
+
+const mediaItems = computed(() => state.byKind.media.items
     .filter((m) => !m.deleted_for_everyone)
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-
-const mediaItems = computed(() => messages.value
-    .filter((m) => ['image', 'video', 'gif'].includes(m.type))
     .flatMap((m) => (m.attachments ?? []).map((a) => ({ ...a, kind: m.type, createdAt: m.created_at }))));
 
-const docItems = computed(() => messages.value
-    .filter((m) => m.type === 'document')
+const docItems = computed(() => state.byKind.docs.items
+    .filter((m) => !m.deleted_for_everyone)
     .flatMap((m) => (m.attachments ?? []).map((a) => ({ ...a, createdAt: m.created_at }))));
 
-const linkItems = computed(() => messages.value
-    .filter((m) => m.type === 'text' && m.metadata?.link_preview)
+const linkItems = computed(() => state.byKind.links.items
+    .filter((m) => !m.deleted_for_everyone && m.metadata?.link_preview)
     .map((m) => ({ ...m.metadata.link_preview, createdAt: m.created_at })));
 
-const counts = computed(() => ({ media: mediaItems.value.length, docs: docItems.value.length, links: linkItems.value.length }));
+const viewerIndex = ref(null);
+
+const activeBucket = computed(() => state.byKind[state.tab]);
+const hasMore = computed(() => activeBucket.value.page < activeBucket.value.lastPage);
 
 function formatSize(bytes) {
     if (!bytes) return '';
@@ -55,32 +93,31 @@ function formatSize(bytes) {
                 :key="t.key"
                 type="button"
                 class="shrink-0 border-b-2 px-3 py-2 text-sm font-medium"
-                :class="tab === t.key ? 'border-converse-accent text-converse-accent' : 'border-transparent text-converse-textMuted hover:text-converse-text'"
-                @click="tab = t.key"
+                :class="state.tab === t.key ? 'border-converse-accent text-converse-accent' : 'border-transparent text-converse-textMuted hover:text-converse-text'"
+                @click="state.tab = t.key"
             >
-                {{ t.label }} <span v-if="counts[t.key]" class="text-xs">({{ counts[t.key] }})</span>
+                {{ t.label }}
             </button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-3">
-            <template v-if="tab === 'media'">
+            <template v-if="state.tab === 'media'">
                 <div v-if="mediaItems.length" class="grid grid-cols-3 gap-1">
-                    <a
-                        v-for="item in mediaItems"
+                    <button
+                        v-for="(item, i) in mediaItems"
                         :key="item.id"
-                        :href="item.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        type="button"
                         class="relative aspect-square overflow-hidden rounded-sm bg-converse-surfaceHover"
+                        @click="viewerIndex = i"
                     >
                         <video v-if="item.kind === 'video'" :src="item.url" class="h-full w-full object-cover" muted />
                         <img v-else :src="item.thumbnail_url || item.url" :alt="item.original_filename" class="h-full w-full object-cover">
-                    </a>
+                    </button>
                 </div>
-                <p v-else class="p-4 text-center text-sm text-converse-textMuted">No media yet.</p>
+                <p v-else-if="!activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">No media yet.</p>
             </template>
 
-            <template v-else-if="tab === 'docs'">
+            <template v-else-if="state.tab === 'docs'">
                 <ul v-if="docItems.length" class="flex flex-col gap-1">
                     <li v-for="item in docItems" :key="item.id">
                         <a
@@ -99,7 +136,7 @@ function formatSize(bytes) {
                         </a>
                     </li>
                 </ul>
-                <p v-else class="p-4 text-center text-sm text-converse-textMuted">No documents yet.</p>
+                <p v-else-if="!activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">No documents yet.</p>
             </template>
 
             <template v-else>
@@ -122,8 +159,26 @@ function formatSize(bytes) {
                         </a>
                     </li>
                 </ul>
-                <p v-else class="p-4 text-center text-sm text-converse-textMuted">No links yet.</p>
+                <p v-else-if="!activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">No links yet.</p>
             </template>
+
+            <p v-if="activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">Loading…</p>
+
+            <button
+                v-if="hasMore && !activeBucket.loading"
+                type="button"
+                class="mx-auto mt-2 block rounded px-3 py-1.5 text-sm text-converse-accent hover:bg-converse-surfaceHover"
+                @click="loadKind(state.tab)"
+            >
+                Load more
+            </button>
         </div>
+
+        <MediaViewerModal
+            v-if="viewerIndex !== null"
+            :items="mediaItems"
+            :index="viewerIndex"
+            @close="viewerIndex = null"
+        />
     </div>
 </template>

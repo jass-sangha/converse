@@ -35,4 +35,9 @@ interface MessageServiceInterface
     public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator;
 
     public function clearForChatable(Conversation $conversation, Model $chatable): void;
+
+    /**
+     * @param  string  $kind  'media' (images/videos/gifs), 'docs', or 'links'
+     */
+    public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage): LengthAwarePaginator;
 }

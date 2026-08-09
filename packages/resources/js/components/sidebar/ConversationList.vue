@@ -43,11 +43,23 @@ const messageHits = ref([]);
 const searching = ref(false);
 const lists = ref([]);
 const showListsMenu = ref(false);
-const listsMenuRoot = ref(null);
+const listsMenuTrigger = ref(null);
+const listsMenuPanel = ref(null);
+const listsMenuPosition = ref({ top: 0, left: 0 });
+
+function toggleListsMenu() {
+    if (!showListsMenu.value && listsMenuTrigger.value) {
+        const rect = listsMenuTrigger.value.getBoundingClientRect();
+        listsMenuPosition.value = { top: rect.bottom + 4, left: rect.left };
+    }
+    showListsMenu.value = !showListsMenu.value;
+}
 
 const activeList = computed(() => {
     if (!filter.value.startsWith("list:")) return null;
-    return lists.value.find((l) => l.id === Number(filter.value.slice(5))) ?? null;
+    return (
+        lists.value.find((l) => l.id === Number(filter.value.slice(5))) ?? null
+    );
 });
 
 onMounted(() => {
@@ -68,7 +80,9 @@ async function deleteList(list) {
 }
 
 function onListsMenuDocumentClick(event) {
-    if (listsMenuRoot.value && !listsMenuRoot.value.contains(event.target)) {
+    const clickedTrigger = listsMenuTrigger.value?.contains(event.target);
+    const clickedPanel = listsMenuPanel.value?.contains(event.target);
+    if (!clickedTrigger && !clickedPanel) {
         showListsMenu.value = false;
     }
 }
@@ -81,7 +95,9 @@ watch(showListsMenu, (open) => {
     }
 });
 
-onBeforeUnmount(() => document.removeEventListener("click", onListsMenuDocumentClick));
+onBeforeUnmount(() =>
+    document.removeEventListener("click", onListsMenuDocumentClick),
+);
 
 function onDocumentClick(event) {
     if (menuRoot.value && !menuRoot.value.contains(event.target)) {
@@ -374,52 +390,87 @@ watch(searchOpen, (open) => {
                 {{ f.label }}
             </button>
 
-            <div
-                v-for="list in lists"
-                :key="list.id"
-                class="group/list shrink-0 rounded-full"
-                :class="
-                    filter === `list:${list.id}`
-                        ? 'bg-converse-accent/15'
-                        : 'bg-converse-surfaceHover hover:bg-converse-border/50'
-                "
-            >
+            <div class="shrink-0">
                 <button
+                    ref="listsMenuTrigger"
                     type="button"
-                    class="rounded-full py-1 pl-3 pr-1 text-sm font-medium"
+                    class="flex shrink-0 items-center gap-1 rounded-full py-1 px-2 text-sm font-medium"
                     :class="
-                        filter === `list:${list.id}`
-                            ? 'text-converse-accent'
-                            : 'text-converse-text'
+                        activeList
+                            ? 'bg-converse-accent/15 text-converse-accent'
+                            : 'bg-converse-surfaceHover text-converse-text hover:bg-converse-border/50'
                     "
-                    @click="setFilter(`list:${list.id}`)"
+                    @click="toggleListsMenu"
                 >
-                    {{ list.name }}
-                    <span
-                        role="button"
-                        title="Delete list"
-                        class="ml-1 hidden rounded-full px-1 text-converse-textMuted opacity-0 hover:text-converse-danger group-hover/list:inline group-hover/list:opacity-100"
-                        @click.stop="deleteList(list)"
-                        >×</span
+                    {{ activeList ? activeList.name : "" }}
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
                     >
+                        <path d="M7 10l5 5 5-5Z" />
+                    </svg>
                 </button>
-            </div>
 
-            <button
-                type="button"
-                title="Create new list"
-                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-converse-surfaceHover text-converse-textMuted hover:bg-converse-border/50"
-                @click="setView('create-list')"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                >
-                    <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" />
-                </svg>
-            </button>
+                <Teleport to="body">
+                    <div
+                        v-if="showListsMenu"
+                        ref="listsMenuPanel"
+                        class="cv-conversation-list__lists-menu fixed z-50 w-56 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
+                        :style="{
+                            top: `${listsMenuPosition.top}px`,
+                            left: `${listsMenuPosition.left}px`,
+                        }"
+                    >
+                        <p
+                            v-if="!lists.length"
+                            class="px-4 py-2 text-converse-textMuted"
+                        >
+                            No lists yet.
+                        </p>
+                        <div
+                            v-for="list in lists"
+                            :key="list.id"
+                            class="group/list flex items-center justify-between px-2 py-1 hover:bg-converse-surfaceHover"
+                        >
+                            <button
+                                type="button"
+                                class="flex-1 truncate px-2 py-1 text-left"
+                                :class="
+                                    filter === `list:${list.id}`
+                                        ? 'text-converse-accent'
+                                        : 'text-converse-text'
+                                "
+                                @click="
+                                    setFilter(`list:${list.id}`);
+                                    showListsMenu = false;
+                                "
+                            >
+                                {{ list.name }}
+                            </button>
+                            <span
+                                role="button"
+                                title="Delete list"
+                                class="hidden shrink-0 rounded-full px-2 text-converse-textMuted opacity-0 hover:text-converse-danger group-hover/list:inline group-hover/list:opacity-100"
+                                @click.stop="deleteList(list)"
+                                >×</span
+                            >
+                        </div>
+                        <hr class="my-1 border-converse-border" />
+                        <button
+                            type="button"
+                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            @click="
+                                setView('create-list');
+                                showListsMenu = false;
+                            "
+                        >
+                            Create new list
+                        </button>
+                    </div>
+                </Teleport>
+            </div>
         </div>
 
         <div
