@@ -6,6 +6,7 @@ use Converse\Chat\Console\Commands\PruneExpiredMessagesCommand;
 use Converse\Chat\Console\Commands\SweepPresenceCommand;
 use Converse\Chat\Contracts\AttachmentServiceInterface;
 use Converse\Chat\Contracts\BlockedUserServiceInterface;
+use Converse\Chat\Contracts\ChatListServiceInterface;
 use Converse\Chat\Contracts\ConversationRepositoryInterface;
 use Converse\Chat\Contracts\ConversationServiceInterface;
 use Converse\Chat\Contracts\LinkPreviewFetcher;
@@ -30,6 +31,7 @@ use Converse\Chat\Repositories\MessageRepository;
 use Converse\Chat\Repositories\ParticipantRepository;
 use Converse\Chat\Services\AttachmentService;
 use Converse\Chat\Services\BlockedUserService;
+use Converse\Chat\Services\ChatListService;
 use Converse\Chat\Services\ConversationService;
 use Converse\Chat\Services\MessageReactionService;
 use Converse\Chat\Services\MessageReceiptService;
@@ -72,6 +74,7 @@ class ChatServiceProvider extends PackageServiceProvider
         UserSearchServiceInterface::class => UserSearchService::class,
         PinnedMessageServiceInterface::class => PinnedMessageService::class,
         UserSettingsServiceInterface::class => UserSettingsService::class,
+        ChatListServiceInterface::class => ChatListService::class,
     ];
 
     protected array $policies = [
@@ -149,9 +152,13 @@ class ChatServiceProvider extends PackageServiceProvider
 
         config(["filesystems.disks.{$disk}" => [
             'driver' => 'local',
-            'root' => storage_path('app/chat'),
+            // Nested under app/public (not app/chat) so it resolves through the standard
+            // public/storage symlink — the framework's dev-server storage.local route 403s
+            // any path outside app/public, and there's no other route in this package that
+            // serves media, so avatars/attachments would 403 on any disk root that isn't here.
+            'root' => storage_path('app/public/chat'),
             'url' => '/storage/chat',
-            'visibility' => 'private',
+            'visibility' => 'public',
         ]]);
     }
 }

@@ -28,10 +28,10 @@ function onChange(event) {
         <label class="mb-1 block text-xs font-medium text-converse-textMuted">Disappearing messages</label>
         <select
             :value="current"
-            class="w-full rounded border border-converse-border px-2 py-1.5 text-sm"
+            class="w-full rounded border border-converse-border bg-converse-surface px-2 py-1.5 text-sm text-converse-text"
             @change="onChange"
         >
-            <option v-for="option in OPTIONS" :key="option.label" :value="option.value">{{ option.label }}</option>
+            <option v-for="option in OPTIONS" :key="option.label" :value="option.value" class="bg-converse-surface text-converse-text">{{ option.label }}</option>
         </select>
     </div>
 </template>

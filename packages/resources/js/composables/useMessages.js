@@ -1,5 +1,5 @@
 import { useApi } from './useApi';
-import { useChatStore, setMessages, prependMessages, upsertMessage, removeMessage } from '../store';
+import { useChatStore, setMessages, prependMessages, upsertMessage, removeMessage, upsertConversation } from '../store';
 
 const cursors = {};
 let localIdCounter = -1;
@@ -143,6 +143,16 @@ export function useMessages() {
         return data.data;
     }
 
+    async function clear(conversationId) {
+        await api.delete(`/conversations/${conversationId}/messages`);
+        setMessages(conversationId, []);
+
+        const conversation = store.conversations.find((c) => c.id === conversationId);
+        if (conversation) {
+            upsertConversation({ ...conversation, last_message: null });
+        }
+    }
+
     return {
         load,
         loadOlder,
@@ -159,5 +169,6 @@ export function useMessages() {
         markDelivered,
         markRead,
         search,
+        clear,
     };
 }

@@ -92,6 +92,15 @@ class MessageController extends Controller
         return MessageResource::collection(collect($forwarded)->map(fn (Message $m) => $m->load(self::EAGER)));
     }
 
+    public function clear(Request $request, Conversation $conversation)
+    {
+        Gate::authorize('view', $conversation);
+
+        $this->messages->clearForChatable($conversation, $request->user());
+
+        return response()->noContent();
+    }
+
     public function search(Request $request)
     {
         $request->validate(['q' => ['required', 'string', 'min:1']]);

@@ -27,7 +27,7 @@ class ConversationRepository implements ConversationRepositoryInterface
             ->whereHas('participants', function ($query) use ($chatable) {
                 Chat::whereChatable($query, $chatable)->whereNull('left_at');
             })
-            ->with(['participants' => fn ($query) => $query->whereNull('left_at'), 'lastMessage'])
+            ->with(['participants' => fn ($query) => $query->whereNull('left_at')])
             ->leftJoin("{$participantTable} as my_participation", function ($join) use ($chatable, $conversationTable) {
                 $join->on('my_participation.conversation_id', '=', "{$conversationTable}.id")
                     ->where('my_participation.chatable_type', '=', $chatable->getMorphClass())

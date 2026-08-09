@@ -2,6 +2,7 @@
 
 use Converse\Chat\Http\Controllers\AttachmentController;
 use Converse\Chat\Http\Controllers\BlockedUserController;
+use Converse\Chat\Http\Controllers\ChatListController;
 use Converse\Chat\Http\Controllers\ConversationController;
 use Converse\Chat\Http\Controllers\LinkPreviewController;
 use Converse\Chat\Http\Controllers\MessageController;
@@ -32,6 +33,7 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
 
         Route::get('conversations/{conversation}/messages', [MessageController::class, 'index']);
         Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
+        Route::delete('conversations/{conversation}/messages', [MessageController::class, 'clear']);
 
         Route::patch('messages/{message}', [MessageController::class, 'update']);
         Route::delete('messages/{message}', [MessageController::class, 'destroy']);
@@ -58,6 +60,7 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::get('users/{chatableType}/{chatableId}/presence', [PresenceController::class, 'show']);
         Route::get('users', [UserSearchController::class, 'index']);
         Route::post('profile/avatar', [ProfileController::class, 'updateAvatar']);
+        Route::delete('profile/avatar', [ProfileController::class, 'destroyAvatar']);
         Route::get('profile/settings', [ProfileController::class, 'showSettings']);
         Route::patch('profile/settings', [ProfileController::class, 'updateSettings']);
 
@@ -70,6 +73,12 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::get('blocked-users', [BlockedUserController::class, 'index']);
         Route::post('blocked-users', [BlockedUserController::class, 'store']);
         Route::delete('blocked-users/{chatableType}/{chatableId}', [BlockedUserController::class, 'destroy']);
+
+        Route::get('lists', [ChatListController::class, 'index']);
+        Route::post('lists', [ChatListController::class, 'store']);
+        Route::delete('lists/{list}', [ChatListController::class, 'destroy']);
+        Route::post('lists/{list}/conversations', [ChatListController::class, 'addConversation']);
+        Route::delete('lists/{list}/conversations/{conversationId}', [ChatListController::class, 'removeConversation']);
 
         Route::post('attachments', [AttachmentController::class, 'store']);
 

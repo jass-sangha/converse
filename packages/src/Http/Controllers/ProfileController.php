@@ -18,19 +18,33 @@ class ProfileController extends Controller
         $request->validate(['avatar' => ['required', 'image', 'max:5120']]);
 
         $user = $request->user();
-        $avatarField = config('chat.user_search.avatar_field', 'avatar');
         $disk = config('chat.media.disk', 'chat');
 
-        $current = data_get($user, $avatarField);
+        $setting = $this->settings->get($user);
 
-        if ($current && ! str_starts_with($current, 'http') && ! str_starts_with($current, '/')) {
-            Storage::disk($disk)->delete($current);
+        if ($setting->avatar_path) {
+            Storage::disk($disk)->delete($setting->avatar_path);
         }
 
         $path = $request->file('avatar')->store('user-avatars', $disk);
 
-        $user->{$avatarField} = $path;
-        $user->save();
+        $this->settings->update($user, ['avatar_path' => $path]);
+
+        return new ChatUserResource($user);
+    }
+
+    public function destroyAvatar(Request $request)
+    {
+        $user = $request->user();
+        $disk = config('chat.media.disk', 'chat');
+
+        $setting = $this->settings->get($user);
+
+        if ($setting->avatar_path) {
+            Storage::disk($disk)->delete($setting->avatar_path);
+        }
+
+        $this->settings->update($user, ['avatar_path' => null]);
 
         return new ChatUserResource($user);
     }
@@ -42,6 +56,7 @@ class ProfileController extends Controller
         return response()->json(['data' => [
             'show_last_seen' => $setting->show_last_seen,
             'show_read_receipts' => $setting->show_read_receipts,
+            'about' => $setting->about,
         ]]);
     }
 
@@ -50,6 +65,7 @@ class ProfileController extends Controller
         $data = $request->validate([
             'show_last_seen' => ['sometimes', 'boolean'],
             'show_read_receipts' => ['sometimes', 'boolean'],
+            'about' => ['sometimes', 'nullable', 'string', 'max:139'],
         ]);
 
         $setting = $this->settings->update($request->user(), $data);
@@ -57,6 +73,7 @@ class ProfileController extends Controller
         return response()->json(['data' => [
             'show_last_seen' => $setting->show_last_seen,
             'show_read_receipts' => $setting->show_read_receipts,
+            'about' => $setting->about,
         ]]);
     }
 }

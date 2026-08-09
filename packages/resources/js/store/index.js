@@ -12,6 +12,7 @@ const state = reactive({
     typingByConversation: {},
     usersById: {},
     pinnedByConversation: {},
+    pendingScrollMessageId: null,
 });
 
 export function useChatStore() {

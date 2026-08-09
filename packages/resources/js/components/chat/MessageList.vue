@@ -79,7 +79,7 @@ function onScroll() {
 <template>
     <div
         ref="scrollEl"
-        class="cv-message-list h-full overflow-y-auto px-3 py-2 sm:px-12"
+        class="cv-message-list h-full overflow-y-auto px-3 pb-2 pt-10 sm:px-12"
         :class="{ 'cv-message-list--pattern bg-converse-chatBg': !wallpaperCss }"
         :style="wallpaperCss ? { backgroundColor: wallpaperCss } : {}"
         @scroll="onScroll"

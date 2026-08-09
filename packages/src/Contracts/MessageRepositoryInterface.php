@@ -21,4 +21,6 @@ interface MessageRepositoryInterface
     ): LengthAwarePaginator;
 
     public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator;
+
+    public function clearForChatable(Conversation $conversation, Model $chatable): void;
 }

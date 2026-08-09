@@ -45,6 +45,8 @@ return [
         'user_presence' => 'chat_user_presence',
         'pinned_messages' => 'chat_pinned_messages',
         'user_settings' => 'chat_user_settings',
+        'lists' => 'chat_lists',
+        'list_conversations' => 'chat_list_conversations',
     ],
 
     /*

@@ -2,3 +2,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.cv-message-bubble--highlight .cv-message-bubble__content {
+    animation: cv-message-highlight 1.6s ease-out;
+}
+
+@keyframes cv-message-highlight {
+    0%, 40% {
+        box-shadow: 0 0 0 4px rgb(var(--cv-accent) / 0.35);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgb(var(--cv-accent) / 0);
+    }
+}

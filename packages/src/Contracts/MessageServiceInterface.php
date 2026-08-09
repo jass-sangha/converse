@@ -33,4 +33,6 @@ interface MessageServiceInterface
     public function forward(Message $message, array $conversationIds, Model $chatable): array;
 
     public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator;
+
+    public function clearForChatable(Conversation $conversation, Model $chatable): void;
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch, onUnmounted } from 'vue';
+import { computed, nextTick, ref, watch, onUnmounted } from 'vue';
 import ChatHeader from './ChatHeader.vue';
 import MessageList from './MessageList.vue';
 import MessageBubble from './MessageBubble.vue';
@@ -11,13 +11,9 @@ import { useMessages } from '../../composables/useMessages';
 import { useMessagePins } from '../../composables/useMessagePins';
 import { useEcho } from '../../composables/useEcho';
 
-const props = defineProps({
-    messageSearchQuery: { type: String, default: '' },
-});
-
 const store = useChatStore();
 const { setActive } = useConversations();
-const { load, update, markDelivered, markRead, search } = useMessages();
+const { load, markDelivered, markRead, search } = useMessages();
 const { list: listPinned, unpin, pinnedFor } = useMessagePins();
 
 const replyTo = ref(null);
@@ -28,7 +24,7 @@ const chatSearchOpen = ref(false);
 const chatSearchQuery = ref('');
 
 const conversation = computed(() => store.conversations.find((c) => c.id === store.activeConversationId));
-const activeSearchQuery = computed(() => (chatSearchOpen.value ? chatSearchQuery.value : props.messageSearchQuery));
+const activeSearchQuery = computed(() => (chatSearchOpen.value ? chatSearchQuery.value : ''));
 
 function onToggleChatSearch() {
     chatSearchOpen.value = !chatSearchOpen.value;
@@ -51,17 +47,34 @@ watch(() => store.activeConversationId, async (newId, oldId) => {
         if (messages.length) {
             await markRead(newId, messages[messages.length - 1].id);
         }
+
+        if (store.pendingScrollMessageId) {
+            const pendingId = store.pendingScrollMessageId;
+            store.pendingScrollMessageId = null;
+            nextTick(() => scrollToMessage(pendingId));
+        }
     }
 }, { immediate: true });
 
 const pinnedMessages = computed(() => (conversation.value ? pinnedFor(conversation.value.id) : []));
 
 function scrollToMessage(messageId) {
-    document.getElementById(`cv-message-${messageId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const el = document.getElementById(`cv-message-${messageId}`);
+    if (!el) return;
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('cv-message-bubble--highlight');
+    setTimeout(() => el.classList.remove('cv-message-bubble--highlight'), 1600);
 }
 
 async function onUnpinFromBanner(message) {
     await unpin(message);
+}
+
+function jumpToResult(message) {
+    chatSearchOpen.value = false;
+    chatSearchQuery.value = '';
+    nextTick(() => scrollToMessage(message.id));
 }
 
 watch(activeSearchQuery, async (q) => {
@@ -87,13 +100,7 @@ function onReply(message) {
 
 function onEdit(message) {
     editing.value = message;
-}
-
-async function saveEdit(newBody) {
-    if (editing.value) {
-        await update(editing.value.id, editing.value.conversation_id, newBody);
-        editing.value = null;
-    }
+    replyTo.value = null;
 }
 </script>
 
@@ -137,7 +144,9 @@ async function saveEdit(newBody) {
 
             <div v-if="activeSearchQuery" class="cv-chat-window__search-results flex-1 overflow-y-auto bg-converse-chatBg p-3">
                 <p class="mb-2 text-xs text-converse-textMuted">Results for "{{ activeSearchQuery }}"</p>
-                <MessageBubble v-for="message in searchResults" :key="message.id" :message="message" />
+                <div v-for="message in searchResults" :key="message.id" class="cursor-pointer" @click="jumpToResult(message)">
+                    <MessageBubble :message="message" />
+                </div>
                 <p v-if="!searchResults.length" class="text-sm text-converse-textMuted">No messages found.</p>
             </div>
 
@@ -149,29 +158,20 @@ async function saveEdit(newBody) {
                 @edit="onEdit"
             />
 
-            <div v-if="editing" class="cv-chat-window__edit-bar border-t border-converse-border bg-converse-warning p-2">
-                <p class="mb-1 text-xs text-converse-textMuted">Editing message</p>
-                <div class="cv-chat-window__edit-actions flex gap-2">
-                    <input
-                        :value="editing.body"
-                        type="text"
-                        class="flex-1 rounded border border-converse-border px-2 py-1 text-sm"
-                        @keyup.enter="(e) => saveEdit(e.target.value)"
-                        @input="(e) => (editing.body = e.target.value)"
-                    >
-                    <button type="button" class="text-sm text-converse-accent" @click="saveEdit(editing.body)">Save</button>
-                    <button type="button" class="text-sm text-converse-textMuted" @click="editing = null">Cancel</button>
-                </div>
-            </div>
-
             <MessageComposer
-                v-else
                 :conversation-id="conversation.id"
                 :reply-to="replyTo"
+                :editing="editing"
                 @dismiss-reply="replyTo = null"
+                @dismiss-edit="editing = null"
             />
         </div>
 
-        <GroupInfoPanel v-if="showInfo" :conversation="conversation" @close="showInfo = false" />
+        <GroupInfoPanel
+            v-if="showInfo"
+            :conversation="conversation"
+            @close="showInfo = false"
+            @search="onToggleChatSearch(); showInfo = false"
+        />
     </div>
 </template>

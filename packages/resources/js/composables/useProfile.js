@@ -27,5 +27,11 @@ export function useProfile() {
         return data.data;
     }
 
-    return { ensureSelfCached, updateAvatar };
+    async function removeAvatar() {
+        const { data } = await api.delete('/profile/avatar');
+        cacheUsers([data.data]);
+        return data.data;
+    }
+
+    return { ensureSelfCached, updateAvatar, removeAvatar };
 }

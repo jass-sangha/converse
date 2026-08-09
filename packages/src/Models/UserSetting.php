@@ -10,7 +10,7 @@ class UserSetting extends Model
 {
     use BelongsToChatable;
 
-    protected $fillable = ['chatable_id', 'chatable_type', 'show_last_seen', 'show_read_receipts'];
+    protected $fillable = ['chatable_id', 'chatable_type', 'show_last_seen', 'show_read_receipts', 'avatar_path', 'about'];
 
     protected $casts = [
         'show_last_seen' => 'boolean',

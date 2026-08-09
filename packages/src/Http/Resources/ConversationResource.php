@@ -2,8 +2,10 @@
 
 namespace Converse\Chat\Http\Resources;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Models\ConversationParticipant;
 use Converse\Chat\Models\Message;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -25,7 +27,7 @@ class ConversationResource extends JsonResource
             'avatar_url' => $this->avatar_path ? Storage::disk(config('chat.media.disk'))->url($this->avatar_path) : null,
             'disappearing_messages_ttl' => $this->disappearing_messages_ttl,
             'last_activity_at' => $this->last_activity_at,
-            'last_message' => $this->whenLoaded('lastMessage', fn () => $this->lastMessage ? new MessageResource($this->lastMessage) : null),
+            'last_message' => $this->resolveLastMessage($viewer),
             'participants' => ParticipantResource::collection($this->whenLoaded('participants')),
             'unread_count' => $me ? $this->unreadCountFor($me) : 0,
             'me' => $me ? [
@@ -38,6 +40,26 @@ class ConversationResource extends JsonResource
             ] : null,
             'created_at' => $this->created_at,
         ];
+    }
+
+    /**
+     * The eager-loaded `lastMessage` relation is global — it ignores per-viewer
+     * "delete for me" / "clear chat" state, so a viewer who cleared their chat would
+     * still see the old preview. Resolve it fresh per viewer instead, excluding
+     * whatever they've deleted, so a cleared chat shows an empty preview for them
+     * while the other participant's own view is unaffected.
+     */
+    protected function resolveLastMessage(?Model $viewer): ?MessageResource
+    {
+        $query = Message::query()->where('conversation_id', $this->id)->orderByDesc('id');
+
+        if ($viewer) {
+            $query->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $viewer));
+        }
+
+        $message = $query->with('receipts.chatable')->first();
+
+        return $message ? new MessageResource($message) : null;
     }
 
     protected function unreadCountFor(ConversationParticipant $participant): int

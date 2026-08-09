@@ -1,15 +1,59 @@
 <script setup>
-import { ref } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
+import CameraCapture from './CameraCapture.vue';
 import { useMessages } from '../../composables/useMessages';
 
 const emit = defineEmits(['uploaded']);
 
+const OPTIONS = [
+    { key: 'document', label: 'Document', accept: '', color: 'bg-indigo-500', path: 'M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z' },
+    { key: 'photos', label: 'Photos & videos', accept: 'image/*,video/*', color: 'bg-fuchsia-500', path: 'M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm11 10.5-2.5-3-3.5 4.5H16Zm-8-6.5A1.5 1.5 0 1 0 7 9.5 1.5 1.5 0 0 0 7 6Z' },
+    { key: 'camera', label: 'Camera', color: 'bg-rose-500', path: 'M9 4 7.5 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.5L15 4Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z' },
+    { key: 'audio', label: 'Audio', accept: 'audio/*', color: 'bg-orange-500', path: 'M12 3v10.55A4 4 0 1 0 14 17V7h4V3Z' },
+    { key: 'contact', label: 'Contact', color: 'bg-sky-500', disabled: true, path: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-3.87 0-8 1.95-8 5v2h16v-2c0-3.05-4.13-5-8-5Z' },
+    { key: 'poll', label: 'Poll', color: 'bg-amber-500', disabled: true, path: 'M4 4h2v16H4Zm14 6h2v10h-2Zm-7-3h2v13h-2Z' },
+    { key: 'event', label: 'Event', color: 'bg-red-500', disabled: true, path: 'M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z' },
+    { key: 'sticker', label: 'New sticker', color: 'bg-teal-500', disabled: true, path: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-3.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 17c-2.5 0-4.6-1.5-5.4-3.6h10.8C16.6 15.5 14.5 17 12 17Z' },
+];
+
 const { uploadAttachment } = useMessages();
 const inputEl = ref(null);
 const uploading = ref(false);
+const showMenu = ref(false);
+const showCamera = ref(false);
+const root = ref(null);
 
-function open() {
-    inputEl.value?.click();
+function toggleMenu() {
+    showMenu.value = !showMenu.value;
+}
+
+function onDocumentClick(event) {
+    if (root.value && !root.value.contains(event.target)) {
+        showMenu.value = false;
+    }
+}
+
+watch(showMenu, (open) => {
+    if (open) {
+        document.addEventListener('click', onDocumentClick);
+    } else {
+        document.removeEventListener('click', onDocumentClick);
+    }
+});
+
+onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick));
+
+function pick(option) {
+    if (option.disabled) return;
+    showMenu.value = false;
+
+    if (option.key === 'camera') {
+        showCamera.value = true;
+        return;
+    }
+
+    inputEl.value.accept = option.accept ?? '';
+    inputEl.value.click();
 }
 
 async function onChange(event) {
@@ -38,16 +82,39 @@ async function onChange(event) {
 </script>
 
 <template>
-    <div class="cv-attachment-picker">
+    <div ref="root" class="cv-attachment-picker relative">
         <button
             type="button"
             title="Attach"
             class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-accent disabled:opacity-50"
             :disabled="uploading"
-            @click="open"
+            @click="toggleMenu"
         >
             <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
         </button>
+
+        <div
+            v-if="showMenu"
+            class="cv-attachment-picker__menu absolute bottom-11 left-0 z-20 grid w-56 grid-cols-1 gap-1 rounded-cv border border-converse-border bg-converse-surface p-2 shadow-lg"
+        >
+            <button
+                v-for="option in OPTIONS"
+                :key="option.key"
+                type="button"
+                class="flex w-full items-center gap-3 rounded px-2 py-2 text-left hover:bg-converse-surfaceHover disabled:cursor-not-allowed disabled:opacity-40"
+                :disabled="option.disabled"
+                :title="option.disabled ? 'Not available yet' : option.label"
+                @click="pick(option)"
+            >
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white" :class="option.color">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path :d="option.path"/></svg>
+                </span>
+                <span class="text-sm text-converse-text">{{ option.label }}</span>
+            </button>
+        </div>
+
         <input ref="inputEl" type="file" multiple class="hidden" @change="onChange">
+
+        <CameraCapture v-if="showCamera" @close="showCamera = false" @uploaded="(payload) => emit('uploaded', payload)" />
     </div>
 </template>

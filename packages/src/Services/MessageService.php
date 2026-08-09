@@ -118,6 +118,11 @@ class MessageService implements MessageServiceInterface
         );
     }
 
+    public function clearForChatable(Conversation $conversation, Model $chatable): void
+    {
+        $this->messages->clearForChatable($conversation, $chatable);
+    }
+
     public function forward(Message $message, array $conversationIds, Model $chatable): array
     {
         if ($message->isDeletedForEveryone()) {

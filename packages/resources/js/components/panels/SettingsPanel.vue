@@ -8,17 +8,20 @@ import { usePreferences } from '../../composables/usePreferences';
 import { usePrivacySettings } from '../../composables/usePrivacySettings';
 
 const store = useChatStore();
-const { updateAvatar } = useProfile();
+const { updateAvatar, removeAvatar } = useProfile();
 const { theme, toggleTheme } = usePreferences();
 const { get: getPrivacySettings, update: updatePrivacySettings } = usePrivacySettings();
 
 const uploadError = ref('');
 const uploading = ref(false);
+const removingAvatar = ref(false);
 const showLastSeen = ref(true);
 const showReadReceipts = ref(true);
 const showBlocked = ref(false);
 const search = ref('');
 const section = ref(null);
+const about = ref('');
+const savingAbout = ref(false);
 
 const me = computed(() => store.usersById[store.currentKey] ?? null);
 
@@ -73,6 +76,7 @@ onMounted(async () => {
     const settings = await getPrivacySettings();
     showLastSeen.value = settings.show_last_seen;
     showReadReceipts.value = settings.show_read_receipts;
+    about.value = settings.about ?? '';
 });
 
 async function onFileChange(event) {
@@ -89,6 +93,27 @@ async function onFileChange(event) {
     } finally {
         uploading.value = false;
         event.target.value = '';
+    }
+}
+
+async function onRemoveAvatar() {
+    uploadError.value = '';
+    removingAvatar.value = true;
+    try {
+        await removeAvatar();
+    } catch (e) {
+        uploadError.value = e.response?.data?.message ?? 'Could not remove photo.';
+    } finally {
+        removingAvatar.value = false;
+    }
+}
+
+async function onAboutBlur() {
+    savingAbout.value = true;
+    try {
+        await updatePrivacySettings({ about: about.value.trim() });
+    } finally {
+        savingAbout.value = false;
     }
 }
 
@@ -112,16 +137,19 @@ function logout() {
         <template v-if="!section">
             <div class="cv-settings-panel__header px-4 py-3">
                 <h1 class="text-xl font-bold text-converse-text">{{ me?.name ?? 'Settings' }}</h1>
+                <p v-if="about" class="truncate text-sm text-converse-textMuted">{{ about }}</p>
             </div>
 
-            <div class="cv-settings-panel__search relative px-3 pb-3">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="pointer-events-none absolute left-6 top-1/2 -translate-y-1/2 text-converse-textMuted"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
-                <input
-                    v-model="search"
-                    type="text"
-                    placeholder="Search"
-                    class="w-full rounded-lg bg-converse-surfaceHover py-2 pl-9 pr-3 text-sm text-converse-text focus:outline-none"
-                >
+            <div class="cv-settings-panel__search px-3 pb-3">
+                <div class="relative">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-converse-textMuted"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
+                    <input
+                        v-model="search"
+                        type="text"
+                        placeholder="Search"
+                        class="w-full rounded-lg bg-converse-surfaceHover py-2 pl-9 pr-3 text-sm text-converse-text focus:outline-none"
+                    >
+                </div>
             </div>
 
             <div class="cv-settings-panel__avatar flex flex-col items-center gap-3 pb-4">
@@ -133,6 +161,15 @@ function logout() {
                     </span>
                     <input type="file" accept="image/*" class="hidden" :disabled="uploading" @change="onFileChange">
                 </label>
+                <button
+                    v-if="me?.avatar_url"
+                    type="button"
+                    class="text-xs text-converse-danger disabled:opacity-50"
+                    :disabled="removingAvatar"
+                    @click="onRemoveAvatar"
+                >
+                    {{ removingAvatar ? 'Removing…' : 'Remove photo' }}
+                </button>
                 <p v-if="uploadError" class="cv-settings-panel__avatar-error text-xs text-converse-danger">{{ uploadError }}</p>
             </div>
 
@@ -180,11 +217,33 @@ function logout() {
                             </span>
                             <input type="file" accept="image/*" class="hidden" :disabled="uploading" @change="onFileChange">
                         </label>
+                        <button
+                            v-if="me?.avatar_url"
+                            type="button"
+                            class="text-xs text-converse-danger disabled:opacity-50"
+                            :disabled="removingAvatar"
+                            @click="onRemoveAvatar"
+                        >
+                            {{ removingAvatar ? 'Removing…' : 'Remove photo' }}
+                        </button>
                         <p v-if="uploadError" class="text-xs text-converse-danger">{{ uploadError }}</p>
                     </div>
-                    <div class="rounded-cv border border-converse-border p-3">
+                    <div class="mb-3 rounded-cv border border-converse-border p-3">
                         <p class="text-xs text-converse-textMuted">Your name</p>
                         <p class="text-[15px] text-converse-text">{{ me?.name ?? '—' }}</p>
+                    </div>
+                    <div class="rounded-cv border border-converse-border p-3">
+                        <p class="mb-1 text-xs text-converse-textMuted">About</p>
+                        <input
+                            v-model="about"
+                            type="text"
+                            maxlength="139"
+                            placeholder="Add a few words about yourself"
+                            class="w-full bg-transparent text-[15px] text-converse-text focus:outline-none"
+                            :disabled="savingAbout"
+                            @blur="onAboutBlur"
+                            @keyup.enter="$event.target.blur()"
+                        >
                     </div>
                 </template>
 
@@ -200,7 +259,7 @@ function logout() {
                                 :aria-checked="showLastSeen"
                                 @click="onToggleLastSeen"
                             >
-                                <span class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-surface transition-transform" :class="showLastSeen ? 'translate-x-5' : 'translate-x-0.5'" />
+                                <span class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform" :class="showLastSeen ? 'translate-x-5' : 'translate-x-0.5'" />
                             </button>
                         </div>
                         <div class="flex items-center justify-between p-3">
@@ -213,7 +272,7 @@ function logout() {
                                 :aria-checked="showReadReceipts"
                                 @click="onToggleReadReceipts"
                             >
-                                <span class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-surface transition-transform" :class="showReadReceipts ? 'translate-x-5' : 'translate-x-0.5'" />
+                                <span class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform" :class="showReadReceipts ? 'translate-x-5' : 'translate-x-0.5'" />
                             </button>
                         </div>
                     </div>
@@ -233,7 +292,7 @@ function logout() {
                             :aria-checked="theme === 'dark'"
                             @click="toggleTheme"
                         >
-                            <span class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-surface transition-transform" :class="theme === 'dark' ? 'translate-x-5' : 'translate-x-0.5'" />
+                            <span class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform" :class="theme === 'dark' ? 'translate-x-5' : 'translate-x-0.5'" />
                         </button>
                     </div>
                     <p class="mt-3 text-xs text-converse-textMuted">Per-chat wallpaper can be changed from that chat's info panel.</p>

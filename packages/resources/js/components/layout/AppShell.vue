@@ -1,7 +1,7 @@
 <script setup>
-import { ref } from 'vue';
 import IconRail from './IconRail.vue';
 import ConversationList from '../sidebar/ConversationList.vue';
+import CreateListPanel from '../sidebar/CreateListPanel.vue';
 import MediaPanel from '../panels/MediaPanel.vue';
 import SettingsPanel from '../panels/SettingsPanel.vue';
 import ProfileEmptyState from '../panels/ProfileEmptyState.vue';
@@ -12,15 +12,10 @@ import { useResizable } from '../../composables/useResizable';
 import { useSidebarUi } from '../../composables/useSidebarUi';
 
 const store = useChatStore();
-const messageSearchQuery = ref('');
 
 const { sidebarWidth } = usePreferences();
 const { startDrag } = useResizable(sidebarWidth, { invert: false });
 const { view } = useSidebarUi();
-
-function onMessageSearch(query) {
-    messageSearchQuery.value = query;
-}
 </script>
 
 <template>
@@ -38,8 +33,9 @@ function onMessageSearch(query) {
             :class="{ hidden: store.activeConversationId, 'sm:block': true }"
             :style="{ '--sidebar-width': sidebarWidth + 'px' }"
         >
-            <ConversationList v-if="view === 'chats'" @message-search="onMessageSearch" />
+            <ConversationList v-if="view === 'chats'" />
             <MediaPanel v-else-if="view === 'media'" />
+            <CreateListPanel v-else-if="view === 'create-list'" />
             <SettingsPanel v-else />
             <div class="cv-app-shell__sidebar-resize-handle absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize sm:block" @pointerdown="startDrag" />
         </div>
@@ -49,7 +45,7 @@ function onMessageSearch(query) {
             :class="{ hidden: !store.activeConversationId, 'sm:block': true }"
         >
             <ProfileEmptyState v-if="view === 'profile'" />
-            <ChatWindow v-else :message-search-query="messageSearchQuery" />
+            <ChatWindow v-else />
         </div>
     </div>
 </template>
