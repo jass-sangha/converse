@@ -378,17 +378,39 @@ function goCreateList() {
                         d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z"
                     />
                 </svg>
-                <button type="button" class="flex-1 text-left" @click="showMuteMenu = !showMuteMenu">
-                    <span class="block text-[15px] text-converse-text">Mute notifications</span>
-                    <span v-if="isMuted" class="block text-xs text-converse-textMuted">Muted until {{ new Date(conversation.me.muted_until).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) }}</span>
+                <button
+                    type="button"
+                    class="flex-1 text-left"
+                    @click="showMuteMenu = !showMuteMenu"
+                >
+                    <span class="block text-[15px] text-converse-text"
+                        >Mute notifications</span
+                    >
+                    <span
+                        v-if="isMuted"
+                        class="block text-xs text-converse-textMuted"
+                        >Muted until
+                        {{
+                            new Date(
+                                conversation.me.muted_until,
+                            ).toLocaleString([], {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                            })
+                        }}</span
+                    >
                 </button>
                 <button
                     type="button"
                     class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
-                    :class="isMuted ? 'bg-converse-accent' : 'bg-converse-border'"
+                    :class="
+                        isMuted ? 'bg-converse-accent' : 'bg-converse-border'
+                    "
                     role="switch"
                     :aria-checked="isMuted"
-                    @click="isMuted ? onUnmute() : (showMuteMenu = !showMuteMenu)"
+                    @click="
+                        isMuted ? onUnmute() : (showMuteMenu = !showMuteMenu)
+                    "
                 >
                     <span
                         class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
@@ -396,7 +418,10 @@ function goCreateList() {
                     />
                 </button>
 
-                <div v-if="showMuteMenu" class="absolute right-4 top-full z-20 mt-1">
+                <div
+                    v-if="showMuteMenu"
+                    class="absolute right-4 top-full z-20 mt-1"
+                >
                     <MuteDurationMenu @pick="onPickMuteDuration" />
                 </div>
             </div>
@@ -656,7 +681,7 @@ function goCreateList() {
                     >
                 </button>
 
-                <button
+                <!-- <button
                     type="button"
                     title="Not available yet"
                     class="flex w-full cursor-not-allowed items-center gap-4 px-4 py-3 text-left opacity-50"
@@ -675,7 +700,7 @@ function goCreateList() {
                     <span class="text-[15px] text-converse-danger"
                         >Report {{ otherParticipant?.name }}</span
                     >
-                </button>
+                </button> -->
             </template>
 
             <button
@@ -722,14 +747,37 @@ function goCreateList() {
 
         <StarredMessagesPanel v-if="showStarred" @close="showStarred = false" />
 
-        <div v-if="showMedia" class="absolute inset-0 z-10 flex flex-col bg-converse-surface">
-            <div class="flex items-center gap-3 border-b border-converse-border px-3 py-3">
-                <button type="button" class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover" @click="showMedia = false">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"/></svg>
+        <div
+            v-if="showMedia"
+            class="absolute inset-0 z-10 flex flex-col bg-converse-surface"
+        >
+            <div
+                class="flex items-center gap-3 border-b border-converse-border px-3 py-3"
+            >
+                <button
+                    type="button"
+                    class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    @click="showMedia = false"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                    >
+                        <path
+                            d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"
+                        />
+                    </svg>
                 </button>
-                <h2 class="text-lg font-semibold text-converse-text">Media, links and docs</h2>
+                <h2 class="text-lg font-semibold text-converse-text">
+                    Media, links and docs
+                </h2>
             </div>
-            <MediaDocsLinksGrid :conversation-id="conversation.id" class="flex-1" />
+            <MediaDocsLinksGrid
+                :conversation-id="conversation.id"
+                class="flex-1"
+            />
         </div>
     </div>
 </template>
