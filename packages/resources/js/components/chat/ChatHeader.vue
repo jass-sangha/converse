@@ -69,7 +69,9 @@ const subtitle = computed(() => {
 
 <template>
     <div class="cv-chat-header flex items-center gap-2 border-b border-converse-border bg-converse-surface px-3 py-2">
-        <button type="button" class="sm:hidden" @click="emit('back')">←</button>
+        <button type="button" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover sm:hidden" @click="emit('back')">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12Z"/></svg>
+        </button>
 
         <div class="cv-chat-header__info flex flex-1 cursor-pointer items-center gap-3 overflow-hidden" @click="emit('open-info')">
             <Avatar :name="displayName" :avatar-url="avatarUrl" :size="40" />

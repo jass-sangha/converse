@@ -3,6 +3,32 @@
 @tailwind components;
 @tailwind utilities;
 
+.cv-app-shell,
+.cv-app-shell * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--cv-text-muted) / 0.35) transparent;
+}
+
+.cv-app-shell ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.cv-app-shell ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cv-app-shell ::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--cv-text-muted) / 0.35);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.cv-app-shell ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--cv-text-muted) / 0.55);
+}
+
 .cv-message-bubble--highlight .cv-message-bubble__content {
     animation: cv-message-highlight 1.6s ease-out;
 }

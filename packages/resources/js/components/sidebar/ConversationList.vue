@@ -10,6 +10,7 @@ import Avatar from "../shared/Avatar.vue";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
 import { useUsers } from "../../composables/useUsers";
+import { useChatLists } from "../../composables/useChatLists";
 import { usePreferences } from "../../composables/usePreferences";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 import { useChatStore } from "../../store";
@@ -19,6 +20,7 @@ const store = useChatStore();
 const { refresh, setActive } = useConversations();
 const { search: searchMessages } = useMessages();
 const { resolve, get } = useUsers();
+const { index: listChatLists, destroy: destroyChatList } = useChatLists();
 const { theme, toggleTheme } = usePreferences();
 const { filter, setFilter, searchOpen, toggleSearch, setView } = useSidebarUi();
 
@@ -39,8 +41,24 @@ const menuRoot = ref(null);
 const searchQuery = ref("");
 const messageHits = ref([]);
 const searching = ref(false);
+const lists = ref([]);
 
-onMounted(() => refresh());
+onMounted(() => {
+    refresh();
+    loadLists();
+});
+
+async function loadLists() {
+    lists.value = await listChatLists();
+}
+
+async function deleteList(list) {
+    await destroyChatList(list.id);
+    if (filter.value === `list:${list.id}`) {
+        setFilter("all");
+    }
+    await loadLists();
+}
 
 function onDocumentClick(event) {
     if (menuRoot.value && !menuRoot.value.contains(event.target)) {
@@ -72,6 +90,13 @@ function isPinned(conversation) {
 }
 
 const filteredConversations = computed(() => {
+    if (filter.value.startsWith("list:")) {
+        const listId = Number(filter.value.slice(5));
+        const list = lists.value.find((l) => l.id === listId);
+        const ids = list?.conversation_ids ?? [];
+        return store.conversations.filter((c) => ids.includes(c.id));
+    }
+
     switch (filter.value) {
         case "unread":
             return store.conversations.filter((c) => c.unread_count > 0);
@@ -269,6 +294,16 @@ watch(searchOpen, (open) => {
                             type="button"
                             class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
+                                setView('media');
+                                showMenu = false;
+                            "
+                        >
+                            Media
+                        </button>
+                        <button
+                            type="button"
+                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            @click="
                                 setView('profile');
                                 showMenu = false;
                             "
@@ -300,6 +335,29 @@ watch(searchOpen, (open) => {
             >
                 {{ f.label }}
             </button>
+
+            <div
+                v-for="list in lists"
+                :key="list.id"
+                class="group/list shrink-0 rounded-full"
+                :class="filter === `list:${list.id}` ? 'bg-converse-accent/15' : 'bg-converse-surfaceHover hover:bg-converse-border/50'"
+            >
+                <button
+                    type="button"
+                    class="rounded-full py-1 pl-3 pr-1 text-sm font-medium"
+                    :class="filter === `list:${list.id}` ? 'text-converse-accent' : 'text-converse-text'"
+                    @click="setFilter(`list:${list.id}`)"
+                >
+                    {{ list.name }}
+                    <span
+                        role="button"
+                        title="Delete list"
+                        class="ml-1 hidden rounded-full px-1 text-converse-textMuted opacity-0 hover:text-converse-danger group-hover/list:inline group-hover/list:opacity-100"
+                        @click.stop="deleteList(list)"
+                    >×</span>
+                </button>
+            </div>
+
             <button
                 type="button"
                 title="Create new list"

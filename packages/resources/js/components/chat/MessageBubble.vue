@@ -16,6 +16,7 @@ import SystemMessage from './message-types/SystemMessage.vue';
 import ReplyPreview from './ReplyPreview.vue';
 import EmojiPicker from '../composer/EmojiPicker.vue';
 import ReactionPills from './ReactionPills.vue';
+import ReactionDetailsModal from './ReactionDetailsModal.vue';
 import ReadReceiptTicks from './ReadReceiptTicks.vue';
 import ForwardModal from './ForwardModal.vue';
 
@@ -62,11 +63,13 @@ const root = ref(null);
 const isOwn = computed(() => chatableKeyOf(props.message) === store.currentKey);
 const isSystem = computed(() => props.message.type === 'system' || props.message.chatable_id === null);
 const bodyComponent = computed(() => TYPE_COMPONENTS[props.message.type] ?? TextMessage);
+const isGroupConversation = computed(() => store.conversations.find((c) => c.id === props.message.conversation_id)?.type === 'group');
 
 const showMenu = ref(false);
 const showReactionPicker = ref(false);
 const showForward = ref(false);
 const showInfo = ref(false);
+const showReactionDetails = ref(false);
 const copied = ref(false);
 
 const visibleMenuItems = computed(() => MENU_ITEMS.filter((item) => {
@@ -105,15 +108,6 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick));
 
 async function onPickReaction(emoji) {
     showReactionPicker.value = false;
-    const mine = props.message.reactions?.find((r) => r.self);
-    if (mine && mine.emoji === emoji) {
-        await unreact(props.message.id, props.message.conversation_id);
-    } else {
-        await react(props.message.id, props.message.conversation_id, emoji);
-    }
-}
-
-async function onTogglePill(emoji) {
     const mine = props.message.reactions?.find((r) => r.self);
     if (mine && mine.emoji === emoji) {
         await unreact(props.message.id, props.message.conversation_id);
@@ -210,7 +204,7 @@ function onMenuAction(key) {
     <div v-else ref="root" class="cv-message-bubble group flex" :class="isOwn ? 'justify-end' : 'justify-start'">
         <div
             class="cv-message-bubble__content relative max-w-[70%] rounded-cv px-3 py-1.5 shadow-sm"
-            :class="isOwn ? 'rounded-tr-sm bg-converse-bubbleOut' : 'rounded-tl-sm bg-converse-bubbleIn'"
+            :class="[isOwn ? 'rounded-tr-sm bg-converse-bubbleOut' : 'rounded-tl-sm bg-converse-bubbleIn', message.reactions?.length ? 'mb-3' : '']"
             title="Double-click to reply"
             @dblclick="!message.deleted_for_everyone && emit('reply', message)"
         >
@@ -227,7 +221,13 @@ function onMenuAction(key) {
                 <ReadReceiptTicks v-if="isOwn" :status="message.status" />
             </div>
 
-            <ReactionPills :reactions="message.reactions ?? []" @toggle="onTogglePill" />
+            <ReactionPills
+                :reactions="message.reactions ?? []"
+                :show-count="isGroupConversation"
+                class="absolute -bottom-3 z-10"
+                :class="isOwn ? 'right-2' : 'left-2'"
+                @open="showReactionDetails = true"
+            />
 
             <div
                 v-if="!message.deleted_for_everyone"
@@ -284,10 +284,11 @@ function onMenuAction(key) {
                 <p v-if="isOwn" class="mt-1 text-converse-textMuted">Status: {{ message.status ?? 'sent' }}</p>
             </div>
 
-            <p v-if="copied" class="absolute -bottom-5 right-1 rounded bg-converse-overlay/70 px-2 py-0.5 text-[10px] text-white">Copied</p>
+            <p v-if="copied" class="absolute -bottom-8 right-1 rounded bg-converse-overlay/70 px-2 py-0.5 text-[10px] text-white">Copied</p>
             <p v-if="pinError" class="cv-message-bubble__pin-error mt-1 text-xs text-converse-danger">{{ pinError }}</p>
         </div>
 
         <ForwardModal v-if="showForward" :message-id="message.id" @close="showForward = false" />
+        <ReactionDetailsModal v-if="showReactionDetails" :message="message" @close="showReactionDetails = false" />
     </div>
 </template>

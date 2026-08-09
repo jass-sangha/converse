@@ -20,10 +20,8 @@ const { view } = useSidebarUi();
 
 <template>
     <div class="cv-app-shell flex h-screen w-screen overflow-hidden text-converse-text">
-        <div
-            class="cv-app-shell__rail-wrap shrink-0"
-            :class="{ hidden: store.activeConversationId, 'sm:block': true }"
-        >
+        <!-- Icon rail is desktop-only — mobile navigates via the sidebar header's own controls. -->
+        <div class="cv-app-shell__rail-wrap hidden shrink-0 sm:block">
             <IconRail />
         </div>
 
