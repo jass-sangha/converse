@@ -58,7 +58,7 @@ class MessageRepository implements MessageRepositoryInterface
         return $builder->paginate($perPage);
     }
 
-    public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage): LengthAwarePaginator
+    public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage, ?string $search = null): LengthAwarePaginator
     {
         $builder = Message::query()
             ->whereHas('conversation.participants', fn ($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
@@ -75,6 +75,25 @@ class MessageRepository implements MessageRepositoryInterface
 
         if ($conversationId !== null) {
             $builder->where('conversation_id', $conversationId);
+        }
+
+        if ($search !== null && $search !== '') {
+            $matches = Chat::matchingChatablePairs($search);
+
+            $builder->where(function ($outer) use ($search, $matches) {
+                $outer->whereHas('attachments', fn ($q) => $q->where('original_filename', 'like', '%'.$search.'%'))
+                    ->orWhereHas('conversation', fn ($q) => $q->where('name', 'like', '%'.$search.'%'));
+
+                if (! empty($matches)) {
+                    $outer->orWhereHas('conversation.participants', function ($participantQuery) use ($matches) {
+                        $participantQuery->where(function ($inner) use ($matches) {
+                            foreach ($matches as [$type, $id]) {
+                                $inner->orWhere(fn ($q) => $q->where('chatable_type', $type)->where('chatable_id', $id));
+                            }
+                        });
+                    });
+                }
+            });
         }
 
         return $builder->paginate($perPage);

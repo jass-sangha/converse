@@ -38,6 +38,7 @@ interface MessageServiceInterface
 
     /**
      * @param  string  $kind  'media' (images/videos/gifs), 'docs', or 'links'
+     * @param  string|null  $search  Matches attachment filename, conversation name, or participant name.
      */
-    public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage): LengthAwarePaginator;
+    public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage, ?string $search = null): LengthAwarePaginator;
 }

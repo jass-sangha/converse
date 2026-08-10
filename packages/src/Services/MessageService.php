@@ -123,9 +123,9 @@ class MessageService implements MessageServiceInterface
         $this->messages->clearForChatable($conversation, $chatable);
     }
 
-    public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage): LengthAwarePaginator
+    public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage, ?string $search = null): LengthAwarePaginator
     {
-        return $this->messages->media($chatable, $kind, $conversationId, $perPage);
+        return $this->messages->media($chatable, $kind, $conversationId, $perPage, $search);
     }
 
     public function forward(Message $message, array $conversationIds, Model $chatable): array

@@ -50,6 +50,37 @@ it('marks messages delivered and read, and never regresses on an earlier read ca
     expect($participant->last_read_message_id)->toBe($ids[9]);
 });
 
+it('exposes per-recipient delivered/read detail for message info', function () {
+    $alice = presenceUser('alice-info@example.com');
+    $bob = presenceUser('bob-info@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $messageId = $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'seen?'])
+        ->json('data.id');
+
+    $before = $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
+    $beforeDetail = collect($before->json('data'))->firstWhere('id', $messageId)['receipt_details'][0];
+    expect($beforeDetail['chatable_id'])->toBe($bob->id)
+        ->and($beforeDetail['delivered_at'])->toBeNull()
+        ->and($beforeDetail['read_at'])->toBeNull();
+
+    $this->actingAs($bob)->postJson("/api/chat/conversations/{$conversationId}/receipts/delivered")->assertNoContent();
+    $this->actingAs($bob)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", [
+        'up_to_message_id' => $messageId,
+    ])->assertNoContent();
+
+    $after = $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
+    $afterDetail = collect($after->json('data'))->firstWhere('id', $messageId)['receipt_details'][0];
+    expect($afterDetail['chatable_id'])->toBe($bob->id)
+        ->and($afterDetail['delivered_at'])->not->toBeNull()
+        ->and($afterDetail['read_at'])->not->toBeNull();
+});
+
 it('never writes to the database when broadcasting a typing indicator', function () {
     $alice = presenceUser('alice-typing@example.com');
     $bob = presenceUser('bob-typing@example.com');

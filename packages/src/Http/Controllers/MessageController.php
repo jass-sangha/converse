@@ -130,6 +130,7 @@ class MessageController extends Controller
             $request->string('kind')->toString(),
             $conversationId,
             $perPage,
+            $request->string('q')->toString() ?: null,
         );
 
         return MessageResource::collection($messages);

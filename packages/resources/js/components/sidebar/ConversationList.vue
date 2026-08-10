@@ -288,7 +288,7 @@ watch(searchOpen, (open) => {
 
                     <div
                         v-if="showMenu"
-                        class="cv-conversation-list__menu absolute right-0 top-full z-20 w-56 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
+                        class="cv-conversation-list__menu cv-animate-pop-in absolute right-0 top-full z-20 w-56 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
                     >
                         <button
                             type="button"
@@ -417,7 +417,7 @@ watch(searchOpen, (open) => {
                     <div
                         v-if="showListsMenu"
                         ref="listsMenuPanel"
-                        class="cv-conversation-list__lists-menu fixed z-50 w-56 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
+                        class="cv-conversation-list__lists-menu cv-animate-pop-in fixed z-50 w-56 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
                         :style="{
                             top: `${listsMenuPosition.top}px`,
                             left: `${listsMenuPosition.left}px`,

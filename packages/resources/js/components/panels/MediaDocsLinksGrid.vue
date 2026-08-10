@@ -18,6 +18,7 @@ const TABS = [
 
 const state = reactive({
     tab: 'media',
+    search: '',
     byKind: {
         media: { items: [], page: 0, lastPage: 1, loading: false, loaded: false },
         docs: { items: [], page: 0, lastPage: 1, loading: false, loaded: false },
@@ -33,7 +34,7 @@ async function loadKind(kind, { reset = false } = {}) {
     bucket.loading = true;
     try {
         const nextPage = reset ? 1 : bucket.page + 1;
-        const response = await messagesApi.media(kind, props.conversationId, nextPage);
+        const response = await messagesApi.media(kind, props.conversationId, nextPage, state.search);
         bucket.items = reset ? response.data : [...bucket.items, ...response.data];
         bucket.page = response.meta?.current_page ?? nextPage;
         bucket.lastPage = response.meta?.last_page ?? bucket.page;
@@ -56,6 +57,12 @@ watch(() => state.tab, (kind) => {
     if (!state.byKind[kind].loaded) {
         loadKind(kind, { reset: true });
     }
+});
+
+let searchDebounce = null;
+watch(() => state.search, () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(resetAll, 250);
 });
 
 loadKind(state.tab, { reset: true });
@@ -87,6 +94,18 @@ function formatSize(bytes) {
 
 <template>
     <div class="cv-media-docs-links flex h-full flex-col">
+        <div class="px-3 pt-2">
+            <div class="relative">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-converse-textMuted"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
+                <input
+                    v-model="state.search"
+                    type="text"
+                    placeholder="Search by chat, contact, or filename"
+                    class="cv-media-docs-links__search w-full rounded-lg bg-converse-surfaceHover py-2 pl-9 pr-3 text-sm text-converse-text focus:outline-none"
+                >
+            </div>
+        </div>
+
         <div class="flex items-center gap-2 border-b border-converse-border px-3 pt-1">
             <button
                 v-for="t in TABS"
@@ -114,7 +133,7 @@ function formatSize(bytes) {
                         <img v-else :src="item.thumbnail_url || item.url" :alt="item.original_filename" class="h-full w-full object-cover">
                     </button>
                 </div>
-                <p v-else-if="!activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">No media yet.</p>
+                <p v-else-if="!activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">{{ state.search ? 'No matching media.' : 'No media yet.' }}</p>
             </template>
 
             <template v-else-if="state.tab === 'docs'">
@@ -136,7 +155,7 @@ function formatSize(bytes) {
                         </a>
                     </li>
                 </ul>
-                <p v-else-if="!activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">No documents yet.</p>
+                <p v-else-if="!activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">{{ state.search ? 'No matching documents.' : 'No documents yet.' }}</p>
             </template>
 
             <template v-else>
@@ -159,7 +178,7 @@ function formatSize(bytes) {
                         </a>
                     </li>
                 </ul>
-                <p v-else-if="!activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">No links yet.</p>
+                <p v-else-if="!activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">{{ state.search ? 'No matching links.' : 'No links yet.' }}</p>
             </template>
 
             <p v-if="activeBucket.loading" class="p-4 text-center text-sm text-converse-textMuted">Loading…</p>

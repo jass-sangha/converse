@@ -19,6 +19,7 @@ import ReplyPreview from "./ReplyPreview.vue";
 import EmojiPicker from "../composer/EmojiPicker.vue";
 import ReactionPills from "./ReactionPills.vue";
 import ReactionDetailsModal from "./ReactionDetailsModal.vue";
+import MessageInfoModal from "./MessageInfoModal.vue";
 import ReadReceiptTicks from "./ReadReceiptTicks.vue";
 import ForwardModal from "./ForwardModal.vue";
 
@@ -41,6 +42,7 @@ const MENU_ITEMS = [
     {
         key: "info",
         label: "Message info",
+        ownOnly: true,
         path: "M11 7h2v2h-2Zm0 4h2v6h-2Zm1-9a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z",
     },
     {
@@ -154,12 +156,11 @@ function onDocumentClick(event) {
     if (root.value && !root.value.contains(event.target)) {
         showMenu.value = false;
         showReactionPicker.value = false;
-        showInfo.value = false;
     }
 }
 
-watch([showMenu, showReactionPicker, showInfo], ([menu, reaction, info]) => {
-    if (menu || reaction || info) {
+watch([showMenu, showReactionPicker], ([menu, reaction]) => {
+    if (menu || reaction) {
         document.addEventListener("click", onDocumentClick);
     } else {
         document.removeEventListener("click", onDocumentClick);
@@ -324,7 +325,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="!message.deleted_for_everyone"
-                class="cv-message-bubble__actions absolute -top-9 z-10 hidden items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface px-1 py-1 shadow-lg group-hover:flex"
+                class="cv-message-bubble__actions absolute -top-9 z-10 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface px-1 py-1 opacity-0 shadow-lg transition-opacity duration-150 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
                 :class="isOwn ? 'right-1' : 'left-1'"
             >
                 <button
@@ -371,7 +372,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showReactionPicker"
-                class="cv-message-bubble__reaction-picker absolute bottom-full z-20 mb-1"
+                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute bottom-full z-20 mb-1"
                 :class="isOwn ? 'right-1' : 'left-1'"
             >
                 <EmojiPicker @pick="onPickReaction" />
@@ -379,7 +380,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="cv-message-bubble__menu absolute top-6 z-20 w-48 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
+                class="cv-message-bubble__menu cv-animate-pop-in absolute top-6 z-20 w-48 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
                 :class="isOwn ? 'right-1' : 'left-1'"
             >
                 <button
@@ -407,26 +408,6 @@ function onMenuAction(key) {
                 </button>
             </div>
 
-            <div
-                v-if="showInfo"
-                class="cv-message-bubble__info absolute top-6 z-20 w-56 rounded-cv border border-converse-border bg-converse-surface p-3 text-xs shadow-lg"
-                :class="isOwn ? 'right-1' : 'left-1'"
-            >
-                <p class="mb-1 font-medium text-converse-text">Message info</p>
-                <p class="text-converse-textMuted">
-                    Sent
-                    {{
-                        new Date(message.created_at).toLocaleString([], {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                        })
-                    }}
-                </p>
-                <p v-if="isOwn" class="mt-1 text-converse-textMuted">
-                    Status: {{ message.status ?? "sent" }}
-                </p>
-            </div>
-
             <p
                 v-if="copied"
                 class="absolute -bottom-8 right-1 rounded bg-converse-overlay/70 px-2 py-0.5 text-[10px] text-white"
@@ -450,6 +431,11 @@ function onMenuAction(key) {
             v-if="showReactionDetails"
             :message="message"
             @close="showReactionDetails = false"
+        />
+        <MessageInfoModal
+            v-if="showInfo"
+            :message="message"
+            @close="showInfo = false"
         />
     </div>
 </template>

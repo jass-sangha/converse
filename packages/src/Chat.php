@@ -110,4 +110,31 @@ class Chat
             })
             ->values();
     }
+
+    /**
+     * Find every chatable (across every configured chatable model) whose name
+     * matches the given term, e.g. for matching a private conversation's other
+     * participant, or a message's sender/conversation, by display name.
+     *
+     * @return array<int, array{0: string, 1: int|string}> [morphType, key] pairs.
+     */
+    public static function matchingChatablePairs(string $term): array
+    {
+        $nameField = config('chat.user_search.name_field', 'name');
+        $pairs = [];
+
+        foreach (array_keys(static::chatableModels()) as $morphType) {
+            $model = static::modelForAlias($morphType);
+            $instance = new $model;
+
+            $model::query()
+                ->where($nameField, 'like', '%'.$term.'%')
+                ->pluck($instance->getKeyName())
+                ->each(function ($id) use ($morphType, &$pairs) {
+                    $pairs[] = [$morphType, $id];
+                });
+        }
+
+        return $pairs;
+    }
 }

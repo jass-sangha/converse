@@ -54,6 +54,12 @@ class MessageResource extends JsonResource
                 ])
                 ->values()),
             'status' => $this->whenLoaded('receipts', fn () => $this->receiptStatus($viewer)),
+            'receipt_details' => $this->whenLoaded('receipts', fn () => $this->receipts->map(fn (MessageReceipt $r) => [
+                'chatable_type' => $r->chatable_type,
+                'chatable_id' => $r->chatable_id,
+                'delivered_at' => $r->delivered_at,
+                'read_at' => $r->read_at,
+            ])),
             'is_starred_by_me' => $this->whenLoaded('starredBy', fn () => $viewer !== null
                 && $this->starredBy->contains(fn (StarredMessage $s) => $this->isChatable($s, $viewer))),
             'is_pinned' => $this->whenLoaded('pinnedIn', fn () => $this->pinnedIn !== null, false),

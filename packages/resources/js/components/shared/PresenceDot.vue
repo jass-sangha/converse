@@ -29,10 +29,10 @@ const lastSeenText = computed(() => {
 </script>
 
 <template>
-    <span class="cv-presence-dot inline-flex items-center gap-1 text-xs text-converse-textMuted">
+    <span class="cv-presence-dot inline-flex items-center gap-1 text-[10px] text-converse-textMuted">
         <span
             v-if="presence?.is_online"
-            class="cv-presence-dot__indicator h-2 w-2 rounded-full bg-converse-accent"
+            class="cv-presence-dot__indicator h-1.5 w-1.5 rounded-full bg-converse-accent"
         />
         <span v-if="lastSeenText">{{ lastSeenText }}</span>
     </span>

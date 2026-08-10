@@ -231,7 +231,7 @@ async function submit() {
                     <button type="button" title="Emoji" class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-accent" @click="showEmoji = !showEmoji">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-3.5-9A1.5 1.5 0 1 0 8.5 9.5 1.5 1.5 0 0 0 8.5 11Zm7 0A1.5 1.5 0 1 0 15.5 8a1.5 1.5 0 0 0 0 3ZM12 17.5c2.33 0 4.31-1.45 5.11-3.5H6.89c.8 2.05 2.78 3.5 5.11 3.5Z"/></svg>
                     </button>
-                    <div v-if="showEmoji" class="absolute bottom-10 left-0 z-10">
+                    <div v-if="showEmoji" class="cv-animate-pop-in absolute bottom-10 left-0 z-10">
                         <EmojiPicker @pick="onEmojiPick" />
                     </div>
                 </div>

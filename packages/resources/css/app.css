@@ -41,3 +41,30 @@
         box-shadow: 0 0 0 0 rgb(var(--cv-accent) / 0);
     }
 }
+
+@keyframes cv-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes cv-scale-in {
+    from { opacity: 0; transform: scale(0.96) translateY(6px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes cv-pop-in {
+    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.cv-animate-fade-in {
+    animation: cv-fade-in 0.15s ease-out;
+}
+
+.cv-animate-scale-in {
+    animation: cv-scale-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cv-animate-pop-in {
+    animation: cv-pop-in 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+}

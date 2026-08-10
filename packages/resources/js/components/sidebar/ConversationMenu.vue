@@ -47,7 +47,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick));
 
         <div
             v-if="open"
-            class="cv-conversation-menu__dropdown absolute right-0 z-20 w-40 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
+            class="cv-conversation-menu__dropdown cv-animate-pop-in absolute right-0 z-20 w-40 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
         >
             <button
                 type="button"

@@ -34,7 +34,8 @@ const SCOPE_LABELS = { private: "individual chats", group: "groups" };
 
 async function onMuteAll(scope, durationKey) {
     notifMenu.value = null;
-    const label = MUTE_DURATIONS.find((d) => d.key === durationKey)?.label ?? durationKey;
+    const label =
+        MUTE_DURATIONS.find((d) => d.key === durationKey)?.label ?? durationKey;
     await muteAll(scope, mutedUntilFor(durationKey));
     notifStatus.value = `Muted ${SCOPE_LABELS[scope]} for ${label.toLowerCase()}.`;
 }
@@ -408,7 +409,7 @@ function logout() {
                                 @click="onToggleLastSeen"
                             >
                                 <span
-                                    class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
+                                    class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
                                     :class="
                                         showLastSeen
                                             ? 'translate-x-5'
@@ -434,7 +435,7 @@ function logout() {
                                 @click="onToggleReadReceipts"
                             >
                                 <span
-                                    class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
+                                    class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
                                     :class="
                                         showReadReceipts
                                             ? 'translate-x-5'
@@ -473,7 +474,7 @@ function logout() {
                             @click="toggleTheme"
                         >
                             <span
-                                class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
+                                class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
                                 :class="
                                     theme === 'dark'
                                         ? 'translate-x-5'
@@ -489,29 +490,78 @@ function logout() {
                 </template>
 
                 <template v-else-if="section === 'notifications'">
-                    <p class="mb-3 text-xs text-converse-textMuted">Mute notifications in bulk across every chat of a kind. This doesn't change any chat you've already muted or unmuted individually.</p>
+                    <p class="mb-3 text-xs text-converse-textMuted">
+                        Mute notifications in bulk across every chat of a kind.
+                        This doesn't change any chat you've already muted or
+                        unmuted individually.
+                    </p>
 
-                    <div class="mb-3 flex items-center justify-between rounded-cv border border-converse-border p-3">
-                        <span class="text-sm text-converse-text">Individual chats</span>
+                    <div
+                        class="mb-3 flex items-center justify-between rounded-cv border border-converse-border p-3"
+                    >
+                        <span class="text-sm text-converse-text"
+                            >Individual chats</span
+                        >
                         <div class="relative">
-                            <button type="button" class="text-sm text-converse-accent" @click="notifMenu = notifMenu === 'private' ? null : 'private'">Mute&hellip;</button>
-                            <div v-if="notifMenu === 'private'" class="absolute right-0 top-full z-20 mt-1">
-                                <MuteDurationMenu :show-unmute="true" @pick="(d) => onMuteAll('private', d)" @unmute="onUnmuteAll('private')" />
+                            <button
+                                type="button"
+                                class="text-sm text-converse-accent"
+                                @click="
+                                    notifMenu =
+                                        notifMenu === 'private'
+                                            ? null
+                                            : 'private'
+                                "
+                            >
+                                Mute&hellip;
+                            </button>
+                            <div
+                                v-if="notifMenu === 'private'"
+                                class="cv-animate-pop-in absolute right-0 top-full z-20 mt-1"
+                            >
+                                <MuteDurationMenu
+                                    :show-unmute="true"
+                                    @pick="(d) => onMuteAll('private', d)"
+                                    @unmute="onUnmuteAll('private')"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between rounded-cv border border-converse-border p-3">
+                    <div
+                        class="flex items-center justify-between rounded-cv border border-converse-border p-3"
+                    >
                         <span class="text-sm text-converse-text">Groups</span>
                         <div class="relative">
-                            <button type="button" class="text-sm text-converse-accent" @click="notifMenu = notifMenu === 'group' ? null : 'group'">Mute&hellip;</button>
-                            <div v-if="notifMenu === 'group'" class="absolute right-0 top-full z-20 mt-1">
-                                <MuteDurationMenu :show-unmute="true" @pick="(d) => onMuteAll('group', d)" @unmute="onUnmuteAll('group')" />
+                            <button
+                                type="button"
+                                class="text-sm text-converse-accent"
+                                @click="
+                                    notifMenu =
+                                        notifMenu === 'group' ? null : 'group'
+                                "
+                            >
+                                Mute&hellip;
+                            </button>
+                            <div
+                                v-if="notifMenu === 'group'"
+                                class="cv-animate-pop-in absolute right-0 top-full z-20 mt-1"
+                            >
+                                <MuteDurationMenu
+                                    :show-unmute="true"
+                                    @pick="(d) => onMuteAll('group', d)"
+                                    @unmute="onUnmuteAll('group')"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    <p v-if="notifStatus" class="mt-3 text-xs text-converse-accent">{{ notifStatus }}</p>
+                    <p
+                        v-if="notifStatus"
+                        class="mt-3 text-xs text-converse-accent"
+                    >
+                        {{ notifStatus }}
+                    </p>
                 </template>
 
                 <template v-else>

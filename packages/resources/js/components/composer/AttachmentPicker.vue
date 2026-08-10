@@ -103,7 +103,7 @@ async function onChange(event) {
 
         <div
             v-if="showMenu"
-            class="cv-attachment-picker__menu absolute bottom-11 left-0 z-20 grid w-56 grid-cols-1 gap-1 rounded-cv border border-converse-border bg-converse-surface p-2 shadow-lg"
+            class="cv-attachment-picker__menu cv-animate-pop-in absolute bottom-11 left-0 z-20 grid w-56 grid-cols-1 gap-1 rounded-cv border border-converse-border bg-converse-surface p-2 shadow-lg"
         >
             <button
                 v-for="option in OPTIONS"

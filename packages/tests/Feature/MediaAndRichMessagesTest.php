@@ -134,6 +134,53 @@ it('aggregates media across every conversation the user participates in, not jus
     expect($daveView->json('data'))->toHaveCount(0);
 });
 
+it('searches media by filename or by chat/contact name', function () {
+    Storage::fake('chat');
+
+    $alice = mediaUser('alice-mediasearch@example.com');
+    $bob = mediaUser('bob-mediasearch@example.com');
+    $carol = mediaUser('carol-mediasearch@example.com');
+
+    $convoWithBob = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $convoWithCarol = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($carol)],
+    ])->json('data.id');
+
+    $vacationPhoto = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->image('vacation-photo.jpg', 200, 200),
+    ])->json('data.id');
+
+    $receiptScan = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->image('receipt-scan.jpg', 200, 200),
+    ])->json('data.id');
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$convoWithBob}/messages", [
+        'type' => 'image', 'attachment_ids' => [$vacationPhoto],
+    ])->assertCreated();
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$convoWithCarol}/messages", [
+        'type' => 'image', 'attachment_ids' => [$receiptScan],
+    ])->assertCreated();
+
+    // Filename match finds only the message with that attachment, regardless of chat.
+    $byFilename = $this->actingAs($alice)->getJson('/api/chat/messages/media?kind=media&q=vacation')->assertOk();
+    expect($byFilename->json('data'))->toHaveCount(1)
+        ->and($byFilename->json('data.0.attachments.0.original_filename'))->toContain('vacation-photo');
+
+    // Contact-name match finds every media item shared in that chat, regardless of filename.
+    $byContactName = $this->actingAs($alice)->getJson('/api/chat/messages/media?kind=media&q=carol-mediasearch')->assertOk();
+    expect($byContactName->json('data'))->toHaveCount(1)
+        ->and($byContactName->json('data.0.attachments.0.original_filename'))->toContain('receipt-scan');
+
+    $noMatch = $this->actingAs($alice)->getJson('/api/chat/messages/media?kind=media&q=nonexistent-term')->assertOk();
+    expect($noMatch->json('data'))->toHaveCount(0);
+});
+
 it('fetches and caches a link preview', function () {
     $alice = mediaUser('alice-preview@example.com');
 

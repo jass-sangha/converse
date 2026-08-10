@@ -290,7 +290,7 @@ function goCreateList() {
                 {{ conversation.description }}
             </p>
 
-            <button
+            <!-- <button
                 type="button"
                 class="mt-4 flex flex-col items-center gap-1 text-converse-accent"
                 @click="emit('search')"
@@ -310,7 +310,7 @@ function goCreateList() {
                     </svg>
                 </span>
                 <span class="text-xs">Search</span>
-            </button>
+            </button> -->
         </div>
 
         <p
@@ -413,22 +413,20 @@ function goCreateList() {
                     "
                 >
                     <span
-                        class="absolute top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
+                        class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
                         :class="isMuted ? 'translate-x-5' : 'translate-x-0.5'"
                     />
                 </button>
 
                 <div
                     v-if="showMuteMenu"
-                    class="absolute right-4 top-full z-20 mt-1"
+                    class="cv-animate-pop-in absolute right-4 top-full z-20 mt-1"
                 >
                     <MuteDurationMenu @pick="onPickMuteDuration" />
                 </div>
             </div>
 
-            <div class="px-4 py-2">
-                <DisappearingToggle :conversation="conversation" />
-            </div>
+            <DisappearingToggle :conversation="conversation" />
         </div>
 
         <div class="border-b border-converse-border py-1">
@@ -611,7 +609,7 @@ function goCreateList() {
 
                 <div
                     v-if="showListMenu"
-                    class="absolute left-4 right-4 top-full z-10 mb-2 rounded-cv border border-converse-border bg-converse-surface py-1 shadow-lg"
+                    class="cv-animate-pop-in absolute left-4 right-4 top-full z-10 mb-2 rounded-cv border border-converse-border bg-converse-surface py-1 shadow-lg"
                 >
                     <button
                         v-for="list in availableLists"

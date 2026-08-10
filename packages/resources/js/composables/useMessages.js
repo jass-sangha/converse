@@ -143,9 +143,9 @@ export function useMessages() {
         return data.data;
     }
 
-    async function media(kind, conversationId = null, page = 1) {
+    async function media(kind, conversationId = null, page = 1, q = null) {
         const { data } = await api.get('/messages/media', {
-            params: { kind, conversation_id: conversationId, page },
+            params: { kind, conversation_id: conversationId, page, q: q || undefined },
         });
         return data;
     }
