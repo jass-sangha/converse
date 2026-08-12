@@ -249,9 +249,24 @@ function logout() {
 <template>
     <div class="cv-settings-panel flex h-full flex-col bg-converse-surface">
         <template v-if="!section">
-            <div class="cv-settings-panel__header flex items-center gap-3 px-4 py-3">
-                <button type="button" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover sm:hidden" @click="setView('chats')">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"/></svg>
+            <div
+                class="cv-settings-panel__header flex items-center gap-3 px-4 py-3"
+            >
+                <button
+                    type="button"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover sm:hidden"
+                    @click="setView('chats')"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                    >
+                        <path
+                            d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"
+                        />
+                    </svg>
                 </button>
                 <div class="min-w-0">
                     <h1 class="text-xl font-bold text-converse-text">
@@ -435,6 +450,9 @@ function logout() {
                                 @change="onFileChange"
                             />
                         </label>
+                        <p class="text-base font-medium text-converse-text">
+                            {{ me?.name ?? "—" }}
+                        </p>
                         <button
                             v-if="me?.avatar_url"
                             type="button"
@@ -449,12 +467,6 @@ function logout() {
                             class="text-xs text-converse-danger"
                         >
                             {{ uploadError }}
-                        </p>
-                    </div>
-                    <div class="mb-3 px-1">
-                        <p class="text-xs text-converse-textMuted">Your name</p>
-                        <p class="text-[15px] text-converse-text">
-                            {{ me?.name ?? "—" }}
                         </p>
                     </div>
                     <div class="rounded-cv border border-converse-border p-3">
@@ -490,7 +502,9 @@ function logout() {
                         <SettingRow
                             :icon="RECEIPT_ICON"
                             label="Hide my read receipts"
-                            :subtitle="hiddenUntilLabel(readReceiptsHiddenUntil)"
+                            :subtitle="
+                                hiddenUntilLabel(readReceiptsHiddenUntil)
+                            "
                             :is-on="readReceiptsHidden"
                             :options="MUTE_DURATIONS"
                             menu-title="Hide for"
@@ -543,9 +557,10 @@ function logout() {
                                 />
                             </span>
                             <span class="min-w-0 flex-1">
-                                <span class="block text-[15px] text-converse-text">{{
-                                    option.label
-                                }}</span>
+                                <span
+                                    class="block text-[15px] text-converse-text"
+                                    >{{ option.label }}</span
+                                >
                                 <span
                                     class="block text-xs text-converse-textMuted"
                                     >{{ option.hint }}</span
@@ -580,7 +595,7 @@ function logout() {
 
                     <SettingRow
                         :icon="MUTE_ICON"
-                        label="Individual chats"
+                        label="Mute notifications for individual chats"
                         :subtitle="mutedLabel.private"
                         :is-on="mutedScopes.private"
                         :options="MUTE_DURATIONS"
@@ -590,7 +605,7 @@ function logout() {
                     />
                     <SettingRow
                         :icon="MUTE_ICON"
-                        label="Groups"
+                        label="Mute notifications for group chats"
                         :subtitle="mutedLabel.group"
                         :is-on="mutedScopes.group"
                         :options="MUTE_DURATIONS"

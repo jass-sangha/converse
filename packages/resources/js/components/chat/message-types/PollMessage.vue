@@ -51,8 +51,10 @@ async function onVote(index) {
                 v-for="(label, index) in labels"
                 :key="index"
                 type="button"
-                class="cv-poll-message__option relative w-full overflow-hidden rounded-cv border border-converse-border p-2 text-left"
-                :class="optionAt(index).self ? 'border-converse-accent' : ''"
+                class="cv-poll-message__option relative w-full overflow-hidden rounded-cv border p-2 text-left"
+                :class="optionAt(index).self
+                    ? 'border-converse-accent text-converse-accent'
+                    : 'border-converse-border text-converse-text hover:bg-converse-surfaceHover'"
                 @click="onVote(index)"
             >
                 <span
@@ -60,7 +62,7 @@ async function onVote(index) {
                     :style="{ width: percentage(index) + '%' }"
                 />
                 <span class="relative flex items-center justify-between gap-2">
-                    <span class="flex items-center gap-2 text-sm text-converse-text">
+                    <span class="flex items-center gap-2 text-sm">
                         <svg v-if="optionAt(index).self" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="shrink-0 text-converse-accent"><path d="m9 16.2-3.5-3.6L4 14.1l5 5 11-11-1.4-1.4Z"/></svg>
                         {{ label }}
                     </span>
