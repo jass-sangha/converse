@@ -1,11 +1,12 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useUsers } from '../../composables/useUsers';
 import Avatar from './Avatar.vue';
 
 const props = defineProps({
     multiple: { type: Boolean, default: false },
     modelValue: { type: Array, default: () => [] },
+    exclude: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -13,17 +14,21 @@ const emit = defineEmits(['update:modelValue']);
 const { search } = useUsers();
 
 const query = ref('');
-const results = ref([]);
+const rawResults = ref([]);
 let debounceTimer = null;
+
+const results = computed(() => rawResults.value.filter(
+    (user) => !props.exclude.some((u) => u.id === user.id && u.type === user.type),
+));
 
 watch(query, (value) => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(async () => {
-        results.value = await search(value);
+        rawResults.value = await search(value);
     }, 250);
 });
 
-search('').then((users) => (results.value = users));
+search('').then((users) => (rawResults.value = users));
 
 function isSelected(user) {
     return props.modelValue.some((u) => u.id === user.id && u.type === user.type);

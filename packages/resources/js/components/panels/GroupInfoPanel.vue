@@ -29,7 +29,7 @@ const store = useChatStore();
 const { resolve, get } = useUsers();
 const { add, remove, changeRole } = useParticipants();
 const { block, unblock, list: listBlocked } = useBlockedUsers();
-const { refreshOne, leave, setWallpaper, setPinned, mute, setHidden } =
+const { refreshOne, leave, setWallpaper, setPinned, mute, setHidden, updateAvatar } =
     useConversations();
 const { clear: clearMessages } = useMessages();
 const {
@@ -50,6 +50,8 @@ const availableLists = ref([]);
 const mediaCount = ref(0);
 const clearing = ref(false);
 const cleared = ref(false);
+const avatarUploading = ref(false);
+const avatarError = ref("");
 
 const isGroup = computed(() => props.conversation.type === "group");
 const myRole = computed(() => props.conversation.me?.role);
@@ -62,6 +64,10 @@ const isFavourite = computed(
 function isMe(participant) {
     return chatableKeyOf(participant) === store.currentKey;
 }
+
+const currentParticipantRefs = computed(() =>
+    (props.conversation.participants ?? []).map((p) => ({ type: p.chatable_type, id: p.chatable_id })),
+);
 
 const otherParticipantRow = computed(() => {
     if (isGroup.value) return null;
@@ -130,6 +136,23 @@ function closeAddMember() {
     showAddMember.value = false;
     picked.value = [];
     error.value = "";
+}
+
+async function onAvatarFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    avatarError.value = "";
+    avatarUploading.value = true;
+
+    try {
+        await updateAvatar(props.conversation.id, file);
+    } catch (e) {
+        avatarError.value = e.response?.data?.message ?? "Could not update photo.";
+    } finally {
+        avatarUploading.value = false;
+        event.target.value = "";
+    }
 }
 
 async function removeMember(participant) {
@@ -277,7 +300,30 @@ function goCreateList() {
         <div
             class="cv-group-info-panel__avatar flex flex-col items-center gap-1 border-b border-converse-border py-6"
         >
+            <label
+                v-if="isGroup && isAdmin"
+                class="group relative cursor-pointer rounded-full"
+            >
+                <Avatar
+                    :name="displayName ?? ''"
+                    :avatar-url="conversation.avatar_url"
+                    :size="120"
+                />
+                <span
+                    class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-xs font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
+                >
+                    {{ avatarUploading ? "Uploading…" : "Change photo" }}
+                </span>
+                <input
+                    type="file"
+                    accept="image/*"
+                    class="hidden"
+                    :disabled="avatarUploading"
+                    @change="onAvatarFileChange"
+                />
+            </label>
             <Avatar
+                v-else
                 :name="displayName ?? ''"
                 :avatar-url="
                     isGroup
@@ -286,6 +332,7 @@ function goCreateList() {
                 "
                 :size="120"
             />
+            <p v-if="avatarError" class="mt-1 text-xs text-converse-danger">{{ avatarError }}</p>
             <p class="mt-2 text-lg font-medium text-converse-text">
                 {{ displayName }}
             </p>
@@ -740,7 +787,7 @@ function goCreateList() {
         <StarredMessagesPanel v-if="showStarred" @close="showStarred = false" />
 
         <Modal v-if="showAddMember" title="Add participants" @close="closeAddMember">
-            <UserPicker v-model="picked" :multiple="true" />
+            <UserPicker v-model="picked" :multiple="true" :exclude="currentParticipantRefs" />
             <p v-if="error" class="mt-2 text-xs text-converse-danger">{{ error }}</p>
 
             <template #footer>
