@@ -95,4 +95,5 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::get('messages/search', [MessageController::class, 'search']);
         Route::get('messages/media', [MessageController::class, 'media']);
         Route::patch('conversations/{conversation}/disappearing', [ConversationController::class, 'disappearing']);
+        Route::post('broadcasting/auth', [\Illuminate\Broadcasting\BroadcastController::class, 'authenticate']);
     });

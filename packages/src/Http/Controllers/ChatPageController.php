@@ -8,25 +8,37 @@ class ChatPageController extends Controller
 {
     public function show(Request $request)
     {
-        $reverb = config('broadcasting.connections.reverb');
+        $connectionName = config('broadcasting.default', 'reverb');
+        $connection = config("broadcasting.connections.{$connectionName}");
 
-        abort_if($reverb === null, 500,
-            'No "reverb" broadcasting connection is configured. Run `php artisan reverb:install` in the host app, '.
-            'or define config(\'broadcasting.connections.reverb\') manually.');
+        if (! in_array($connectionName, ['reverb', 'pusher'])) {
+            if (config('broadcasting.connections.reverb.key')) {
+                $connectionName = 'reverb';
+                $connection = config('broadcasting.connections.reverb');
+            } elseif (config('broadcasting.connections.pusher.key')) {
+                $connectionName = 'pusher';
+                $connection = config('broadcasting.connections.pusher');
+            } else {
+                $connectionName = 'reverb';
+                $connection = config('broadcasting.connections.reverb') ?? [];
+            }
+        }
 
-        $assetPath = __DIR__.'/../../../resources/dist/app.js';
+        $assetPath = __DIR__ . '/../../../resources/dist/app.js';
         $themeOverridePath = public_path('vendor/chat/theme.css');
 
         return view('chat::chat', [
             'chatConfig' => [
-                'apiBaseUrl' => '/'.ltrim(config('chat.route_prefix', 'api/chat'), '/'),
+                'apiBaseUrl' => '/' . ltrim(config('chat.route_prefix', 'api/chat'), '/'),
                 'chatableType' => $request->user()?->getMorphClass(),
                 'chatableId' => $request->user()?->getAuthIdentifier(),
-                'reverb' => [
-                    'key' => $reverb['key'] ?? null,
-                    'host' => $reverb['options']['host'] ?? null,
-                    'port' => $reverb['options']['port'] ?? 443,
-                    'scheme' => $reverb['options']['scheme'] ?? 'https',
+                'broadcasting' => [
+                    'driver' => $connectionName,
+                    'key' => $connection['key'] ?? null,
+                    'host' => $connection['options']['host'] ?? null,
+                    'port' => $connection['options']['port'] ?? null,
+                    'scheme' => $connection['options']['scheme'] ?? null,
+                    'cluster' => $connection['options']['cluster'] ?? null,
                 ],
                 'assetVersion' => is_file($assetPath) ? filemtime($assetPath) : time(),
             ],

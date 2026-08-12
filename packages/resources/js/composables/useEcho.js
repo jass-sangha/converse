@@ -38,20 +38,34 @@ export function useEcho() {
     }
 
     const config = window.ConverseConfig ?? {};
-    const reverb = config.reverb ?? {};
+    const broadcasting = config.broadcasting ?? {};
+    const driver = broadcasting.driver ?? 'reverb';
 
     try {
-        echo = new Echo({
-            broadcaster: 'reverb',
-            key: reverb.key,
-            wsHost: reverb.host,
-            wsPort: reverb.port ?? 80,
-            wssPort: reverb.port ?? 443,
-            forceTLS: (reverb.scheme ?? 'https') === 'https',
-            enabledTransports: ['ws', 'wss'],
-        });
+        if (driver === 'reverb') {
+            echo = new Echo({
+                broadcaster: 'reverb',
+                key: broadcasting.key,
+                wsHost: broadcasting.host || window.location.hostname,
+                wsPort: broadcasting.port ?? (broadcasting.scheme === 'https' ? 443 : 8080),
+                wssPort: broadcasting.port ?? 443,
+                forceTLS: broadcasting.scheme === 'https',
+                enabledTransports: ['ws', 'wss'],
+                authEndpoint: (config.apiBaseUrl || '/api/chat') + '/broadcasting/auth',
+            });
+        } else if (driver === 'pusher') {
+            echo = new Echo({
+                broadcaster: 'pusher',
+                key: broadcasting.key,
+                cluster: broadcasting.cluster,
+                forceTLS: true,
+                authEndpoint: (config.apiBaseUrl || '/api/chat') + '/broadcasting/auth',
+            });
+        } else {
+            echo = noopEcho;
+        }
 
-        if (config.chatableType && config.chatableId) {
+        if (echo !== noopEcho && config.chatableType && config.chatableId) {
             echo.private(`chatable.${config.chatableType}.${config.chatableId}`)
                 .listen('.conversation.created', () => {
                     useConversations().refresh();
