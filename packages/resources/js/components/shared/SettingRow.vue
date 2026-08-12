@@ -14,6 +14,7 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle', 'pick', 'off']);
 
+const root = ref(null);
 const showMenu = ref(false);
 const { opened, closed } = useExclusiveDropdown();
 
@@ -21,9 +22,26 @@ function close() {
     showMenu.value = false;
 }
 
-watch(showMenu, (open) => (open ? opened(close) : closed(close)));
+function onDocumentClick(event) {
+    if (root.value && !root.value.contains(event.target)) {
+        close();
+    }
+}
 
-onBeforeUnmount(() => closed(close));
+watch(showMenu, (open) => {
+    if (open) {
+        opened(close);
+        document.addEventListener('click', onDocumentClick);
+    } else {
+        closed(close);
+        document.removeEventListener('click', onDocumentClick);
+    }
+});
+
+onBeforeUnmount(() => {
+    closed(close);
+    document.removeEventListener('click', onDocumentClick);
+});
 
 // A row always has *something* to show in its dropdown once it's on (at minimum the "Off"
 // entry below), even with no `options` list — a plain boolean row (no duration/options) still
@@ -58,7 +76,7 @@ function turnOff() {
 </script>
 
 <template>
-    <div class="cv-setting-row relative flex w-full items-center gap-4 px-4 py-3">
+    <div ref="root" class="cv-setting-row relative flex w-full items-center gap-4 px-4 py-3">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="shrink-0 text-converse-textMuted">
             <path :d="icon" />
         </svg>

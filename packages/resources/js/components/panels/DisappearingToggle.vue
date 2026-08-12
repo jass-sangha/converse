@@ -15,6 +15,7 @@ const OPTIONS = [
     { key: '90d', label: '90 days', seconds: 7776000 },
 ];
 
+const root = ref(null);
 const showMenu = ref(false);
 const { opened, closed } = useExclusiveDropdown();
 
@@ -22,8 +23,26 @@ function close() {
     showMenu.value = false;
 }
 
-watch(showMenu, (open) => (open ? opened(close) : closed(close)));
-onBeforeUnmount(() => closed(close));
+function onDocumentClick(event) {
+    if (root.value && !root.value.contains(event.target)) {
+        close();
+    }
+}
+
+watch(showMenu, (open) => {
+    if (open) {
+        opened(close);
+        document.addEventListener('click', onDocumentClick);
+    } else {
+        closed(close);
+        document.removeEventListener('click', onDocumentClick);
+    }
+});
+
+onBeforeUnmount(() => {
+    closed(close);
+    document.removeEventListener('click', onDocumentClick);
+});
 
 const current = computed(() => props.conversation.disappearing_messages_ttl || null);
 const isOn = computed(() => !!current.value);
@@ -41,7 +60,7 @@ function turnOff() {
 </script>
 
 <template>
-    <div class="cv-disappearing-toggle relative flex w-full items-center gap-4 px-4 py-3">
+    <div ref="root" class="cv-disappearing-toggle relative flex w-full items-center gap-4 px-4 py-3">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="shrink-0 text-converse-textMuted">
             <path d="M15 1H9v2h6Zm-4 13h2V8h-2Zm8.03-6.61 1.42-1.42a13.98 13.98 0 0 0-1.42-1.42l-1.42 1.42A9 9 0 1 0 21 12a8.96 8.96 0 0 0-1.97-5.61ZM12 20a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" />
         </svg>

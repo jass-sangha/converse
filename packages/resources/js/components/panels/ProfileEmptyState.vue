@@ -1,43 +1,18 @@
-<script setup>
-const ACTIONS = [
-    {
-        label: "Send document",
-        path: "M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z",
-    },
-    {
-        label: "Add contact",
-        path: "M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2Zm9 4c-3.31 0-9 1.66-9 5v1h18v-1c0-3.34-5.69-5-9-5Z",
-    },
-];
-</script>
+<script setup></script>
 
 <template>
     <div
-        class="cv-profile-empty-state grid h-full place-content-center bg-converse-chatBg p-6"
+        class="cv-profile-empty-state flex h-full flex-col items-center justify-center gap-3 bg-converse-chatBg p-6 text-center"
     >
-        <div class="flex items-center gap-6">
-            <div
-                v-for="action in ACTIONS"
-                :key="action.label"
-                class="flex flex-col items-center gap-2"
-                :title="action.label"
-            >
-                <span
-                    class="flex h-11 w-11 items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                    >
-                        <path :d="action.path" />
-                    </svg>
-                </span>
-                <span class="text-xs text-converse-textMuted">{{
-                    action.label
-                }}</span>
-            </div>
-        </div>
+        <span
+            class="flex h-16 w-16 items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm"
+        >
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-3.87 0-8 1.95-8 5v2h16v-2c0-3.05-4.13-5-8-5Z" />
+            </svg>
+        </span>
+        <p class="text-sm text-converse-textMuted">
+            This is your profile. Manage your name, photo, and settings from the panel on the left.
+        </p>
     </div>
 </template>

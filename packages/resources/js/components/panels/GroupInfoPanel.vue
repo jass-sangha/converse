@@ -219,14 +219,33 @@ async function toggleBlockOther() {
 }
 
 const showMuteMenu = ref(false);
+const muteMenuRoot = ref(null);
 const { opened: muteMenuOpened, closed: muteMenuClosed } = useExclusiveDropdown();
 
 function closeMuteMenu() {
     showMuteMenu.value = false;
 }
 
-watch(showMuteMenu, (open) => (open ? muteMenuOpened(closeMuteMenu) : muteMenuClosed(closeMuteMenu)));
-onBeforeUnmount(() => muteMenuClosed(closeMuteMenu));
+function onMuteMenuDocumentClick(event) {
+    if (muteMenuRoot.value && !muteMenuRoot.value.contains(event.target)) {
+        closeMuteMenu();
+    }
+}
+
+watch(showMuteMenu, (open) => {
+    if (open) {
+        muteMenuOpened(closeMuteMenu);
+        document.addEventListener('click', onMuteMenuDocumentClick);
+    } else {
+        muteMenuClosed(closeMuteMenu);
+        document.removeEventListener('click', onMuteMenuDocumentClick);
+    }
+});
+
+onBeforeUnmount(() => {
+    muteMenuClosed(closeMuteMenu);
+    document.removeEventListener('click', onMuteMenuDocumentClick);
+});
 
 async function onPickMuteDuration(durationKey) {
     showMuteMenu.value = false;
@@ -428,7 +447,7 @@ function goCreateList() {
                 >
             </button>
 
-            <div class="relative flex w-full items-center gap-4 px-4 py-3">
+            <div ref="muteMenuRoot" class="relative flex w-full items-center gap-4 px-4 py-3">
                 <svg
                     viewBox="0 0 24 24"
                     width="20"

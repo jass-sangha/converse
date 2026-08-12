@@ -31,11 +31,8 @@ const search = ref("");
 const section = ref(null);
 const about = ref("");
 const savingAbout = ref(false);
-const notifStatus = ref("");
 const mutedScopes = ref({ private: false, group: false });
-const mutedLabel = ref({ private: null, group: null });
-
-const SCOPE_LABELS = { private: "individual chats", group: "groups" };
+const mutedUntil = ref({ private: null, group: null });
 
 const MUTE_ICON =
     "M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z";
@@ -81,19 +78,16 @@ const THEME_OPTIONS = [
 ];
 
 async function onMuteAll(scope, durationKey) {
-    const label =
-        MUTE_DURATIONS.find((d) => d.key === durationKey)?.label ?? durationKey;
-    await muteAll(scope, mutedUntilFor(durationKey));
+    const until = mutedUntilFor(durationKey);
+    await muteAll(scope, until);
     mutedScopes.value[scope] = true;
-    mutedLabel.value[scope] = label;
-    notifStatus.value = `Muted ${SCOPE_LABELS[scope]} for ${label.toLowerCase()}.`;
+    mutedUntil.value[scope] = until;
 }
 
 async function onUnmuteAll(scope) {
     await muteAll(scope, null);
     mutedScopes.value[scope] = false;
-    mutedLabel.value[scope] = null;
-    notifStatus.value = `Unmuted ${SCOPE_LABELS[scope]}.`;
+    mutedUntil.value[scope] = null;
 }
 
 const me = computed(() => store.usersById[store.currentKey] ?? null);
@@ -236,9 +230,9 @@ async function onShowReadReceipts() {
     applyPrivacySettings(settings);
 }
 
-function hiddenUntilLabel(iso) {
+function untilLabel(prefix, iso) {
     if (!iso) return null;
-    return `Hidden until ${new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}`;
+    return `${prefix} until ${new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}`;
 }
 
 function logout() {
@@ -491,7 +485,7 @@ function logout() {
                         <SettingRow
                             :icon="EYE_ICON"
                             label="Hide my last seen & online status"
-                            :subtitle="hiddenUntilLabel(lastSeenHiddenUntil)"
+                            :subtitle="untilLabel('Hidden', lastSeenHiddenUntil)"
                             :is-on="lastSeenHidden"
                             :options="MUTE_DURATIONS"
                             menu-title="Hide for"
@@ -503,7 +497,7 @@ function logout() {
                             :icon="RECEIPT_ICON"
                             label="Hide my read receipts"
                             :subtitle="
-                                hiddenUntilLabel(readReceiptsHiddenUntil)
+                                untilLabel('Hidden', readReceiptsHiddenUntil)
                             "
                             :is-on="readReceiptsHidden"
                             :options="MUTE_DURATIONS"
@@ -596,7 +590,7 @@ function logout() {
                     <SettingRow
                         :icon="MUTE_ICON"
                         label="Mute notifications for individual chats"
-                        :subtitle="mutedLabel.private"
+                        :subtitle="untilLabel('Muted', mutedUntil.private)"
                         :is-on="mutedScopes.private"
                         :options="MUTE_DURATIONS"
                         menu-title="Mute for"
@@ -606,20 +600,13 @@ function logout() {
                     <SettingRow
                         :icon="MUTE_ICON"
                         label="Mute notifications for group chats"
-                        :subtitle="mutedLabel.group"
+                        :subtitle="untilLabel('Muted', mutedUntil.group)"
                         :is-on="mutedScopes.group"
                         :options="MUTE_DURATIONS"
                         menu-title="Mute for"
                         @pick="(option) => onMuteAll('group', option.key)"
                         @off="onUnmuteAll('group')"
                     />
-
-                    <p
-                        v-if="notifStatus"
-                        class="mt-3 text-xs text-converse-accent"
-                    >
-                        {{ notifStatus }}
-                    </p>
                 </template>
 
                 <template v-else>

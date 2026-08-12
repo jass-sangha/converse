@@ -29,6 +29,10 @@ it('hides last seen and read receipts for a set duration, then reverts automatic
     $afterExpiry = $this->actingAs($alice)->getJson('/api/chat/profile/settings')->assertOk();
     expect($afterExpiry->json('data.show_last_seen'))->toBeTrue()
         ->and($afterExpiry->json('data.show_read_receipts'))->toBeTrue();
+
+    // Without this, the traveled clock leaks into whichever test runs next in the same
+    // process — $this->travel() mutates Carbon's global test-now, not a per-test sandbox.
+    $this->travelBack();
 });
 
 it('re-enables last seen and read receipts immediately via the off action', function () {
