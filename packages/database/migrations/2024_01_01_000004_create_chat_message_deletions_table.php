@@ -16,7 +16,10 @@ return new class extends Migration
             $table->morphs('chatable');
             $table->timestamp('deleted_at')->nullable();
 
-            $table->unique(['message_id', 'chatable_type', 'chatable_id']);
+            $table->unique(
+                ['message_id', 'chatable_type', 'chatable_id'],
+                'message_deletion_unique'
+            );
         });
     }
 
