@@ -124,8 +124,8 @@ function select(conversationId) {
     setActive(conversationId);
 }
 
-function isPinned(conversation) {
-    return !!(conversation.pinned_at || conversation.me?.pinned_at);
+function isFavourited(conversation) {
+    return !!(conversation.favourited_at || conversation.me?.favourited_at);
 }
 
 const filteredConversations = computed(() => {
@@ -140,7 +140,7 @@ const filteredConversations = computed(() => {
         case "unread":
             return store.conversations.filter((c) => c.unread_count > 0);
         case "favourites":
-            return store.conversations.filter(isPinned);
+            return store.conversations.filter(isFavourited);
         case "groups":
             return store.conversations.filter((c) => c.type === "group");
         default:

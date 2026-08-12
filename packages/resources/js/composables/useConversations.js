@@ -52,6 +52,11 @@ export function useConversations() {
         upsertConversation(data.data);
     }
 
+    async function setFavourited(conversationId, favourited) {
+        const { data } = await api.patch(`/conversations/${conversationId}/favourite`, { favourited });
+        upsertConversation(data.data);
+    }
+
     async function setHidden(conversationId, hidden) {
         const { data } = await api.patch(`/conversations/${conversationId}/hide`, { hidden });
 
@@ -99,6 +104,7 @@ export function useConversations() {
         mute,
         setArchived,
         setPinned,
+        setFavourited,
         setHidden,
         updateAvatar,
         setWallpaper,

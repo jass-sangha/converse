@@ -18,6 +18,7 @@ use Converse\Chat\Http\Controllers\ProfileController;
 use Converse\Chat\Http\Controllers\StarredMessageController;
 use Converse\Chat\Http\Controllers\TypingController;
 use Converse\Chat\Http\Controllers\UserSearchController;
+use Illuminate\Broadcasting\BroadcastController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
@@ -31,6 +32,7 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::patch('conversations/{conversation}/mute', [ConversationController::class, 'mute']);
         Route::patch('conversations/{conversation}/archive', [ConversationController::class, 'archive']);
         Route::patch('conversations/{conversation}/pin', [ConversationController::class, 'pin']);
+        Route::patch('conversations/{conversation}/favourite', [ConversationController::class, 'favourite']);
         Route::patch('conversations/{conversation}/hide', [ConversationController::class, 'hide']);
         Route::patch('conversations/{conversation}/wallpaper', [ConversationController::class, 'wallpaper']);
 
@@ -95,5 +97,5 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::get('messages/search', [MessageController::class, 'search']);
         Route::get('messages/media', [MessageController::class, 'media']);
         Route::patch('conversations/{conversation}/disappearing', [ConversationController::class, 'disappearing']);
-        Route::post('broadcasting/auth', [\Illuminate\Broadcasting\BroadcastController::class, 'authenticate']);
+        Route::post('broadcasting/auth', [BroadcastController::class, 'authenticate']);
     });

@@ -22,6 +22,7 @@ class ConversationParticipant extends Model
         'muted_until',
         'archived_at',
         'pinned_at',
+        'favourited_at',
         'hidden_at',
         'wallpaper',
         'last_read_message_id',
@@ -34,6 +35,7 @@ class ConversationParticipant extends Model
         'muted_until' => 'datetime',
         'archived_at' => 'datetime',
         'pinned_at' => 'datetime',
+        'favourited_at' => 'datetime',
         'hidden_at' => 'datetime',
     ];
 

@@ -3,11 +3,12 @@ import { onBeforeUnmount, ref, watch } from 'vue';
 
 defineProps({
     pinned: { type: Boolean, default: false },
+    favourited: { type: Boolean, default: false },
     muted: { type: Boolean, default: false },
     isGroup: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['mute', 'unmute', 'pin', 'unpin', 'delete', 'leave']);
+const emit = defineEmits(['mute', 'unmute', 'pin', 'unpin', 'favourite', 'unfavourite', 'delete', 'leave']);
 
 const open = ref(false);
 const root = ref(null);
@@ -62,6 +63,13 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick));
                 @click="act(pinned ? 'unpin' : 'pin')"
             >
                 {{ pinned ? 'Unpin' : 'Pin' }}
+            </button>
+            <button
+                type="button"
+                class="cv-conversation-menu__item block w-full px-3 py-1.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="act(favourited ? 'unfavourite' : 'favourite')"
+            >
+                {{ favourited ? 'Remove from favourites' : 'Add to favourites' }}
             </button>
             <button
                 type="button"

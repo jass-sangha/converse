@@ -159,3 +159,23 @@ it('mutes, archives, and pins a conversation for the requesting participant only
         ->assertOk()
         ->assertJsonPath('data.me.pinned_at', fn ($value) => $value !== null);
 });
+
+it('favourites a conversation independently of pinning it', function () {
+    $alice = socialUser('alice-fav@example.com');
+    $bob = socialUser('bob-fav@example.com');
+    $conversationId = privateConversationBetween($alice, $bob);
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/conversations/{$conversationId}/favourite", ['favourited' => true])
+        ->assertOk()
+        ->assertJsonPath('data.me.favourited_at', fn ($value) => $value !== null)
+        ->assertJsonPath('data.me.pinned_at', fn ($value) => $value === null);
+
+    $bobsView = $this->actingAs($bob)->getJson("/api/chat/conversations/{$conversationId}")->assertOk();
+    expect($bobsView->json('data.me.favourited_at'))->toBeNull();
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/conversations/{$conversationId}/favourite", ['favourited' => false])
+        ->assertOk()
+        ->assertJsonPath('data.me.favourited_at', fn ($value) => $value === null);
+});

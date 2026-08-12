@@ -135,6 +135,19 @@ class ConversationController extends Controller
         return new ConversationResource($conversation->fresh(['participants', 'lastMessage']));
     }
 
+    public function favourite(Request $request, Conversation $conversation)
+    {
+        Gate::authorize('view', $conversation);
+
+        $this->conversations->setFavourited(
+            $conversation,
+            $request->user(),
+            $request->boolean('favourited', true),
+        );
+
+        return new ConversationResource($conversation->fresh(['participants', 'lastMessage']));
+    }
+
     public function hide(Request $request, Conversation $conversation)
     {
         Gate::authorize('view', $conversation);

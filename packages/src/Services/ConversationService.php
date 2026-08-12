@@ -129,6 +129,15 @@ class ConversationService implements ConversationServiceInterface
         $participant->update(['pinned_at' => $pinned ? now() : null]);
     }
 
+    public function setFavourited(Conversation $conversation, Model $chatable, bool $favourited): void
+    {
+        $participant = $this->participants->findFor($conversation->id, $chatable);
+
+        abort_if($participant === null, 403);
+
+        $participant->update(['favourited_at' => $favourited ? now() : null]);
+    }
+
     public function setHidden(Conversation $conversation, Model $chatable, bool $hidden): void
     {
         $participant = $this->participants->findFor($conversation->id, $chatable);

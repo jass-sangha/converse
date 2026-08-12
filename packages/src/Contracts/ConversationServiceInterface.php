@@ -37,6 +37,8 @@ interface ConversationServiceInterface
 
     public function setPinned(Conversation $conversation, Model $chatable, bool $pinned): void;
 
+    public function setFavourited(Conversation $conversation, Model $chatable, bool $favourited): void;
+
     public function setHidden(Conversation $conversation, Model $chatable, bool $hidden): void;
 
     public function setWallpaper(Conversation $conversation, Model $chatable, ?string $wallpaper): void;

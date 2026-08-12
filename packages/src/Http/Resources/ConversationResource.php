@@ -35,6 +35,7 @@ class ConversationResource extends JsonResource
                 'muted_until' => $me->muted_until,
                 'archived_at' => $me->archived_at,
                 'pinned_at' => $me->pinned_at,
+                'favourited_at' => $me->favourited_at,
                 'hidden_at' => $me->hidden_at,
                 'wallpaper' => $me->wallpaper,
             ] : null,

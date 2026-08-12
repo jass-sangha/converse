@@ -18,10 +18,17 @@ defineEmits(["select"]);
 
 const store = useChatStore();
 const { resolve, get } = useUsers();
-const { mute, setPinned, setHidden, leave } = useConversations();
+const { mute, setPinned, setFavourited, setHidden, leave } = useConversations();
 
 const isPinned = computed(
     () => !!(props.conversation.pinned_at || props.conversation.me?.pinned_at),
+);
+const isFavourited = computed(
+    () =>
+        !!(
+            props.conversation.favourited_at ||
+            props.conversation.me?.favourited_at
+        ),
 );
 const isMuted = computed(() => !!props.conversation.me?.muted_until);
 const isGroup = computed(() => props.conversation.type === "group");
@@ -46,6 +53,10 @@ function onMenuAction(action) {
             return setPinned(props.conversation.id, true);
         case "unpin":
             return setPinned(props.conversation.id, false);
+        case "favourite":
+            return setFavourited(props.conversation.id, true);
+        case "unfavourite":
+            return setFavourited(props.conversation.id, false);
         case "delete":
             return setHidden(props.conversation.id, true);
         case "leave":
@@ -213,13 +224,23 @@ const lastActivityLabel = computed(() => {
                         </svg>
                     </span>
                     <span
-                        v-if="conversation.unread_count > 0"
-                        class="cv-conversation-item__unread flex h-4 min-w-[1.1rem] items-center justify-center rounded-full bg-converse-accent px-1 text-[10px] font-medium text-converse-accentContrast"
+                        v-if="isFavourited"
+                        class="flex h-4 w-4 items-center justify-center text-converse-textMuted"
+                        title="Favourite"
                     >
-                        {{ conversation.unread_count }}
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="14"
+                            height="14"
+                            fill="currentColor"
+                        >
+                            <path
+                                d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.02 6.02 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z"
+                            />
+                        </svg>
                     </span>
                     <span
-                        v-else-if="isPinned"
+                        v-if="isPinned"
                         class="flex h-4 w-4 items-center justify-center text-converse-textMuted"
                         title="Pinned"
                     >
@@ -230,9 +251,15 @@ const lastActivityLabel = computed(() => {
                             fill="currentColor"
                         >
                             <path
-                                d="M7 8a5 5 0 1 1 10 0 5 5 0 0 1-10 0ZM8 13h8l-4 9Z"
+                                d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2Z"
                             />
                         </svg>
+                    </span>
+                    <span
+                        v-if="conversation.unread_count > 0"
+                        class="cv-conversation-item__unread flex h-4 min-w-[1.1rem] items-center justify-center rounded-full bg-converse-accent px-1 text-[10px] font-medium text-converse-accentContrast"
+                    >
+                        {{ conversation.unread_count }}
                     </span>
                 </span>
             </div>
@@ -249,12 +276,15 @@ const lastActivityLabel = computed(() => {
         >
             <ConversationMenu
                 :pinned="isPinned"
+                :favourited="isFavourited"
                 :muted="isMuted"
                 :is-group="isGroup"
                 @mute="onMenuAction('mute')"
                 @unmute="onMenuAction('unmute')"
                 @pin="onMenuAction('pin')"
                 @unpin="onMenuAction('unpin')"
+                @favourite="onMenuAction('favourite')"
+                @unfavourite="onMenuAction('unfavourite')"
                 @delete="onMenuAction('delete')"
                 @leave="onMenuAction('leave')"
             />

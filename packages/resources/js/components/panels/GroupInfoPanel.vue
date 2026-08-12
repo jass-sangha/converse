@@ -30,7 +30,7 @@ const store = useChatStore();
 const { resolve, get } = useUsers();
 const { add, remove, changeRole } = useParticipants();
 const { block, unblock, list: listBlocked } = useBlockedUsers();
-const { refreshOne, leave, setWallpaper, setPinned, mute, setHidden, updateAvatar } =
+const { refreshOne, leave, setWallpaper, setFavourited, mute, setHidden, updateAvatar } =
     useConversations();
 const { clear: clearMessages } = useMessages();
 const {
@@ -59,7 +59,11 @@ const myRole = computed(() => props.conversation.me?.role);
 const isAdmin = computed(() => myRole.value === "admin");
 const isMuted = computed(() => !!props.conversation.me?.muted_until);
 const isFavourite = computed(
-    () => !!(props.conversation.pinned_at || props.conversation.me?.pinned_at),
+    () =>
+        !!(
+            props.conversation.favourited_at ||
+            props.conversation.me?.favourited_at
+        ),
 );
 
 function isMe(participant) {
@@ -258,7 +262,7 @@ async function onUnmute() {
 }
 
 async function toggleFavourite() {
-    await setPinned(props.conversation.id, !isFavourite.value);
+    await setFavourited(props.conversation.id, !isFavourite.value);
 }
 
 async function onClearChat() {

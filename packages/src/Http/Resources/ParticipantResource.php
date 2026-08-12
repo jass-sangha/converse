@@ -18,6 +18,7 @@ class ParticipantResource extends JsonResource
             'muted_until' => $this->muted_until,
             'archived_at' => $this->archived_at,
             'pinned_at' => $this->pinned_at,
+            'favourited_at' => $this->favourited_at,
         ];
     }
 }
