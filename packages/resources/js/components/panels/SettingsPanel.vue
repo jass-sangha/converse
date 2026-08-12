@@ -442,7 +442,7 @@ function logout() {
                 </template>
 
                 <template v-else-if="section === 'privacy'">
-                    <div class="mb-3 divide-y divide-converse-border rounded-cv border border-converse-border">
+                    <div class="mb-3">
                         <SettingRow
                             :icon="EYE_ICON"
                             label="Show my last seen & online status"
