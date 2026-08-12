@@ -53,11 +53,7 @@ class ProfileController extends Controller
     {
         $setting = $this->settings->get($request->user());
 
-        return response()->json(['data' => [
-            'show_last_seen' => $setting->show_last_seen,
-            'show_read_receipts' => $setting->show_read_receipts,
-            'about' => $setting->about,
-        ]]);
+        return response()->json(['data' => $this->settingsPayload($setting)]);
     }
 
     public function updateSettings(Request $request)
@@ -65,15 +61,26 @@ class ProfileController extends Controller
         $data = $request->validate([
             'show_last_seen' => ['sometimes', 'boolean'],
             'show_read_receipts' => ['sometimes', 'boolean'],
+            'last_seen_hidden_until' => ['sometimes', 'nullable', 'date'],
+            'read_receipts_hidden_until' => ['sometimes', 'nullable', 'date'],
             'about' => ['sometimes', 'nullable', 'string', 'max:139'],
         ]);
 
         $setting = $this->settings->update($request->user(), $data);
 
-        return response()->json(['data' => [
-            'show_last_seen' => $setting->show_last_seen,
-            'show_read_receipts' => $setting->show_read_receipts,
+        return response()->json(['data' => $this->settingsPayload($setting)]);
+    }
+
+    protected function settingsPayload($setting): array
+    {
+        return [
+            // Effective, not raw: true only when not currently inside a hidden-until window —
+            // see UserSetting::lastSeenVisible()/readReceiptsVisible().
+            'show_last_seen' => $setting->lastSeenVisible(),
+            'show_read_receipts' => $setting->readReceiptsVisible(),
+            'last_seen_hidden_until' => $setting->last_seen_hidden_until,
+            'read_receipts_hidden_until' => $setting->read_receipts_hidden_until,
             'about' => $setting->about,
-        ]]);
+        ];
     }
 }

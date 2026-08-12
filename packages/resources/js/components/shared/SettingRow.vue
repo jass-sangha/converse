@@ -20,6 +20,10 @@ const showMenu = ref(false);
 // needs that same menu, just without a picker list above the Off button.
 const hasMenu = computed(() => props.options.length > 0 || props.isOn);
 
+// Switch and row both do the exact same thing: if there's a menu to show (any options, or
+// just the Off entry once on), open it — never toggle instantly. That keeps a labeled "Off"
+// button always the one and only way to turn a row off, instead of the switch silently doing
+// it with no visible control.
 function onRowClick() {
     if (hasMenu.value) {
         showMenu.value = !showMenu.value;
@@ -29,21 +33,7 @@ function onRowClick() {
 }
 
 function onSwitchClick() {
-    if (props.options.length === 0) {
-        if (props.isOn) {
-            showMenu.value = !showMenu.value;
-        } else {
-            emit('toggle');
-        }
-        return;
-    }
-
-    if (props.isOn) {
-        showMenu.value = false;
-        emit('off');
-    } else {
-        showMenu.value = !showMenu.value;
-    }
+    onRowClick();
 }
 
 function pick(option) {

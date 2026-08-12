@@ -22,8 +22,10 @@ const { get: getPrivacySettings, update: updatePrivacySettings } =
 const uploadError = ref("");
 const uploading = ref(false);
 const removingAvatar = ref(false);
-const showLastSeen = ref(true);
-const showReadReceipts = ref(true);
+const lastSeenHidden = ref(false);
+const lastSeenHiddenUntil = ref(null);
+const readReceiptsHidden = ref(false);
+const readReceiptsHiddenUntil = ref(null);
 const showBlocked = ref(false);
 const search = ref("");
 const section = ref(null);
@@ -149,10 +151,16 @@ const sectionTitle = computed(
     () => ROWS.find((row) => row.key === section.value)?.label ?? "",
 );
 
+function applyPrivacySettings(settings) {
+    lastSeenHidden.value = !settings.show_last_seen;
+    lastSeenHiddenUntil.value = settings.last_seen_hidden_until ?? null;
+    readReceiptsHidden.value = !settings.show_read_receipts;
+    readReceiptsHiddenUntil.value = settings.read_receipts_hidden_until ?? null;
+}
+
 onMounted(async () => {
     const settings = await getPrivacySettings();
-    showLastSeen.value = settings.show_last_seen;
-    showReadReceipts.value = settings.show_read_receipts;
+    applyPrivacySettings(settings);
     about.value = settings.about ?? "";
 });
 
@@ -196,14 +204,41 @@ async function onAboutBlur() {
     }
 }
 
-async function onToggleLastSeen() {
-    showLastSeen.value = !showLastSeen.value;
-    await updatePrivacySettings({ show_last_seen: showLastSeen.value });
+async function onHideLastSeen(option) {
+    const settings = await updatePrivacySettings({
+        show_last_seen: true,
+        last_seen_hidden_until: mutedUntilFor(option.key),
+    });
+    applyPrivacySettings(settings);
 }
 
-async function onToggleReadReceipts() {
-    showReadReceipts.value = !showReadReceipts.value;
-    await updatePrivacySettings({ show_read_receipts: showReadReceipts.value });
+async function onShowLastSeen() {
+    const settings = await updatePrivacySettings({
+        show_last_seen: true,
+        last_seen_hidden_until: null,
+    });
+    applyPrivacySettings(settings);
+}
+
+async function onHideReadReceipts(option) {
+    const settings = await updatePrivacySettings({
+        show_read_receipts: true,
+        read_receipts_hidden_until: mutedUntilFor(option.key),
+    });
+    applyPrivacySettings(settings);
+}
+
+async function onShowReadReceipts() {
+    const settings = await updatePrivacySettings({
+        show_read_receipts: true,
+        read_receipts_hidden_until: null,
+    });
+    applyPrivacySettings(settings);
+}
+
+function hiddenUntilLabel(iso) {
+    if (!iso) return null;
+    return `Hidden until ${new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}`;
 }
 
 function logout() {
@@ -445,17 +480,25 @@ function logout() {
                     <div class="mb-3">
                         <SettingRow
                             :icon="EYE_ICON"
-                            label="Show my last seen & online status"
-                            :is-on="showLastSeen"
-                            @toggle="onToggleLastSeen"
-                            @off="onToggleLastSeen"
+                            label="Hide my last seen & online status"
+                            :subtitle="hiddenUntilLabel(lastSeenHiddenUntil)"
+                            :is-on="lastSeenHidden"
+                            :options="MUTE_DURATIONS"
+                            menu-title="Hide for"
+                            off-label="Show again"
+                            @pick="onHideLastSeen"
+                            @off="onShowLastSeen"
                         />
                         <SettingRow
                             :icon="RECEIPT_ICON"
-                            label="Show my read receipts"
-                            :is-on="showReadReceipts"
-                            @toggle="onToggleReadReceipts"
-                            @off="onToggleReadReceipts"
+                            label="Hide my read receipts"
+                            :subtitle="hiddenUntilLabel(readReceiptsHiddenUntil)"
+                            :is-on="readReceiptsHidden"
+                            :options="MUTE_DURATIONS"
+                            menu-title="Hide for"
+                            off-label="Show again"
+                            @pick="onHideReadReceipts"
+                            @off="onShowReadReceipts"
                         />
                     </div>
                     <button

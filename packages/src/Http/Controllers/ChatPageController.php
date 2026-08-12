@@ -24,12 +24,12 @@ class ChatPageController extends Controller
             }
         }
 
-        $assetPath = __DIR__ . '/../../../resources/dist/app.js';
+        $assetPath = __DIR__.'/../../../resources/dist/app.js';
         $themeOverridePath = public_path('vendor/chat/theme.css');
 
         return view('chat::chat', [
             'chatConfig' => [
-                'apiBaseUrl' => '/' . ltrim(config('chat.route_prefix', 'api/chat'), '/'),
+                'apiBaseUrl' => '/'.ltrim(config('chat.route_prefix', 'api/chat'), '/'),
                 'chatableType' => $request->user()?->getMorphClass(),
                 'chatableId' => $request->user()?->getAuthIdentifier(),
                 'broadcasting' => [

@@ -29,11 +29,11 @@ class UserSettingsService implements UserSettingsServiceInterface
 
     public function allowsLastSeen(Model $chatable): bool
     {
-        return $this->get($chatable)->show_last_seen;
+        return $this->get($chatable)->lastSeenVisible();
     }
 
     public function allowsReadReceipts(Model $chatable): bool
     {
-        return $this->get($chatable)->show_read_receipts;
+        return $this->get($chatable)->readReceiptsVisible();
     }
 }
