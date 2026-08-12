@@ -75,9 +75,19 @@ const docItems = computed(() => state.byKind.docs.items
     .filter((m) => !m.deleted_for_everyone)
     .flatMap((m) => (m.attachments ?? []).map((a) => ({ ...a, createdAt: m.created_at }))));
 
+const URL_PATTERN = /https?:\/\/\S+/;
+
+// Not every link-containing message has a fetched OG preview (that fetch races the send, and
+// can fail or simply never finish in time) — fall back to the bare URL pulled from the body so
+// the message still shows up here, just without a thumbnail/title.
 const linkItems = computed(() => state.byKind.links.items
-    .filter((m) => !m.deleted_for_everyone && m.metadata?.link_preview)
-    .map((m) => ({ ...m.metadata.link_preview, createdAt: m.created_at })));
+    .filter((m) => !m.deleted_for_everyone)
+    .map((m) => {
+        if (m.metadata?.link_preview) return { ...m.metadata.link_preview, createdAt: m.created_at };
+        const url = m.body?.match(URL_PATTERN)?.[0];
+        return url ? { url, title: null, image: null, createdAt: m.created_at } : null;
+    })
+    .filter(Boolean));
 
 const viewerIndex = ref(null);
 

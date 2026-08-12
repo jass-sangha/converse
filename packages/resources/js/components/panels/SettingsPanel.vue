@@ -451,9 +451,7 @@ function logout() {
                             {{ uploadError }}
                         </p>
                     </div>
-                    <div
-                        class="mb-3 rounded-cv border border-converse-border p-3"
-                    >
+                    <div class="mb-3 px-1">
                         <p class="text-xs text-converse-textMuted">Your name</p>
                         <p class="text-[15px] text-converse-text">
                             {{ me?.name ?? "—" }}

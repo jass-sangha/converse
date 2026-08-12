@@ -1,6 +1,7 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useConversations } from '../../composables/useConversations';
+import { useExclusiveDropdown } from '../../composables/useExclusiveDropdown';
 
 const props = defineProps({
     conversation: { type: Object, required: true },
@@ -15,6 +16,14 @@ const OPTIONS = [
 ];
 
 const showMenu = ref(false);
+const { opened, closed } = useExclusiveDropdown();
+
+function close() {
+    showMenu.value = false;
+}
+
+watch(showMenu, (open) => (open ? opened(close) : closed(close)));
+onBeforeUnmount(() => closed(close));
 
 const current = computed(() => props.conversation.disappearing_messages_ttl || null);
 const isOn = computed(() => !!current.value);
@@ -46,7 +55,7 @@ function turnOff() {
             :class="isOn ? 'bg-converse-accent' : 'bg-converse-border'"
             role="switch"
             :aria-checked="isOn"
-            @click="isOn ? turnOff() : (showMenu = !showMenu)"
+            @click="showMenu = !showMenu"
         >
             <span
                 class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"

@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { useExclusiveDropdown } from '../../composables/useExclusiveDropdown';
 
 const props = defineProps({
     icon: { type: String, required: true },
@@ -14,6 +15,15 @@ const props = defineProps({
 const emit = defineEmits(['toggle', 'pick', 'off']);
 
 const showMenu = ref(false);
+const { opened, closed } = useExclusiveDropdown();
+
+function close() {
+    showMenu.value = false;
+}
+
+watch(showMenu, (open) => (open ? opened(close) : closed(close)));
+
+onBeforeUnmount(() => closed(close));
 
 // A row always has *something* to show in its dropdown once it's on (at minimum the "Off"
 // entry below), even with no `options` list — a plain boolean row (no duration/options) still

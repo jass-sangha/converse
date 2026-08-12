@@ -1,5 +1,6 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 import Avatar from "../shared/Avatar.vue";
 import Modal from "../shared/Modal.vue";
 import UserPicker from "../shared/UserPicker.vue";
@@ -218,6 +219,14 @@ async function toggleBlockOther() {
 }
 
 const showMuteMenu = ref(false);
+const { opened: muteMenuOpened, closed: muteMenuClosed } = useExclusiveDropdown();
+
+function closeMuteMenu() {
+    showMuteMenu.value = false;
+}
+
+watch(showMuteMenu, (open) => (open ? muteMenuOpened(closeMuteMenu) : muteMenuClosed(closeMuteMenu)));
+onBeforeUnmount(() => muteMenuClosed(closeMuteMenu));
 
 async function onPickMuteDuration(durationKey) {
     showMuteMenu.value = false;
@@ -461,9 +470,7 @@ function goCreateList() {
                     "
                     role="switch"
                     :aria-checked="isMuted"
-                    @click="
-                        isMuted ? onUnmute() : (showMuteMenu = !showMuteMenu)
-                    "
+                    @click="showMuteMenu = !showMuteMenu"
                 >
                     <span
                         class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
@@ -475,7 +482,7 @@ function goCreateList() {
                     v-if="showMuteMenu"
                     class="cv-animate-pop-in absolute right-4 top-full z-20 mt-1"
                 >
-                    <MuteDurationMenu @pick="onPickMuteDuration" />
+                    <MuteDurationMenu :show-unmute="isMuted" @pick="onPickMuteDuration" @unmute="onUnmute" />
                 </div>
             </div>
 

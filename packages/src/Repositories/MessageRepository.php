@@ -70,7 +70,11 @@ class MessageRepository implements MessageRepositoryInterface
         match ($kind) {
             'media' => $builder->whereIn('type', ['image', 'video', 'gif']),
             'docs' => $builder->where('type', 'document'),
-            'links' => $builder->where('type', 'text')->whereNotNull('metadata->link_preview'),
+            // Any text message containing a URL counts as a "link", not only the ones where
+            // the composer's client-side OG-preview fetch happened to finish before send —
+            // that fetch is a best-effort race against however fast the sender hits enter, so
+            // gating this list on metadata->link_preview silently dropped most real links.
+            'links' => $builder->where('type', 'text')->where('body', 'like', '%http%'),
         };
 
         if ($conversationId !== null) {

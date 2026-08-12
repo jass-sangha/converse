@@ -227,6 +227,22 @@ watch(searchOpen, (open) => {
 <template>
     <div class="cv-conversation-list flex h-full flex-col bg-converse-surface">
         <div
+            v-if="showArchived"
+            class="cv-conversation-list__header flex items-center gap-3 border-b border-converse-border px-3 py-3"
+        >
+            <button
+                type="button"
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                title="Back to chats"
+                @click="toggleArchived"
+            >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"/></svg>
+            </button>
+            <h1 class="text-lg font-semibold text-converse-text">Archived chats</h1>
+        </div>
+
+        <div
+            v-else
             class="cv-conversation-list__header flex items-center justify-between px-4 py-3"
         >
             <h1 class="text-xl font-bold text-converse-text">Converse</h1>
@@ -328,11 +344,7 @@ watch(searchOpen, (open) => {
                                 showMenu = false;
                             "
                         >
-                            {{
-                                showArchived
-                                    ? "Back to chats"
-                                    : "Archived chats"
-                            }}
+                            Archived chats
                         </button>
                         <button
                             type="button"

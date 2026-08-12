@@ -220,6 +220,33 @@ it('searches media by filename or by chat/contact name', function () {
     expect($noMatch->json('data'))->toHaveCount(0);
 });
 
+it('lists a link in the media links tab even without a fetched preview', function () {
+    $alice = mediaUser('alice-linkslist@example.com');
+    $bob = mediaUser('bob-linkslist@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    // No metadata.link_preview attached — mirrors a message sent before the composer's
+    // debounced OG-preview fetch had a chance to resolve.
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => 'check this out https://example.com/page',
+    ])->assertCreated();
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => 'no link here',
+    ])->assertCreated();
+
+    $links = $this->actingAs($alice)->getJson('/api/chat/messages/media?kind=links')->assertOk();
+
+    expect($links->json('data'))->toHaveCount(1)
+        ->and($links->json('data.0.body'))->toContain('https://example.com/page');
+});
+
 it('fetches and caches a link preview', function () {
     $alice = mediaUser('alice-preview@example.com');
 
