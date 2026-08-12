@@ -23,7 +23,10 @@ return new class extends Migration
             $table->unsignedBigInteger('last_read_message_id')->nullable();
             $table->timestamps();
 
-            $table->unique(['conversation_id', 'chatable_type', 'chatable_id']);
+            $table->unique(
+                ['conversation_id', 'chatable_type', 'chatable_id'],
+                'chat_participant_unique'
+            );
             $table->index('left_at');
         });
     }
