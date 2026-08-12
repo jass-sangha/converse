@@ -16,7 +16,10 @@ return new class extends Migration
             $table->morphs('chatable');
             $table->timestamps();
 
-            $table->unique(['message_id', 'chatable_type', 'chatable_id']);
+            $table->unique(
+                ['message_id', 'chatable_type', 'chatable_id'],
+                'starred_message_unique'
+            );
         });
     }
 
