@@ -123,6 +123,13 @@ it('stars and unstars a message', function () {
     $starred = $this->actingAs($bob)->getJson('/api/chat/starred-messages')->assertOk();
     expect($starred->json('data'))->toHaveCount(1);
 
+    // The embedded conversation.participants shape must match ParticipantResource
+    // (chatable_type/chatable_id) — the frontend's chatableKeyOf() reads those exact keys to
+    // figure out who the "other" participant of a starred DM is.
+    $participant = $starred->json('data.0.conversation.participants.0');
+    expect($participant)->toHaveKeys(['chatable_type', 'chatable_id'])
+        ->and($participant)->not->toHaveKey('type');
+
     $this->actingAs($bob)->deleteJson("/api/chat/messages/{$messageId}/star")->assertNoContent();
 
     $starredAfter = $this->actingAs($bob)->getJson('/api/chat/starred-messages')->assertOk();

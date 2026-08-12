@@ -232,7 +232,12 @@ async function onShowReadReceipts() {
 
 function untilLabel(prefix, iso) {
     if (!iso) return null;
-    return `${prefix} until ${new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}`;
+    const date = new Date(iso);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = date.toLocaleString("en-US", { month: "short" });
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${prefix} until ${day} ${month} ${date.getFullYear()}, ${hours}:${minutes}`;
 }
 
 function logout() {
@@ -485,11 +490,12 @@ function logout() {
                         <SettingRow
                             :icon="EYE_ICON"
                             label="Hide my last seen & online status"
-                            :subtitle="untilLabel('Hidden', lastSeenHiddenUntil)"
+                            :subtitle="
+                                untilLabel('Hidden', lastSeenHiddenUntil)
+                            "
                             :is-on="lastSeenHidden"
                             :options="MUTE_DURATIONS"
                             menu-title="Hide for"
-                            off-label="Show again"
                             @pick="onHideLastSeen"
                             @off="onShowLastSeen"
                         />
@@ -502,7 +508,6 @@ function logout() {
                             :is-on="readReceiptsHidden"
                             :options="MUTE_DURATIONS"
                             menu-title="Hide for"
-                            off-label="Show again"
                             @pick="onHideReadReceipts"
                             @off="onShowReadReceipts"
                         />

@@ -72,8 +72,13 @@ class MessageResource extends JsonResource
                 'id' => $this->conversation->id,
                 'name' => $this->conversation->name,
                 'type' => $this->conversation->type?->value,
+                // Field names must match ParticipantResource's shape (chatable_type/chatable_id),
+                // not a short type/id pair — every frontend consumer keys off of chatableKeyOf(),
+                // which reads chatable_type/chatable_id. A mismatch here silently produces an
+                // "undefined:undefined" chatable key, which then sends type=undefined to /users
+                // and 422s — the exact failure that made the starred-messages panel unusable.
                 'participants' => $this->conversation->relationLoaded('participants')
-                    ? $this->conversation->participants->map(fn ($p) => ['type' => $p->chatable_type, 'id' => $p->chatable_id])->values()
+                    ? $this->conversation->participants->map(fn ($p) => ['chatable_type' => $p->chatable_type, 'chatable_id' => $p->chatable_id])->values()
                     : [],
             ]),
             'expires_at' => $this->expires_at,

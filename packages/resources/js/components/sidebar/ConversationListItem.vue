@@ -191,18 +191,25 @@ const lastActivityLabel = computed(() => {
                 >
                     <span
                         v-if="isMuted"
-                        class="text-converse-textMuted"
+                        class="flex h-4 w-4 items-center justify-center text-converse-textMuted"
                         title="Muted"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            width="12"
-                            height="12"
-                            fill="currentColor"
+                            width="14"
+                            height="14"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
                         >
                             <path
-                                d="M16.5 12A4.5 4.5 0 0 0 14 8.03v1.66l2.45 2.45c.03-.14.05-.28.05-.14ZM19 12c0 .94-.2 1.82-.54 2.63l1.51 1.51A8.93 8.93 0 0 0 21 12h-2ZM4.27 3 3 4.27l6 6V12a3 3 0 0 0 4.7 2.46l1.32 1.32A4.48 4.48 0 0 1 12 16.5 4.5 4.5 0 0 1 7.5 12H5.5a6.5 6.5 0 0 0 6 6.48V21h2v-2.02a6.46 6.46 0 0 0 2.79-1.05L19.73 21 21 19.73 4.27 3Z"
+                                fill="currentColor"
+                                stroke="none"
+                                d="M18 16v-5a6 6 0 0 0-5-5.91V4a1 1 0 1 0-2 0v1.09A6 6 0 0 0 6 11v5l-2 2v1h16v-1Zm-6 6a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2Z"
                             />
+                            <line x1="3" y1="3" x2="21" y2="21" />
                         </svg>
                     </span>
                     <span
@@ -213,17 +220,17 @@ const lastActivityLabel = computed(() => {
                     </span>
                     <span
                         v-else-if="isPinned"
-                        class="text-converse-textMuted"
+                        class="flex h-4 w-4 items-center justify-center text-converse-textMuted"
                         title="Pinned"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            width="12"
-                            height="12"
+                            width="14"
+                            height="14"
                             fill="currentColor"
                         >
                             <path
-                                d="M16 3v6.5l2 3V15h-6v6l-1 1-1-1v-6H4v-2.5l2-3V3Z"
+                                d="M7 8a5 5 0 1 1 10 0 5 5 0 0 1-10 0ZM8 13h8l-4 9Z"
                             />
                         </svg>
                     </span>
