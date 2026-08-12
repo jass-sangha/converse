@@ -17,7 +17,10 @@ return new class extends Migration
             $table->string('emoji', 16);
             $table->timestamps();
 
-            $table->unique(['message_id', 'chatable_type', 'chatable_id']);
+            $table->unique(
+                ['message_id', 'chatable_type', 'chatable_id'],
+                'message_reaction_unique'
+            );
         });
     }
 
