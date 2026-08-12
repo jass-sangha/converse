@@ -2,10 +2,11 @@
 import { computed, onMounted, ref } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import BlockedUsersPanel from "./BlockedUsersPanel.vue";
-import MuteDurationMenu from "../shared/MuteDurationMenu.vue";
+import SettingRow from "../shared/SettingRow.vue";
 import { useChatStore } from "../../store";
 import { useProfile } from "../../composables/useProfile";
 import { usePreferences } from "../../composables/usePreferences";
+import { useSidebarUi } from "../../composables/useSidebarUi";
 import { usePrivacySettings } from "../../composables/usePrivacySettings";
 import { useNotifications } from "../../composables/useNotifications";
 import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
@@ -13,7 +14,8 @@ import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
 const store = useChatStore();
 const { muteAll } = useNotifications();
 const { updateAvatar, removeAvatar } = useProfile();
-const { theme, toggleTheme } = usePreferences();
+const { theme, setTheme } = usePreferences();
+const { setView } = useSidebarUi();
 const { get: getPrivacySettings, update: updatePrivacySettings } =
     usePrivacySettings();
 
@@ -27,22 +29,68 @@ const search = ref("");
 const section = ref(null);
 const about = ref("");
 const savingAbout = ref(false);
-const notifMenu = ref(null);
 const notifStatus = ref("");
+const mutedScopes = ref({ private: false, group: false });
+const mutedLabel = ref({ private: null, group: null });
 
 const SCOPE_LABELS = { private: "individual chats", group: "groups" };
 
+const MUTE_ICON =
+    "M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z";
+const EYE_ICON =
+    "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5Zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5Zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3Z";
+const RECEIPT_ICON =
+    "M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7Zm4.24-1.41L11.66 16.17l-3.88-3.88-1.41 1.41 5.29 5.29L23.66 7l-1.42-1.41ZM.41 13.59 5.7 18.88l1.41-1.41-5.29-5.29L.41 13.59Z";
+
+const LIGHT_PREVIEW = { bg: "#f0f2f5", accent: "#00a884", line: "#c4c9cf" };
+const DARK_PREVIEW = { bg: "#111b21", accent: "#00a884", line: "#3a4a53" };
+
+const THEME_OPTIONS = [
+    {
+        key: "light",
+        label: "Light",
+        hint: "Always use the light theme",
+        previewStyle: { background: LIGHT_PREVIEW.bg },
+        previewAccentStyle: { background: LIGHT_PREVIEW.accent },
+        previewLineStyle: { background: LIGHT_PREVIEW.line },
+    },
+    {
+        key: "dark",
+        label: "Dark",
+        hint: "Always use the dark theme",
+        previewStyle: { background: DARK_PREVIEW.bg },
+        previewAccentStyle: { background: DARK_PREVIEW.accent },
+        previewLineStyle: { background: DARK_PREVIEW.line },
+    },
+    {
+        key: "system",
+        label: "System default",
+        hint: "Match your device's appearance",
+        previewStyle: {
+            background: `linear-gradient(90deg, ${LIGHT_PREVIEW.bg} 50%, ${DARK_PREVIEW.bg} 50%)`,
+        },
+        previewAccentStyle: {
+            background: `linear-gradient(90deg, ${LIGHT_PREVIEW.accent} 50%, ${DARK_PREVIEW.accent} 50%)`,
+        },
+        previewLineStyle: {
+            background: `linear-gradient(90deg, ${LIGHT_PREVIEW.line} 50%, ${DARK_PREVIEW.line} 50%)`,
+        },
+    },
+];
+
 async function onMuteAll(scope, durationKey) {
-    notifMenu.value = null;
     const label =
         MUTE_DURATIONS.find((d) => d.key === durationKey)?.label ?? durationKey;
     await muteAll(scope, mutedUntilFor(durationKey));
+    mutedScopes.value[scope] = true;
+    mutedLabel.value[scope] = label;
     notifStatus.value = `Muted ${SCOPE_LABELS[scope]} for ${label.toLowerCase()}.`;
 }
 
 async function onUnmuteAll(scope) {
-    notifMenu.value = null;
     await muteAll(scope, null);
+    mutedScopes.value[scope] = false;
+    mutedLabel.value[scope] = null;
     notifStatus.value = `Unmuted ${SCOPE_LABELS[scope]}.`;
 }
 
@@ -166,16 +214,21 @@ function logout() {
 <template>
     <div class="cv-settings-panel flex h-full flex-col bg-converse-surface">
         <template v-if="!section">
-            <div class="cv-settings-panel__header px-4 py-3">
-                <h1 class="text-xl font-bold text-converse-text">
-                    {{ me?.name ?? "Settings" }}
-                </h1>
-                <p
-                    v-if="about"
-                    class="truncate text-sm text-converse-textMuted"
-                >
-                    {{ about }}
-                </p>
+            <div class="cv-settings-panel__header flex items-center gap-3 px-4 py-3">
+                <button type="button" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover sm:hidden" @click="setView('chats')">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"/></svg>
+                </button>
+                <div class="min-w-0">
+                    <h1 class="text-xl font-bold text-converse-text">
+                        {{ me?.name ?? "Settings" }}
+                    </h1>
+                    <p
+                        v-if="about"
+                        class="truncate text-sm text-converse-textMuted"
+                    >
+                        {{ about }}
+                    </p>
+                </div>
             </div>
 
             <div class="cv-settings-panel__search px-3 pb-3">
@@ -389,61 +442,19 @@ function logout() {
                 </template>
 
                 <template v-else-if="section === 'privacy'">
-                    <div class="mb-3 rounded-cv border border-converse-border">
-                        <div
-                            class="flex items-center justify-between border-b border-converse-border p-3"
-                        >
-                            <span class="text-sm text-converse-text"
-                                >Show my last seen &amp; online status</span
-                            >
-                            <button
-                                type="button"
-                                class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
-                                :class="
-                                    showLastSeen
-                                        ? 'bg-converse-accent'
-                                        : 'bg-converse-border'
-                                "
-                                role="switch"
-                                :aria-checked="showLastSeen"
-                                @click="onToggleLastSeen"
-                            >
-                                <span
-                                    class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
-                                    :class="
-                                        showLastSeen
-                                            ? 'translate-x-5'
-                                            : 'translate-x-0.5'
-                                    "
-                                />
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-between p-3">
-                            <span class="text-sm text-converse-text"
-                                >Show my read receipts</span
-                            >
-                            <button
-                                type="button"
-                                class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
-                                :class="
-                                    showReadReceipts
-                                        ? 'bg-converse-accent'
-                                        : 'bg-converse-border'
-                                "
-                                role="switch"
-                                :aria-checked="showReadReceipts"
-                                @click="onToggleReadReceipts"
-                            >
-                                <span
-                                    class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
-                                    :class="
-                                        showReadReceipts
-                                            ? 'translate-x-5'
-                                            : 'translate-x-0.5'
-                                    "
-                                />
-                            </button>
-                        </div>
+                    <div class="mb-3 divide-y divide-converse-border rounded-cv border border-converse-border">
+                        <SettingRow
+                            :icon="EYE_ICON"
+                            label="Show my last seen & online status"
+                            :is-on="showLastSeen"
+                            @toggle="onToggleLastSeen"
+                        />
+                        <SettingRow
+                            :icon="RECEIPT_ICON"
+                            label="Show my read receipts"
+                            :is-on="showReadReceipts"
+                            @toggle="onToggleReadReceipts"
+                        />
                     </div>
                     <button
                         type="button"
@@ -455,32 +466,60 @@ function logout() {
                 </template>
 
                 <template v-else-if="section === 'chats'">
-                    <div
-                        class="flex items-center justify-between rounded-cv border border-converse-border p-3"
+                    <p
+                        class="mb-2 text-xs font-medium uppercase text-converse-textMuted"
                     >
-                        <span class="text-sm text-converse-text"
-                            >Dark mode</span
-                        >
+                        Theme
+                    </p>
+                    <div class="flex flex-col gap-2">
                         <button
+                            v-for="option in THEME_OPTIONS"
+                            :key="option.key"
                             type="button"
-                            class="relative h-6 w-11 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
+                            class="flex items-center gap-3 rounded-cv border p-3 text-left"
                             :class="
-                                theme === 'dark'
-                                    ? 'bg-converse-accent'
-                                    : 'bg-converse-border'
+                                theme === option.key
+                                    ? 'border-converse-accent bg-converse-accent/5'
+                                    : 'border-converse-border hover:bg-converse-surfaceHover'
                             "
-                            role="switch"
-                            :aria-checked="theme === 'dark'"
-                            @click="toggleTheme"
+                            role="radio"
+                            :aria-checked="theme === option.key"
+                            @click="setTheme(option.key)"
                         >
                             <span
-                                class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
-                                :class="
-                                    theme === 'dark'
-                                        ? 'translate-x-5'
-                                        : 'translate-x-0.5'
-                                "
-                            />
+                                class="cv-theme-preview flex h-8 w-11 shrink-0 flex-col gap-1 overflow-hidden rounded-md border border-converse-border p-1"
+                                :style="option.previewStyle"
+                            >
+                                <span
+                                    class="block h-1.5 w-5 rounded-full"
+                                    :style="option.previewAccentStyle"
+                                />
+                                <span
+                                    class="block h-1.5 w-3/4 rounded-full"
+                                    :style="option.previewLineStyle"
+                                />
+                            </span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-[15px] text-converse-text">{{
+                                    option.label
+                                }}</span>
+                                <span
+                                    class="block text-xs text-converse-textMuted"
+                                    >{{ option.hint }}</span
+                                >
+                            </span>
+                            <svg
+                                v-if="theme === option.key"
+                                viewBox="0 0 24 24"
+                                width="18"
+                                height="18"
+                                fill="currentColor"
+                                class="shrink-0 text-converse-accent"
+                            >
+                                <path
+                                    d="m9 16.2-3.5-3.6L4 14.1l5 5 11-11-1.4-1.4Z"
+                                />
+                            </svg>
                         </button>
                     </div>
                     <p class="mt-3 text-xs text-converse-textMuted">
@@ -496,64 +535,27 @@ function logout() {
                         unmuted individually.
                     </p>
 
-                    <div
-                        class="mb-3 flex items-center justify-between rounded-cv border border-converse-border p-3"
-                    >
-                        <span class="text-sm text-converse-text"
-                            >Individual chats</span
-                        >
-                        <div class="relative">
-                            <button
-                                type="button"
-                                class="text-sm text-converse-accent"
-                                @click="
-                                    notifMenu =
-                                        notifMenu === 'private'
-                                            ? null
-                                            : 'private'
-                                "
-                            >
-                                Mute&hellip;
-                            </button>
-                            <div
-                                v-if="notifMenu === 'private'"
-                                class="cv-animate-pop-in absolute right-0 top-full z-20 mt-1"
-                            >
-                                <MuteDurationMenu
-                                    :show-unmute="true"
-                                    @pick="(d) => onMuteAll('private', d)"
-                                    @unmute="onUnmuteAll('private')"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        class="flex items-center justify-between rounded-cv border border-converse-border p-3"
-                    >
-                        <span class="text-sm text-converse-text">Groups</span>
-                        <div class="relative">
-                            <button
-                                type="button"
-                                class="text-sm text-converse-accent"
-                                @click="
-                                    notifMenu =
-                                        notifMenu === 'group' ? null : 'group'
-                                "
-                            >
-                                Mute&hellip;
-                            </button>
-                            <div
-                                v-if="notifMenu === 'group'"
-                                class="cv-animate-pop-in absolute right-0 top-full z-20 mt-1"
-                            >
-                                <MuteDurationMenu
-                                    :show-unmute="true"
-                                    @pick="(d) => onMuteAll('group', d)"
-                                    @unmute="onUnmuteAll('group')"
-                                />
-                            </div>
-                        </div>
+                    <div class="mb-3 divide-y divide-converse-border rounded-cv border border-converse-border">
+                        <SettingRow
+                            :icon="MUTE_ICON"
+                            label="Individual chats"
+                            :subtitle="mutedLabel.private"
+                            :is-on="mutedScopes.private"
+                            :options="MUTE_DURATIONS"
+                            menu-title="Mute for"
+                            @pick="(option) => onMuteAll('private', option.key)"
+                            @off="onUnmuteAll('private')"
+                        />
+                        <SettingRow
+                            :icon="MUTE_ICON"
+                            label="Groups"
+                            :subtitle="mutedLabel.group"
+                            :is-on="mutedScopes.group"
+                            :options="MUTE_DURATIONS"
+                            menu-title="Mute for"
+                            @pick="(option) => onMuteAll('group', option.key)"
+                            @off="onUnmuteAll('group')"
+                        />
                     </div>
 
                     <p

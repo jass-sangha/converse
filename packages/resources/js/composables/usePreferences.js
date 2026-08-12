@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const PREFIX = 'converse:';
 
@@ -19,13 +19,14 @@ function write(key, value) {
     }
 }
 
-function systemPrefersDark() {
-    return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-}
+const darkMediaQuery = typeof window !== 'undefined' ? window.matchMedia?.('(prefers-color-scheme: dark)') : null;
+const systemPrefersDark = ref(darkMediaQuery?.matches ?? false);
 
-const theme = ref(read('theme', null) ?? (systemPrefersDark() ? 'dark' : 'light'));
+const theme = ref(read('theme', 'system'));
 const sidebarWidth = ref(read('sidebarWidth', 320));
 const settingsPanelWidth = ref(read('settingsPanelWidth', 320));
+
+const effectiveTheme = computed(() => (theme.value === 'system' ? (systemPrefersDark.value ? 'dark' : 'light') : theme.value));
 
 function applyTheme(value) {
     if (typeof document !== 'undefined') {
@@ -33,12 +34,12 @@ function applyTheme(value) {
     }
 }
 
-applyTheme(theme.value);
+applyTheme(effectiveTheme.value);
 
-watch(theme, (value) => {
-    write('theme', value);
-    applyTheme(value);
-});
+darkMediaQuery?.addEventListener?.('change', (event) => { systemPrefersDark.value = event.matches; });
+
+watch(theme, (value) => write('theme', value));
+watch(effectiveTheme, applyTheme);
 
 watch(sidebarWidth, (value) => write('sidebarWidth', value));
 watch(settingsPanelWidth, (value) => write('settingsPanelWidth', value));
@@ -46,8 +47,9 @@ watch(settingsPanelWidth, (value) => write('settingsPanelWidth', value));
 export function usePreferences() {
     return {
         theme,
+        effectiveTheme,
         setTheme: (value) => { theme.value = value; },
-        toggleTheme: () => { theme.value = theme.value === 'dark' ? 'light' : 'dark'; },
+        toggleTheme: () => { theme.value = effectiveTheme.value === 'dark' ? 'light' : 'dark'; },
         sidebarWidth,
         setSidebarWidth: (px) => { sidebarWidth.value = px; },
         settingsPanelWidth,

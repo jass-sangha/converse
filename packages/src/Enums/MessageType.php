@@ -14,5 +14,7 @@ enum MessageType: string
     case Contact = 'contact';
     case Gif = 'gif';
     case Sticker = 'sticker';
+    case Poll = 'poll';
+    case Event = 'event';
     case System = 'system';
 }

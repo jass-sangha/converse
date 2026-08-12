@@ -1,0 +1,66 @@
+<script setup>
+import { computed } from 'vue';
+import { useMessages } from '../../../composables/useMessages';
+
+const props = defineProps({
+    message: { type: Object, required: true },
+});
+
+const { respondToEvent } = useMessages();
+
+const RSVP_OPTIONS = [
+    { key: 'going', label: 'Going' },
+    { key: 'maybe', label: 'Maybe' },
+    { key: 'declined', label: "Can't go" },
+];
+
+const title = computed(() => props.message.metadata?.title ?? '');
+const location = computed(() => props.message.metadata?.location ?? null);
+const description = computed(() => props.message.metadata?.description ?? null);
+const tally = computed(() => props.message.event ?? {});
+const myStatus = computed(() => tally.value.my_status ?? null);
+
+const formattedStartsAt = computed(() => {
+    const raw = props.message.metadata?.starts_at;
+    if (!raw) return '';
+    const date = new Date(raw);
+    return date.toLocaleString([], { weekday: 'short', day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit' });
+});
+
+function countFor(status) {
+    return tally.value[status]?.count ?? 0;
+}
+
+async function onRespond(status) {
+    await respondToEvent(props.message.id, props.message.conversation_id, myStatus.value === status ? null : status);
+}
+</script>
+
+<template>
+    <div class="cv-event-message min-w-[240px] max-w-sm rounded border border-converse-border bg-converse-surface p-3">
+        <div class="mb-2 flex items-center gap-2">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="shrink-0 text-converse-textMuted"><path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z"/></svg>
+            <p class="text-sm font-medium text-converse-text">{{ title }}</p>
+        </div>
+
+        <p class="text-xs text-converse-textMuted">{{ formattedStartsAt }}</p>
+        <p v-if="location" class="text-xs text-converse-textMuted">📍 {{ location }}</p>
+        <p v-if="description" class="mt-1 whitespace-pre-wrap text-sm text-converse-text">{{ description }}</p>
+
+        <div class="mt-3 flex gap-2">
+            <button
+                v-for="option in RSVP_OPTIONS"
+                :key="option.key"
+                type="button"
+                class="flex-1 rounded-cv border px-2 py-1.5 text-center text-xs"
+                :class="myStatus === option.key
+                    ? 'border-converse-accent bg-converse-accent/15 text-converse-accent'
+                    : 'border-converse-border text-converse-text hover:bg-converse-surfaceHover'"
+                @click="onRespond(option.key)"
+            >
+                {{ option.label }}
+                <span class="block text-[10px] text-converse-textMuted">{{ countFor(option.key) }}</span>
+            </button>
+        </div>
+    </div>
+</template>

@@ -15,6 +15,7 @@ use Converse\Chat\Events\MessageSent;
 use Converse\Chat\Events\MessageUpdated;
 use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\Message;
+use Converse\Chat\Models\MessageAttachment;
 use Converse\Chat\Models\MessageDeletion;
 use Converse\Chat\Models\MessageReceipt;
 use Converse\Chat\Notifications\NewChatMessageNotification;
@@ -151,14 +152,45 @@ class MessageService implements MessageServiceInterface
                     'metadata' => $message->metadata,
                 ]);
 
-                $forwarded[array_key_last($forwarded)]->update([
+                $forwardedMessage = $forwarded[array_key_last($forwarded)];
+
+                $forwardedMessage->update([
                     'is_forwarded' => true,
                     'forwarded_from_message_id' => $message->id,
                 ]);
+
+                $this->copyAttachments($message, $forwardedMessage, $chatable);
             }
 
             return $forwarded;
         });
+    }
+
+    /**
+     * send() only links attachments the forwarder has just uploaded (attachment_ids), so a
+     * forwarded media message would otherwise carry over its type/body/metadata but none of
+     * the original attachment rows — the attachments still belong to the source message and
+     * can't be re-linked to a second one. Clone the rows instead, pointing at the same
+     * underlying file on disk, owned by the forwarder.
+     */
+    protected function copyAttachments(Message $source, Message $target, Model $chatable): void
+    {
+        foreach ($source->attachments as $attachment) {
+            MessageAttachment::query()->create([
+                'message_id' => $target->id,
+                'uploader_type' => $chatable->getMorphClass(),
+                'uploader_id' => $chatable->getKey(),
+                'disk' => $attachment->disk,
+                'path' => $attachment->path,
+                'original_filename' => $attachment->original_filename,
+                'mime_type' => $attachment->mime_type,
+                'size_bytes' => $attachment->size_bytes,
+                'width' => $attachment->width,
+                'height' => $attachment->height,
+                'duration_seconds' => $attachment->duration_seconds,
+                'thumbnail_path' => $attachment->thumbnail_path,
+            ]);
+        }
     }
 
     /**

@@ -119,7 +119,7 @@ function onScroll() {
     >
         <div ref="sentinelEl" class="cv-message-list__sentinel h-1" />
 
-        <div class="cv-message-list__messages mx-auto flex max-w-5xl flex-col gap-2">
+        <div class="cv-message-list__messages mx-auto flex max-w-7xl flex-col gap-2">
             <template v-for="item in timeline" :key="item.key">
                 <div v-if="item.kind === 'date'" class="flex justify-center py-1">
                     <span class="rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-xs font-medium text-converse-textMuted shadow-sm">{{ item.label }}</span>

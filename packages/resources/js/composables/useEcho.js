@@ -112,6 +112,18 @@ function joinConversation(conversationId) {
                 upsertMessage(conversationId, { ...existing, reactions: payload.reactions });
             }
         })
+        .listen('.message.poll-voted', (payload) => {
+            const existing = findMessage(conversationId, payload.message_id);
+            if (existing) {
+                upsertMessage(conversationId, { ...existing, poll: payload.poll });
+            }
+        })
+        .listen('.message.event-rsvped', (payload) => {
+            const existing = findMessage(conversationId, payload.message_id);
+            if (existing) {
+                upsertMessage(conversationId, { ...existing, event: payload.event });
+            }
+        })
         .listen('.messages.delivered', () => {
             markStatusAtLeast(conversationId, 'delivered');
         })

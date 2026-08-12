@@ -4,6 +4,8 @@ import ReplyPreview from '../chat/ReplyPreview.vue';
 import EmojiPicker from './EmojiPicker.vue';
 import AttachmentPicker from './AttachmentPicker.vue';
 import VoiceRecorder from './VoiceRecorder.vue';
+import PollComposerModal from './PollComposerModal.vue';
+import EventComposerModal from './EventComposerModal.vue';
 import { useMessages } from '../../composables/useMessages';
 import { useTyping } from '../../composables/useTyping';
 import { useApi } from '../../composables/useApi';
@@ -26,6 +28,8 @@ const linkPreview = ref(null);
 const recording = ref(false);
 const inputEl = ref(null);
 const stagedAttachments = ref([]);
+const showPollModal = ref(false);
+const showEventModal = ref(false);
 let linkDebounce = null;
 
 const hasStaged = computed(() => stagedAttachments.value.length > 0);
@@ -96,6 +100,24 @@ async function onVoiceRecorded({ attachment, durationSeconds }) {
         attachment_ids: [attachment.id],
         metadata: { duration: durationSeconds },
     });
+    emit('sent');
+}
+
+async function onCreatePoll({ question, options, multiple }) {
+    await send(props.conversationId, {
+        type: 'poll',
+        metadata: { question, options, multiple },
+    });
+    showPollModal.value = false;
+    emit('sent');
+}
+
+async function onCreateEvent({ title: eventTitle, starts_at, location, description }) {
+    await send(props.conversationId, {
+        type: 'event',
+        metadata: { title: eventTitle, starts_at, location, description },
+    });
+    showEventModal.value = false;
     emit('sent');
 }
 
@@ -225,7 +247,11 @@ async function submit() {
 
         <form class="cv-composer__form flex items-center gap-2" @submit.prevent="submit">
             <template v-if="!recording">
-                <AttachmentPicker @uploaded="onAttachmentUploaded" />
+                <AttachmentPicker
+                    @uploaded="onAttachmentUploaded"
+                    @create-poll="showPollModal = true"
+                    @create-event="showEventModal = true"
+                />
 
                 <div class="cv-composer__emoji-wrap relative">
                     <button type="button" title="Emoji" class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-accent" @click="showEmoji = !showEmoji">
@@ -255,5 +281,8 @@ async function submit() {
                 {{ editing ? 'Save' : 'Send' }}
             </button>
         </form>
+
+        <PollComposerModal v-if="showPollModal" @close="showPollModal = false" @create="onCreatePoll" />
+        <EventComposerModal v-if="showEventModal" @close="showEventModal = false" @create="onCreateEvent" />
     </div>
 </template>

@@ -14,6 +14,8 @@ import LocationMessage from "./message-types/LocationMessage.vue";
 import ContactMessage from "./message-types/ContactMessage.vue";
 import GifMessage from "./message-types/GifMessage.vue";
 import StickerMessage from "./message-types/StickerMessage.vue";
+import PollMessage from "./message-types/PollMessage.vue";
+import EventMessage from "./message-types/EventMessage.vue";
 import SystemMessage from "./message-types/SystemMessage.vue";
 import ReplyPreview from "./ReplyPreview.vue";
 import EmojiPicker from "../composer/EmojiPicker.vue";
@@ -34,6 +36,8 @@ const TYPE_COMPONENTS = {
     contact: ContactMessage,
     gif: GifMessage,
     sticker: StickerMessage,
+    poll: PollMessage,
+    event: EventMessage,
 };
 
 const QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];

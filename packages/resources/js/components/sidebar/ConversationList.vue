@@ -21,7 +21,7 @@ const { refresh, setActive } = useConversations();
 const { search: searchMessages } = useMessages();
 const { resolve, get } = useUsers();
 const { index: listChatLists, destroy: destroyChatList } = useChatLists();
-const { theme, toggleTheme } = usePreferences();
+const { effectiveTheme, toggleTheme } = usePreferences();
 const { filter, setFilter, searchOpen, toggleSearch, setView } = useSidebarUi();
 
 const FILTERS = [
@@ -342,7 +342,7 @@ watch(searchOpen, (open) => {
                                 showMenu = false;
                             "
                         >
-                            {{ theme === "dark" ? "Light mode" : "Dark mode" }}
+                            {{ effectiveTheme === "dark" ? "Light mode" : "Dark mode" }}
                         </button>
                         <button
                             type="button"

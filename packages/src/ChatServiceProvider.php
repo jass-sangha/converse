@@ -9,6 +9,7 @@ use Converse\Chat\Contracts\BlockedUserServiceInterface;
 use Converse\Chat\Contracts\ChatListServiceInterface;
 use Converse\Chat\Contracts\ConversationRepositoryInterface;
 use Converse\Chat\Contracts\ConversationServiceInterface;
+use Converse\Chat\Contracts\EventRsvpServiceInterface;
 use Converse\Chat\Contracts\LinkPreviewFetcher;
 use Converse\Chat\Contracts\MediaProcessor;
 use Converse\Chat\Contracts\MessageReactionServiceInterface;
@@ -18,6 +19,7 @@ use Converse\Chat\Contracts\MessageServiceInterface;
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Contracts\ParticipantServiceInterface;
 use Converse\Chat\Contracts\PinnedMessageServiceInterface;
+use Converse\Chat\Contracts\PollVoteServiceInterface;
 use Converse\Chat\Contracts\PresenceServiceInterface;
 use Converse\Chat\Contracts\StarredMessageServiceInterface;
 use Converse\Chat\Contracts\UserSearchServiceInterface;
@@ -33,6 +35,7 @@ use Converse\Chat\Services\AttachmentService;
 use Converse\Chat\Services\BlockedUserService;
 use Converse\Chat\Services\ChatListService;
 use Converse\Chat\Services\ConversationService;
+use Converse\Chat\Services\EventRsvpService;
 use Converse\Chat\Services\MessageReactionService;
 use Converse\Chat\Services\MessageReceiptService;
 use Converse\Chat\Services\MessageService;
@@ -40,6 +43,7 @@ use Converse\Chat\Services\NullMediaProcessor;
 use Converse\Chat\Services\OpenGraphLinkPreviewFetcher;
 use Converse\Chat\Services\ParticipantService;
 use Converse\Chat\Services\PinnedMessageService;
+use Converse\Chat\Services\PollVoteService;
 use Converse\Chat\Services\PresenceService;
 use Converse\Chat\Services\StarredMessageService;
 use Converse\Chat\Services\UserSearchService;
@@ -75,6 +79,8 @@ class ChatServiceProvider extends PackageServiceProvider
         PinnedMessageServiceInterface::class => PinnedMessageService::class,
         UserSettingsServiceInterface::class => UserSettingsService::class,
         ChatListServiceInterface::class => ChatListService::class,
+        PollVoteServiceInterface::class => PollVoteService::class,
+        EventRsvpServiceInterface::class => EventRsvpService::class,
     ];
 
     protected array $policies = [

@@ -24,6 +24,16 @@ class MessagePolicy
         return $this->isActiveParticipant($message, $user);
     }
 
+    public function vote(Model $user, Message $message): bool
+    {
+        return $this->isActiveParticipant($message, $user);
+    }
+
+    public function rsvp(Model $user, Message $message): bool
+    {
+        return $this->isActiveParticipant($message, $user);
+    }
+
     public function star(Model $user, Message $message): bool
     {
         return $this->isActiveParticipant($message, $user);

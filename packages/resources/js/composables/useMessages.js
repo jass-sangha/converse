@@ -113,6 +113,24 @@ export function useMessages() {
         }
     }
 
+    async function votePoll(messageId, conversationId, optionIndex) {
+        const { data } = await api.post(`/messages/${messageId}/poll/vote`, { option_index: optionIndex });
+        const existing = (store.messagesByConversation[conversationId] ?? []).find((m) => m.id === messageId);
+        if (existing) {
+            upsertMessage(conversationId, { ...existing, poll: data.data });
+        }
+        return data.data;
+    }
+
+    async function respondToEvent(messageId, conversationId, status) {
+        const { data } = await api.post(`/messages/${messageId}/event/rsvp`, { status });
+        const existing = (store.messagesByConversation[conversationId] ?? []).find((m) => m.id === messageId);
+        if (existing) {
+            upsertMessage(conversationId, { ...existing, event: data.data });
+        }
+        return data.data;
+    }
+
     async function star(messageId) {
         await api.post(`/messages/${messageId}/star`);
     }
@@ -170,6 +188,8 @@ export function useMessages() {
         forward,
         react,
         unreact,
+        votePoll,
+        respondToEvent,
         star,
         unstar,
         uploadAttachment,

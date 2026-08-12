@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import Avatar from "../shared/Avatar.vue";
+import Modal from "../shared/Modal.vue";
 import UserPicker from "../shared/UserPicker.vue";
 import DisappearingToggle from "./DisappearingToggle.vue";
 import StarredMessagesPanel from "./StarredMessagesPanel.vue";
@@ -119,11 +120,16 @@ async function addMembers() {
     try {
         await add(props.conversation.id, picked.value);
         await refreshOne(props.conversation.id);
-        showAddMember.value = false;
-        picked.value = [];
+        closeAddMember();
     } catch (e) {
         error.value = e.response?.data?.message ?? "Could not add members.";
     }
+}
+
+function closeAddMember() {
+    showAddMember.value = false;
+    picked.value = [];
+    error.value = "";
 }
 
 async function removeMember(participant) {
@@ -480,21 +486,9 @@ function goCreateList() {
                         v-if="isAdmin"
                         type="button"
                         class="text-xs text-converse-accent"
-                        @click="showAddMember = !showAddMember"
+                        @click="showAddMember = true"
                     >
                         Add
-                    </button>
-                </div>
-
-                <div v-if="showAddMember" class="mb-3 px-4">
-                    <UserPicker v-model="picked" :multiple="true" />
-                    <button
-                        type="button"
-                        class="mt-2 w-full rounded bg-converse-accent py-1.5 text-sm text-white disabled:opacity-50"
-                        :disabled="!picked.length"
-                        @click="addMembers"
-                    >
-                        Add selected
                     </button>
                 </div>
 
@@ -744,6 +738,22 @@ function goCreateList() {
         </div>
 
         <StarredMessagesPanel v-if="showStarred" @close="showStarred = false" />
+
+        <Modal v-if="showAddMember" title="Add participants" @close="closeAddMember">
+            <UserPicker v-model="picked" :multiple="true" />
+            <p v-if="error" class="mt-2 text-xs text-converse-danger">{{ error }}</p>
+
+            <template #footer>
+                <button
+                    type="button"
+                    class="w-full rounded bg-converse-accent py-1.5 text-sm text-white disabled:opacity-50"
+                    :disabled="!picked.length"
+                    @click="addMembers"
+                >
+                    Add selected
+                </button>
+            </template>
+        </Modal>
 
         <div
             v-if="showMedia"

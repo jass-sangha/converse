@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Gate;
 
 class MessageController extends Controller
 {
-    protected const EAGER = ['chatable', 'attachments', 'reactions', 'replyTo', 'receipts.chatable', 'starredBy', 'pinnedIn'];
+    protected const EAGER = ['chatable', 'attachments', 'reactions', 'replyTo', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps'];
 
     public function __construct(
         protected MessageServiceInterface $messages,

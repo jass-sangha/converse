@@ -47,6 +47,8 @@ return [
         'user_settings' => 'chat_user_settings',
         'lists' => 'chat_lists',
         'list_conversations' => 'chat_list_conversations',
+        'poll_votes' => 'chat_poll_votes',
+        'event_rsvps' => 'chat_event_rsvps',
     ],
 
     /*

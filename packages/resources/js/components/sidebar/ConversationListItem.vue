@@ -165,11 +165,11 @@ const lastActivityLabel = computed(() => {
                         />
                     </svg>
                 </span>
-                <span
+                <!-- <span
                     v-if="lastActivityLabel"
                     class="shrink-0 text-[10px] text-converse-textMuted"
                     >{{ lastActivityLabel }}</span
-                >
+                > -->
             </div>
             <div
                 class="cv-conversation-item__preview-row flex items-center justify-between gap-2"

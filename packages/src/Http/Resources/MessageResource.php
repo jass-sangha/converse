@@ -3,8 +3,11 @@
 namespace Converse\Chat\Http\Resources;
 
 use Converse\Chat\Contracts\UserSettingsServiceInterface;
+use Converse\Chat\Enums\MessageType;
+use Converse\Chat\Models\EventRsvp;
 use Converse\Chat\Models\MessageReaction;
 use Converse\Chat\Models\MessageReceipt;
+use Converse\Chat\Models\PollVote;
 use Converse\Chat\Models\StarredMessage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -63,6 +66,8 @@ class MessageResource extends JsonResource
             'is_starred_by_me' => $this->whenLoaded('starredBy', fn () => $viewer !== null
                 && $this->starredBy->contains(fn (StarredMessage $s) => $this->isChatable($s, $viewer))),
             'is_pinned' => $this->whenLoaded('pinnedIn', fn () => $this->pinnedIn !== null, false),
+            'poll' => $this->whenLoaded('pollVotes', fn () => $this->type === MessageType::Poll ? $this->pollTally($viewer) : null),
+            'event' => $this->whenLoaded('eventRsvps', fn () => $this->type === MessageType::Event ? $this->eventTally($viewer) : null),
             'conversation' => $this->whenLoaded('conversation', fn () => [
                 'id' => $this->conversation->id,
                 'name' => $this->conversation->name,
@@ -79,6 +84,43 @@ class MessageResource extends JsonResource
     protected function isChatable(mixed $row, Model $chatable): bool
     {
         return $row->chatable_type === $chatable->getMorphClass() && $row->chatable_id === $chatable->getKey();
+    }
+
+    protected function pollTally(?Model $viewer): array
+    {
+        $optionCount = count($this->metadata['options'] ?? []);
+
+        $options = collect(range(0, max($optionCount - 1, -1)))->map(function (int $index) use ($viewer) {
+            $group = $this->pollVotes->where('option_index', $index);
+
+            return [
+                'index' => $index,
+                'count' => $group->count(),
+                'self' => $viewer !== null && $group->contains(fn (PollVote $v) => $this->isChatable($v, $viewer)),
+                'voters' => $group->map(fn (PollVote $v) => ['type' => $v->chatable_type, 'id' => $v->chatable_id])->values(),
+            ];
+        })->values();
+
+        return [
+            'options' => $options,
+            'total_voters' => $this->pollVotes->unique(fn (PollVote $v) => $v->chatable_type.':'.$v->chatable_id)->count(),
+        ];
+    }
+
+    protected function eventTally(?Model $viewer): array
+    {
+        $myStatus = $viewer === null ? null : optional(
+            $this->eventRsvps->first(fn (EventRsvp $r) => $this->isChatable($r, $viewer))
+        )->status;
+
+        return collect(['going', 'maybe', 'declined'])->mapWithKeys(function (string $status) {
+            $group = $this->eventRsvps->where('status', $status);
+
+            return [$status => [
+                'count' => $group->count(),
+                'respondents' => $group->map(fn (EventRsvp $r) => ['type' => $r->chatable_type, 'id' => $r->chatable_id])->values(),
+            ]];
+        })->put('my_status', $myStatus)->toArray();
     }
 
     protected function receiptStatus(?Model $viewer): string

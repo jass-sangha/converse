@@ -4,6 +4,7 @@ use Converse\Chat\Http\Controllers\AttachmentController;
 use Converse\Chat\Http\Controllers\BlockedUserController;
 use Converse\Chat\Http\Controllers\ChatListController;
 use Converse\Chat\Http\Controllers\ConversationController;
+use Converse\Chat\Http\Controllers\EventRsvpController;
 use Converse\Chat\Http\Controllers\LinkPreviewController;
 use Converse\Chat\Http\Controllers\MessageController;
 use Converse\Chat\Http\Controllers\MessageReactionController;
@@ -11,6 +12,7 @@ use Converse\Chat\Http\Controllers\MessageReceiptController;
 use Converse\Chat\Http\Controllers\NotificationController;
 use Converse\Chat\Http\Controllers\ParticipantController;
 use Converse\Chat\Http\Controllers\PinnedMessageController;
+use Converse\Chat\Http\Controllers\PollVoteController;
 use Converse\Chat\Http\Controllers\PresenceController;
 use Converse\Chat\Http\Controllers\ProfileController;
 use Converse\Chat\Http\Controllers\StarredMessageController;
@@ -43,6 +45,9 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
 
         Route::post('messages/{message}/reactions', [MessageReactionController::class, 'store']);
         Route::delete('messages/{message}/reactions', [MessageReactionController::class, 'destroy']);
+
+        Route::post('messages/{message}/poll/vote', [PollVoteController::class, 'store']);
+        Route::post('messages/{message}/event/rsvp', [EventRsvpController::class, 'store']);
 
         Route::get('starred-messages', [StarredMessageController::class, 'index']);
         Route::post('messages/{message}/star', [StarredMessageController::class, 'store']);

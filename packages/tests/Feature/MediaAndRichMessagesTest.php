@@ -42,6 +42,45 @@ it('uploads an attachment and sends it as an image message', function () {
     ])->assertStatus(403);
 });
 
+it('forwards a media message with its attachment intact', function () {
+    Storage::fake('chat');
+
+    $alice = mediaUser('alice-fwdmedia@example.com');
+    $bob = mediaUser('bob-fwdmedia@example.com');
+    $carol = mediaUser('carol-fwdmedia@example.com');
+
+    $convoAB = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $convoAC = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($carol)],
+    ])->json('data.id');
+
+    $attachmentId = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->image('photo.jpg', 200, 200),
+    ])->json('data.id');
+
+    $originalId = $this->actingAs($alice)->postJson("/api/chat/conversations/{$convoAB}/messages", [
+        'type' => 'image',
+        'attachment_ids' => [$attachmentId],
+    ])->json('data.id');
+
+    $forwarded = $this->actingAs($alice)
+        ->postJson("/api/chat/messages/{$originalId}/forward", ['conversation_ids' => [$convoAC]])
+        ->assertOk();
+
+    expect($forwarded->json('data.0.type'))->toBe('image')
+        ->and($forwarded->json('data.0.attachments'))->toHaveCount(1)
+        ->and($forwarded->json('data.0.attachments.0.original_filename'))->toContain('photo');
+
+    // The original message must keep its own attachment untouched.
+    $original = $this->actingAs($alice)->getJson("/api/chat/conversations/{$convoAB}/messages")->json('data');
+    expect(collect($original)->firstWhere('id', $originalId)['attachments'])->toHaveCount(1);
+});
+
 it('rejects an oversized or wrong-type attachment upload', function () {
     Storage::fake('chat');
 

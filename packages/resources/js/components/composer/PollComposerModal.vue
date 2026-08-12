@@ -1,0 +1,109 @@
+<script setup>
+import { computed, ref } from 'vue';
+import Modal from '../shared/Modal.vue';
+
+const emit = defineEmits(['close', 'create']);
+
+const question = ref('');
+const options = ref(['', '']);
+const multiple = ref(false);
+const submitting = ref(false);
+
+const canAddOption = computed(() => options.value.length < 12);
+const validOptions = computed(() => options.value.map((o) => o.trim()).filter(Boolean));
+const canSubmit = computed(() => question.value.trim().length > 0 && validOptions.value.length >= 2);
+
+function addOption() {
+    if (canAddOption.value) options.value.push('');
+}
+
+function removeOption(index) {
+    if (options.value.length > 2) options.value.splice(index, 1);
+}
+
+async function submit() {
+    if (!canSubmit.value || submitting.value) return;
+
+    submitting.value = true;
+    try {
+        emit('create', {
+            question: question.value.trim(),
+            options: validOptions.value,
+            multiple: multiple.value,
+        });
+    } finally {
+        submitting.value = false;
+    }
+}
+</script>
+
+<template>
+    <Modal title="Create poll" @close="emit('close')">
+        <label class="mb-1 block text-xs font-medium uppercase text-converse-textMuted">Question</label>
+        <input
+            v-model="question"
+            type="text"
+            maxlength="255"
+            placeholder="Ask a question"
+            class="mb-4 w-full border-b border-converse-border bg-transparent pb-2 text-[15px] text-converse-text focus:border-converse-accent focus:outline-none"
+        >
+
+        <label class="mb-1 block text-xs font-medium uppercase text-converse-textMuted">Options</label>
+        <div class="flex flex-col gap-2">
+            <div v-for="(option, index) in options" :key="index" class="flex items-center gap-2">
+                <input
+                    v-model="options[index]"
+                    type="text"
+                    maxlength="100"
+                    :placeholder="`Option ${index + 1}`"
+                    class="flex-1 rounded-cv border border-converse-border bg-transparent px-3 py-1.5 text-sm text-converse-text focus:border-converse-accent focus:outline-none"
+                >
+                <button
+                    v-if="options.length > 2"
+                    type="button"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    @click="removeOption(index)"
+                >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <button
+            v-if="canAddOption"
+            type="button"
+            class="mt-2 text-sm text-converse-accent"
+            @click="addOption"
+        >
+            + Add option
+        </button>
+
+        <label class="mt-4 flex items-center justify-between">
+            <span class="text-sm text-converse-text">Allow multiple answers</span>
+            <button
+                type="button"
+                class="relative h-6 w-11 shrink-0 rounded-full transition-colors"
+                :class="multiple ? 'bg-converse-accent' : 'bg-converse-border'"
+                role="switch"
+                :aria-checked="multiple"
+                @click="multiple = !multiple"
+            >
+                <span
+                    class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
+                    :class="multiple ? 'translate-x-5' : 'translate-x-0.5'"
+                />
+            </button>
+        </label>
+
+        <template #footer>
+            <button
+                type="button"
+                class="w-full rounded bg-converse-accent py-1.5 text-sm text-white disabled:opacity-50"
+                :disabled="!canSubmit || submitting"
+                @click="submit"
+            >
+                Create poll
+            </button>
+        </template>
+    </Modal>
+</template>
