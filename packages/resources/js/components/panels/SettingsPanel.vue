@@ -535,28 +535,26 @@ function logout() {
                         unmuted individually.
                     </p>
 
-                    <div class="mb-3 divide-y divide-converse-border rounded-cv border border-converse-border">
-                        <SettingRow
-                            :icon="MUTE_ICON"
-                            label="Individual chats"
-                            :subtitle="mutedLabel.private"
-                            :is-on="mutedScopes.private"
-                            :options="MUTE_DURATIONS"
-                            menu-title="Mute for"
-                            @pick="(option) => onMuteAll('private', option.key)"
-                            @off="onUnmuteAll('private')"
-                        />
-                        <SettingRow
-                            :icon="MUTE_ICON"
-                            label="Groups"
-                            :subtitle="mutedLabel.group"
-                            :is-on="mutedScopes.group"
-                            :options="MUTE_DURATIONS"
-                            menu-title="Mute for"
-                            @pick="(option) => onMuteAll('group', option.key)"
-                            @off="onUnmuteAll('group')"
-                        />
-                    </div>
+                    <SettingRow
+                        :icon="MUTE_ICON"
+                        label="Individual chats"
+                        :subtitle="mutedLabel.private"
+                        :is-on="mutedScopes.private"
+                        :options="MUTE_DURATIONS"
+                        menu-title="Mute for"
+                        @pick="(option) => onMuteAll('private', option.key)"
+                        @off="onUnmuteAll('private')"
+                    />
+                    <SettingRow
+                        :icon="MUTE_ICON"
+                        label="Groups"
+                        :subtitle="mutedLabel.group"
+                        :is-on="mutedScopes.group"
+                        :options="MUTE_DURATIONS"
+                        menu-title="Mute for"
+                        @pick="(option) => onMuteAll('group', option.key)"
+                        @off="onUnmuteAll('group')"
+                    />
 
                     <p
                         v-if="notifStatus"
