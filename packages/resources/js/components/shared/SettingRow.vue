@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     icon: { type: String, required: true },
@@ -14,17 +14,30 @@ const props = defineProps({
 const emit = defineEmits(['toggle', 'pick', 'off']);
 
 const showMenu = ref(false);
-const hasMenu = props.options.length > 0;
+
+// A row always has *something* to show in its dropdown once it's on (at minimum the "Off"
+// entry below), even with no `options` list — a plain boolean row (no duration/options) still
+// needs that same menu, just without a picker list above the Off button.
+const hasMenu = computed(() => props.options.length > 0 || props.isOn);
 
 function onRowClick() {
-    if (hasMenu) showMenu.value = !showMenu.value;
+    if (hasMenu.value) {
+        showMenu.value = !showMenu.value;
+    } else {
+        emit('toggle');
+    }
 }
 
 function onSwitchClick() {
-    if (!hasMenu) {
-        emit('toggle');
+    if (props.options.length === 0) {
+        if (props.isOn) {
+            showMenu.value = !showMenu.value;
+        } else {
+            emit('toggle');
+        }
         return;
     }
+
     if (props.isOn) {
         showMenu.value = false;
         emit('off');

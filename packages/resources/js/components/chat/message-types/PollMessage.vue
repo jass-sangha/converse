@@ -1,12 +1,15 @@
 <script setup>
 import { computed } from 'vue';
 import { useMessages } from '../../../composables/useMessages';
+import { useChatStore } from '../../../store';
+import { chatableKey } from '../../../chatable';
 
 const props = defineProps({
     message: { type: Object, required: true },
 });
 
 const { votePoll } = useMessages();
+const store = useChatStore();
 
 const question = computed(() => props.message.metadata?.question ?? '');
 const labels = computed(() => props.message.metadata?.options ?? []);
@@ -14,8 +17,16 @@ const multiple = computed(() => !!props.message.metadata?.multiple);
 const tally = computed(() => props.message.poll ?? { options: [], total_voters: 0 });
 const totalVoters = computed(() => tally.value.total_voters ?? 0);
 
+// `self` isn't trustworthy from the API here: the same tally payload is broadcast to every
+// participant (it can't carry a field scoped to "whoever's looking"), so it's derived locally
+// from the objective voters list instead — correct regardless of whether this tally came from
+// the initial load, this viewer's own vote response, or someone else's realtime broadcast.
 function optionAt(index) {
-    return tally.value.options?.find((o) => o.index === index) ?? { count: 0, self: false, voters: [] };
+    const option = tally.value.options?.find((o) => o.index === index) ?? { count: 0, voters: [] };
+    return {
+        ...option,
+        self: (option.voters ?? []).some((v) => chatableKey(v.type, v.id) === store.currentKey),
+    };
 }
 
 function percentage(index) {

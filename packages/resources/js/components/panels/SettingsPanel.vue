@@ -448,12 +448,14 @@ function logout() {
                             label="Show my last seen & online status"
                             :is-on="showLastSeen"
                             @toggle="onToggleLastSeen"
+                            @off="onToggleLastSeen"
                         />
                         <SettingRow
                             :icon="RECEIPT_ICON"
                             label="Show my read receipts"
                             :is-on="showReadReceipts"
                             @toggle="onToggleReadReceipts"
+                            @off="onToggleReadReceipts"
                         />
                     </div>
                     <button

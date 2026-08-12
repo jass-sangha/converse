@@ -1,12 +1,15 @@
 <script setup>
 import { computed } from 'vue';
 import { useMessages } from '../../../composables/useMessages';
+import { useChatStore } from '../../../store';
+import { chatableKey } from '../../../chatable';
 
 const props = defineProps({
     message: { type: Object, required: true },
 });
 
 const { respondToEvent } = useMessages();
+const store = useChatStore();
 
 const RSVP_OPTIONS = [
     { key: 'going', label: 'Going' },
@@ -18,7 +21,20 @@ const title = computed(() => props.message.metadata?.title ?? '');
 const location = computed(() => props.message.metadata?.location ?? null);
 const description = computed(() => props.message.metadata?.description ?? null);
 const tally = computed(() => props.message.event ?? {});
-const myStatus = computed(() => tally.value.my_status ?? null);
+
+// Derived locally from respondent lists rather than trusted from `my_status` — that field is
+// only meaningful on the initial per-viewer load, not on the same tally object this viewer's
+// own RSVP response or a realtime broadcast from someone else carries. See PollMessage.vue for
+// the same reasoning.
+const myStatus = computed(() => {
+    for (const option of RSVP_OPTIONS) {
+        const respondents = tally.value[option.key]?.respondents ?? [];
+        if (respondents.some((r) => chatableKey(r.type, r.id) === store.currentKey)) {
+            return option.key;
+        }
+    }
+    return null;
+});
 
 const formattedStartsAt = computed(() => {
     const raw = props.message.metadata?.starts_at;
