@@ -17,7 +17,10 @@ return new class extends Migration
             $table->timestamp('delivered_at')->nullable();
             $table->timestamp('read_at')->nullable();
 
-            $table->unique(['message_id', 'chatable_type', 'chatable_id']);
+            $table->unique(
+                ['message_id', 'chatable_type', 'chatable_id'],
+                'message_receipt_unique'
+            );
             $table->index(['chatable_type', 'chatable_id', 'read_at']);
             $table->index(['message_id', 'delivered_at']);
         });
