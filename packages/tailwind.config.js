@@ -37,6 +37,8 @@ export default {
                     textDim: withOpacity('--cv-text-dim'),
                     accentText: withOpacity('--cv-accent-text'),
                     accentTint: withOpacity('--cv-accent-tint'),
+                    sageTint: withOpacity('--cv-sage-tint'),
+                    sageLine: withOpacity('--cv-sage-line'),
                 },
             },
             borderRadius: {

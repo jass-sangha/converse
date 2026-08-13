@@ -180,21 +180,20 @@ function openHit(hit) {
         <SearchBar :autofocus="false" @query="onSearchQuery" />
 
         <div
-            class="cv-conversation-list__filters flex items-center gap-2 overflow-x-auto px-3 pb-2"
+            class="cv-conversation-list__filters flex items-center gap-2 overflow-x-auto px-3 pb-3.5"
         >
             <button
                 v-for="f in FILTERS"
                 :key="f.key"
                 type="button"
-                class="shrink-0 rounded-full px-3 py-1 text-sm font-medium"
-                :class="
-                    filter === f.key
-                        ? 'bg-converse-accent/15 text-converse-accent'
-                        : 'bg-converse-surfaceHover text-converse-text hover:bg-converse-border/50'
-                "
+                class="relative h-8 shrink-0 rounded-full border border-converse-border px-[15px] text-[12.5px] font-semibold text-converse-textMuted"
                 @click="setFilter(f.key)"
             >
-                {{ f.label }}
+                <span
+                    v-if="filter === f.key"
+                    class="absolute -inset-px rounded-full border border-converse-sageLine bg-converse-sageTint"
+                />
+                <span class="relative">{{ f.label }}</span>
             </button>
         </div>
 

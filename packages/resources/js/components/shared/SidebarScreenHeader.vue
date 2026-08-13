@@ -8,7 +8,7 @@ const emit = defineEmits(["back"]);
 
 <template>
     <div
-        class="cv-sidebar-screen-header flex shrink-0 items-center gap-3 border-b border-converse-border px-3 py-3"
+        class="cv-sidebar-screen-header flex shrink-0 items-center gap-3 px-3 py-3"
     >
         <button
             type="button"

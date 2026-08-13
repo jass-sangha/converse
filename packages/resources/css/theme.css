@@ -29,6 +29,8 @@
     --cv-text-dim: 130 121 106;
     --cv-accent-text: 140 73 26;
     --cv-accent-tint: 255 242 235;
+    --cv-sage-tint: 225 238 204;
+    --cv-sage-line: 174 191 146;
 }
 
 :root[data-theme='dark'] {
@@ -52,4 +54,6 @@
     --cv-text-dim: 161 151 134;
     --cv-accent-text: 246 160 107;
     --cv-accent-tint: 64 35 16;
+    --cv-sage-tint: 61 71 43;
+    --cv-sage-line: 114 129 87;
 }
