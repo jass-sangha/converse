@@ -32,10 +32,16 @@ export default {
                     info: withOpacity('--cv-info'),
                     railBg: withOpacity('--cv-rail-bg'),
                     chatBg: withOpacity('--cv-chat-bg'),
+                    sage: withOpacity('--cv-sage'),
+                    sageContrast: withOpacity('--cv-sage-contrast'),
                 },
             },
             borderRadius: {
                 cv: 'var(--cv-radius)',
+            },
+            fontFamily: {
+                sans: ['Figtree', 'system-ui', 'ui-sans-serif', 'sans-serif'],
+                display: ['Caprasimo', 'serif'],
             },
         },
     },

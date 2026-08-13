@@ -147,7 +147,7 @@ const lastActivityLabel = computed(() => {
 
 <template>
     <li
-        class="cv-conversation-item group min-h-16 flex cursor-pointer items-center gap-2 px-3 py-1 hover:bg-converse-surfaceHover"
+        class="cv-conversation-item group mb-1 min-h-16 flex cursor-pointer items-center gap-2 rounded-2xl px-3 py-1 hover:bg-converse-surfaceHover"
         :class="{ 'bg-converse-surfaceHover': active }"
         @click="$emit('select', conversation.id)"
     >

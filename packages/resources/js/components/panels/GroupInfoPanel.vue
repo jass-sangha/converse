@@ -365,7 +365,7 @@ function goCreateList() {
                 :size="120"
             />
             <p v-if="avatarError" class="mt-1 text-xs text-converse-danger">{{ avatarError }}</p>
-            <p class="mt-2 text-lg font-medium text-converse-text">
+            <p class="font-display mt-2 text-lg font-normal text-converse-text">
                 {{ displayName }}
             </p>
             <p
@@ -489,7 +489,7 @@ function goCreateList() {
                     type="button"
                     class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
                     :class="
-                        isMuted ? 'bg-converse-accent' : 'bg-converse-border'
+                        isMuted ? 'bg-converse-sage' : 'bg-converse-border'
                     "
                     role="switch"
                     :aria-checked="isMuted"

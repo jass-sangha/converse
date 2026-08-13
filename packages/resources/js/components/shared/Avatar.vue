@@ -23,7 +23,7 @@ const initials = computed(() => {
     >
     <div
         v-else
-        class="cv-avatar flex items-center justify-center rounded-full bg-converse-accent font-medium text-white"
+        class="cv-avatar flex items-center justify-center rounded-full bg-converse-sage font-medium text-converse-sageContrast"
         :style="{ width: size + 'px', height: size + 'px', fontSize: Math.round(size / 2.5) + 'px' }"
     >
         {{ initials }}

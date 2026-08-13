@@ -103,11 +103,11 @@ async function onChange(event) {
         <button
             type="button"
             title="Attach"
-            class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-accent disabled:opacity-50"
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent disabled:opacity-50"
             :disabled="uploading"
             @click="toggleMenu"
         >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.8 20.7a5 5 0 0 1-7.1-7.1L14 5.3a3.4 3.4 0 0 1 4.8 4.8l-8.2 8.2a1.8 1.8 0 0 1-2.5-2.5l7.6-7.6"/></svg>
         </button>
 
         <div

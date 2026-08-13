@@ -86,7 +86,7 @@ watch(remoteStream, (stream) => {
             </div>
 
             <div class="text-center">
-                <div class="text-3xl font-semibold text-converse-text">{{ person?.name ?? 'Unknown' }}</div>
+                <div class="font-display text-3xl font-normal text-converse-text">{{ person?.name ?? 'Unknown' }}</div>
                 <div class="mt-2 text-sm font-semibold tabular-nums text-converse-textMuted">{{ statusLabel }}</div>
             </div>
         </div>

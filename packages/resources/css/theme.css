@@ -7,36 +7,43 @@
  */
 
 :root {
-    --cv-bg: 240 242 245;
-    --cv-surface: 255 255 255;
-    --cv-surface-hover: 249 250 251;
-    --cv-border: 209 213 219;
-    --cv-text: 32 44 51;
-    --cv-text-muted: 75 85 99;
-    --cv-accent: 0 168 132;
-    --cv-accent-contrast: 255 255 255;
-    --cv-bubble-out: 217 253 211;
-    --cv-bubble-in: 255 255 255;
-    --cv-danger: 220 38 38;
+    --cv-bg: 245 234 216;
+    --cv-surface: 249 244 237;
+    --cv-surface-hover: 238 231 219;
+    --cv-border: 220 211 196;
+    --cv-text: 32 30 29;
+    --cv-text-muted: 100 92 80;
+    --cv-accent: 198 113 57;
+    --cv-accent-contrast: 245 234 216;
+    --cv-bubble-out: 255 225 208;
+    --cv-bubble-in: 249 244 237;
+    --cv-danger: 179 64 44;
     --cv-overlay: 0 0 0;
-    --cv-warning: 254 252 232;
-    --cv-info: 96 165 250;
-    --cv-radius: 0.75rem;
-    --cv-rail-bg: 240 242 245;
-    --cv-chat-bg: 239 234 226;
+    --cv-warning: 255 225 208;
+    --cv-info: 122 138 94;
+    --cv-radius: 1.25rem;
+    --cv-rail-bg: 235 221 197;
+    --cv-chat-bg: 245 234 216;
+    --cv-sage: 122 138 94;
+    --cv-sage-contrast: 245 234 216;
 }
 
 :root[data-theme='dark'] {
-    --cv-bg: 17 27 33;
-    --cv-surface: 32 44 51;
-    --cv-surface-hover: 42 57 66;
-    --cv-border: 42 57 66;
-    --cv-text: 233 237 239;
-    --cv-text-muted: 134 150 160;
-    --cv-bubble-out: 0 92 75;
-    --cv-bubble-in: 32 44 51;
-    --cv-danger: 248 113 113;
-    --cv-warning: 63 58 26;
-    --cv-rail-bg: 32 44 51;
-    --cv-chat-bg: 11 20 26;
+    --cv-bg: 46 43 37;
+    --cv-surface: 71 66 56;
+    --cv-surface-hover: 86 80 63;
+    --cv-border: 100 92 80;
+    --cv-text: 249 244 237;
+    --cv-text-muted: 192 182 165;
+    --cv-accent: 214 127 72;
+    --cv-accent-contrast: 32 30 29;
+    --cv-bubble-out: 100 51 18;
+    --cv-bubble-in: 71 66 56;
+    --cv-danger: 210 96 74;
+    --cv-warning: 100 51 18;
+    --cv-info: 143 160 115;
+    --cv-rail-bg: 32 30 29;
+    --cv-chat-bg: 46 43 37;
+    --cv-sage: 143 160 115;
+    --cv-sage-contrast: 32 30 29;
 }

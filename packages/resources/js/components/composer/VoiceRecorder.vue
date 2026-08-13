@@ -86,10 +86,10 @@ onBeforeUnmount(() => {
         v-if="!recording"
         type="button"
         title="Record a voice message"
-        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-accent"
+        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-converse-accent text-converse-accentContrast shadow-sm"
         @click="start"
     >
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12Z"/></svg>
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
     </button>
 
     <div v-else class="cv-voice-recorder flex flex-1 items-center gap-3">

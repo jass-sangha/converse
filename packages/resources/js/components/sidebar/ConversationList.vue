@@ -22,7 +22,7 @@ const { search: searchMessages } = useMessages();
 const { resolve, get } = useUsers();
 const { index: listChatLists, destroy: destroyChatList } = useChatLists();
 const { effectiveTheme, toggleTheme } = usePreferences();
-const { filter, setFilter, searchOpen, toggleSearch, setView } = useSidebarUi();
+const { filter, setFilter, setView } = useSidebarUi();
 
 const FILTERS = [
     { key: "all", label: "All" },
@@ -214,14 +214,7 @@ function openHit(hit) {
     store.pendingScrollMessageId = hit.id;
     setActive(hit.conversation_id);
     onSearchQuery("");
-    toggleSearch();
 }
-
-watch(searchOpen, (open) => {
-    if (!open && searchQuery.value) {
-        onSearchQuery("");
-    }
-});
 </script>
 
 <template>
@@ -245,42 +238,27 @@ watch(searchOpen, (open) => {
             v-else
             class="cv-conversation-list__header flex items-center justify-between px-4 py-3"
         >
-            <h1 class="text-xl font-bold text-converse-text">Converse</h1>
+            <h1 class="font-display text-2xl font-normal text-converse-text">Converse</h1>
 
-            <div class="cv-conversation-list__actions flex items-center gap-1">
-                <button
-                    type="button"
-                    title="Search"
-                    class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click="toggleSearch"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"
-                        />
-                    </svg>
-                </button>
+            <div class="cv-conversation-list__actions flex items-center gap-1.5">
                 <button
                     type="button"
                     title="New chat"
-                    class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    class="flex h-9 items-center gap-1.5 rounded-full bg-converse-accent px-4 text-sm font-semibold text-converse-accentContrast hover:opacity-90"
                     @click="showNewChat = true"
                 >
                     <svg
                         viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.75"
+                        stroke-linecap="round"
                     >
-                        <path
-                            d="M20.49 3.51a3 3 0 0 0-4.24 0L5 14.76V19h4.24L20.49 7.75a3 3 0 0 0 0-4.24ZM4 21h16v-1.5H4Z"
-                        />
+                        <path d="M12 5v14M5 12h14" />
                     </svg>
+                    New
                 </button>
 
                 <div ref="menuRoot" class="relative">
@@ -381,10 +359,9 @@ watch(searchOpen, (open) => {
             </div>
         </div>
 
-        <SearchBar v-if="searchOpen" @query="onSearchQuery" />
+        <SearchBar :autofocus="false" @query="onSearchQuery" />
 
         <div
-            v-else
             class="cv-conversation-list__filters flex items-center gap-2 overflow-x-auto px-3 pb-2"
         >
             <button
@@ -503,7 +480,7 @@ watch(searchOpen, (open) => {
                 >
                     Chats
                 </h3>
-                <ul>
+                <ul class="px-2 py-1">
                     <ConversationListItem
                         v-for="conversation in filteredConversations"
                         :key="conversation.id"
@@ -519,11 +496,11 @@ watch(searchOpen, (open) => {
                 >
                     Messages
                 </h3>
-                <ul>
+                <ul class="px-2 py-1">
                     <li
                         v-for="hit in messageHits"
                         :key="hit.id"
-                        class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-converse-surfaceHover"
+                        class="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-converse-surfaceHover"
                         @click="openHit(hit)"
                     >
                         <Avatar
@@ -553,7 +530,7 @@ watch(searchOpen, (open) => {
             </template>
         </div>
 
-        <ul v-else class="cv-conversation-list__items flex-1 overflow-y-auto">
+        <ul v-else class="cv-conversation-list__items flex-1 overflow-y-auto px-2 py-1">
             <ConversationListItem
                 v-for="conversation in filteredConversations"
                 :key="conversation.id"

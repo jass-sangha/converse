@@ -35,7 +35,7 @@ const lastSeenText = computed(() => {
     >
         <span
             v-if="presence?.is_online"
-            class="cv-presence-dot__indicator h-1.5 w-1.5 rounded-full bg-converse-accent"
+            class="cv-presence-dot__indicator h-1.5 w-1.5 rounded-full bg-converse-sage"
         />
         <span v-if="lastSeenText">{{ lastSeenText }}</span>
     </span>

@@ -268,7 +268,7 @@ function logout() {
                     </svg>
                 </button>
                 <div class="min-w-0">
-                    <h1 class="text-xl font-bold text-converse-text">
+                    <h1 class="font-display truncate text-xl font-normal text-converse-text">
                         {{ me?.name ?? "Settings" }}
                     </h1>
                     <p

@@ -203,7 +203,7 @@ async function submit() {
 </script>
 
 <template>
-    <div class="cv-composer border-t border-converse-border bg-converse-surface p-2">
+    <div class="cv-composer bg-converse-chatBg p-3">
         <ReplyPreview
             v-if="replyTo"
             :reply-to="replyTo"
@@ -253,23 +253,25 @@ async function submit() {
                     @create-event="showEventModal = true"
                 />
 
-                <div class="cv-composer__emoji-wrap relative">
-                    <button type="button" title="Emoji" class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-accent" @click="showEmoji = !showEmoji">
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-3.5-9A1.5 1.5 0 1 0 8.5 9.5 1.5 1.5 0 0 0 8.5 11Zm7 0A1.5 1.5 0 1 0 15.5 8a1.5 1.5 0 0 0 0 3ZM12 17.5c2.33 0 4.31-1.45 5.11-3.5H6.89c.8 2.05 2.78 3.5 5.11 3.5Z"/></svg>
+                <div class="cv-composer__emoji-wrap relative shrink-0">
+                    <button type="button" title="Emoji" class="flex h-12 w-12 items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent" @click="showEmoji = !showEmoji">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
                     </button>
-                    <div v-if="showEmoji" class="cv-animate-pop-in absolute bottom-10 left-0 z-10">
+                    <div v-if="showEmoji" class="cv-animate-pop-in absolute bottom-14 left-0 z-10">
                         <EmojiPicker @pick="onEmojiPick" />
                     </div>
                 </div>
 
-                <input
-                    ref="inputEl"
-                    v-model="body"
-                    type="text"
-                    :placeholder="hasStaged ? 'Add a caption' : editing ? 'Edit message' : 'Type a message'"
-                    class="cv-composer__input flex-1 rounded-full bg-converse-surfaceHover px-4 py-2 text-sm text-converse-text focus:outline-none"
-                    @keydown.escape="onInputEscape"
-                >
+                <div class="flex min-w-0 flex-1 items-center rounded-full bg-converse-surface px-5 py-2 shadow-sm">
+                    <input
+                        ref="inputEl"
+                        v-model="body"
+                        type="text"
+                        :placeholder="hasStaged ? 'Add a caption' : editing ? 'Edit message' : 'Type a message'"
+                        class="cv-composer__input w-full min-w-0 bg-transparent text-sm text-converse-text focus:outline-none"
+                        @keydown.escape="onInputEscape"
+                    >
+                </div>
             </template>
 
             <VoiceRecorder
@@ -277,8 +279,9 @@ async function submit() {
                 @recorded="onVoiceRecorded"
                 @recording-change="recording = $event"
             />
-            <button v-else type="submit" class="cv-composer__send rounded-full bg-converse-accent px-4 py-2 text-sm font-medium text-converse-accentContrast">
-                {{ editing ? 'Save' : 'Send' }}
+            <button v-else type="submit" class="cv-composer__send flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-converse-accent text-sm font-medium text-converse-accentContrast shadow-sm">
+                <svg v-if="!editing" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+                <span v-else>Save</span>
             </button>
         </form>
 
