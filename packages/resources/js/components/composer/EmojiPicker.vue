@@ -113,7 +113,7 @@ const activeEmojis = computed(() => {
             <button
                 type="button"
                 title="Recent"
-                class="flex h-8 w-8 items-center justify-center rounded"
+                class="flex h-8 w-8 items-center justify-center rounded-full"
                 :class="activeCategory === 'recent' && !query ? 'bg-converse-accent/15 text-converse-accent' : 'text-converse-textMuted hover:bg-converse-surfaceHover'"
                 @click="activeCategory = 'recent'; query = ''"
             >
@@ -124,7 +124,7 @@ const activeEmojis = computed(() => {
                 :key="cat.key"
                 type="button"
                 :title="cat.label"
-                class="flex h-8 w-8 items-center justify-center rounded"
+                class="flex h-8 w-8 items-center justify-center rounded-full"
                 :class="activeCategory === cat.key && !query ? 'bg-converse-accent/15 text-converse-accent' : 'text-converse-textMuted hover:bg-converse-surfaceHover'"
                 @click="activeCategory = cat.key; query = ''"
             >

@@ -112,13 +112,13 @@ async function onChange(event) {
 
         <div
             v-if="showMenu"
-            class="cv-attachment-picker__menu cv-animate-pop-in absolute bottom-11 left-0 z-20 grid w-56 grid-cols-1 gap-1 rounded-cv border border-converse-border bg-converse-surface p-2 shadow-lg"
+            class="cv-attachment-picker__menu cv-animate-pop-in absolute bottom-14 left-0 z-20 grid w-56 grid-cols-1 gap-1 rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
         >
             <button
                 v-for="option in OPTIONS"
                 :key="option.key"
                 type="button"
-                class="flex w-full items-center gap-3 rounded px-2 py-2 text-left hover:bg-converse-surfaceHover disabled:cursor-not-allowed disabled:opacity-40"
+                class="flex w-full items-center gap-3 rounded-full px-2 py-2 text-left hover:bg-converse-surfaceHover disabled:cursor-not-allowed disabled:opacity-40"
                 :disabled="option.disabled"
                 :title="option.disabled ? 'Not available yet' : option.label"
                 @click="pick(option)"

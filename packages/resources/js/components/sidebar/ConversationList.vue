@@ -282,11 +282,11 @@ function openHit(hit) {
 
                     <div
                         v-if="showMenu"
-                        class="cv-conversation-list__menu cv-animate-pop-in absolute right-0 top-full z-20 w-56 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
+                        class="cv-conversation-list__menu cv-animate-pop-in absolute right-0 top-full z-20 w-56 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
                     >
                         <button
                             type="button"
-                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
                                 showNewGroup = true;
                                 showMenu = false;
@@ -296,7 +296,7 @@ function openHit(hit) {
                         </button>
                         <button
                             type="button"
-                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
                                 showStarred = true;
                                 showMenu = false;
@@ -306,7 +306,7 @@ function openHit(hit) {
                         </button>
                         <button
                             type="button"
-                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
                                 showBlocked = true;
                                 showMenu = false;
@@ -316,7 +316,7 @@ function openHit(hit) {
                         </button>
                         <button
                             type="button"
-                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
                                 toggleArchived();
                                 showMenu = false;
@@ -326,7 +326,7 @@ function openHit(hit) {
                         </button>
                         <button
                             type="button"
-                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
                                 toggleTheme();
                                 showMenu = false;
@@ -336,7 +336,7 @@ function openHit(hit) {
                         </button>
                         <button
                             type="button"
-                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
                                 setView('media');
                                 showMenu = false;
@@ -346,7 +346,7 @@ function openHit(hit) {
                         </button>
                         <button
                             type="button"
-                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
                                 setView('profile');
                                 showMenu = false;
@@ -406,7 +406,7 @@ function openHit(hit) {
                     <div
                         v-if="showListsMenu"
                         ref="listsMenuPanel"
-                        class="cv-conversation-list__lists-menu cv-animate-pop-in fixed z-50 w-56 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
+                        class="cv-conversation-list__lists-menu cv-animate-pop-in fixed z-50 w-56 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
                         :style="{
                             top: `${listsMenuPosition.top}px`,
                             left: `${listsMenuPosition.left}px`,
@@ -414,14 +414,14 @@ function openHit(hit) {
                     >
                         <p
                             v-if="!lists.length"
-                            class="px-4 py-2 text-converse-textMuted"
+                            class="px-3.5 py-2.5 text-converse-textMuted"
                         >
                             No lists yet.
                         </p>
                         <div
                             v-for="list in lists"
                             :key="list.id"
-                            class="group/list flex items-center justify-between px-2 py-1 hover:bg-converse-surfaceHover"
+                            class="group/list flex items-center justify-between rounded-full px-2 py-1 hover:bg-converse-surfaceHover"
                         >
                             <button
                                 type="button"
@@ -449,7 +449,7 @@ function openHit(hit) {
                         <hr class="my-1 border-converse-border" />
                         <button
                             type="button"
-                            class="block w-full px-4 py-2 text-left text-converse-text hover:bg-converse-surfaceHover"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
                                 setView('create-list');
                                 showListsMenu = false;

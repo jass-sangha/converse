@@ -48,32 +48,32 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick));
 
         <div
             v-if="open"
-            class="cv-conversation-menu__dropdown cv-animate-pop-in absolute right-0 z-20 w-40 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
+            class="cv-conversation-menu__dropdown cv-animate-pop-in absolute right-0 z-20 w-48 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
         >
             <button
                 type="button"
-                class="cv-conversation-menu__item block w-full px-3 py-1.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="cv-conversation-menu__item block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="act(muted ? 'unmute' : 'mute')"
             >
                 {{ muted ? 'Unmute' : 'Mute' }}
             </button>
             <button
                 type="button"
-                class="cv-conversation-menu__item block w-full px-3 py-1.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="cv-conversation-menu__item block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="act(pinned ? 'unpin' : 'pin')"
             >
                 {{ pinned ? 'Unpin' : 'Pin' }}
             </button>
             <button
                 type="button"
-                class="cv-conversation-menu__item block w-full px-3 py-1.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="cv-conversation-menu__item block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="act(favourited ? 'unfavourite' : 'favourite')"
             >
                 {{ favourited ? 'Remove from favourites' : 'Add to favourites' }}
             </button>
             <button
                 type="button"
-                class="cv-conversation-menu__item block w-full px-3 py-1.5 text-left text-converse-danger hover:bg-converse-surfaceHover"
+                class="cv-conversation-menu__item block w-full rounded-full px-3.5 py-2.5 text-left text-converse-danger hover:bg-converse-surfaceHover"
                 @click="act('delete')"
             >
                 Delete chat
@@ -81,7 +81,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick));
             <button
                 v-if="isGroup"
                 type="button"
-                class="cv-conversation-menu__item block w-full px-3 py-1.5 text-left text-converse-danger hover:bg-converse-surfaceHover"
+                class="cv-conversation-menu__item block w-full rounded-full px-3.5 py-2.5 text-left text-converse-danger hover:bg-converse-surfaceHover"
                 @click="act('leave')"
             >
                 Leave group

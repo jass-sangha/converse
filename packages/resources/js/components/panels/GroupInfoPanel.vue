@@ -680,26 +680,27 @@ function goCreateList() {
 
                 <div
                     v-if="showListMenu"
-                    class="cv-animate-pop-in absolute left-4 right-4 top-full z-10 mb-2 rounded-cv border border-converse-border bg-converse-surface py-1 shadow-lg"
+                    class="cv-animate-pop-in absolute left-4 right-4 top-full z-10 mb-2 rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
                 >
                     <button
                         v-for="list in availableLists"
                         :key="list.id"
                         type="button"
-                        class="block w-full px-3 py-2 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
+                        class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
                         @click="addToList(list)"
                     >
                         {{ list.name }}
                     </button>
                     <p
                         v-if="!availableLists.length"
-                        class="px-3 py-2 text-sm text-converse-textMuted"
+                        class="px-3.5 py-2.5 text-sm text-converse-textMuted"
                     >
                         No lists yet.
                     </p>
+                    <div class="my-1 border-t border-converse-border" />
                     <button
                         type="button"
-                        class="block w-full border-t border-converse-border px-3 py-2 text-left text-sm text-converse-accent hover:bg-converse-surfaceHover"
+                        class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-accent hover:bg-converse-surfaceHover"
                         @click="goCreateList"
                     >
                         + Create new list

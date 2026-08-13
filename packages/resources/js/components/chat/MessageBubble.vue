@@ -389,14 +389,14 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="cv-message-bubble__menu cv-animate-pop-in absolute top-6 z-20 w-48 rounded-cv border border-converse-border bg-converse-surface py-1 text-sm shadow-lg"
+                class="cv-message-bubble__menu cv-animate-pop-in absolute top-6 z-20 w-48 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
                 :class="isOwn ? 'right-1' : 'left-1'"
             >
                 <button
                     v-for="item in visibleMenuItems"
                     :key="item.key"
                     type="button"
-                    class="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-converse-surfaceHover"
+                    class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left hover:bg-converse-surfaceHover"
                     :class="
                         item.danger
                             ? 'text-converse-danger'

@@ -99,20 +99,20 @@ function turnOff() {
         </button>
 
         <div v-if="hasMenu && showMenu" class="cv-animate-pop-in absolute right-4 top-full z-20 mt-1">
-            <div class="w-44 rounded-cv border border-converse-border bg-converse-surface py-1 shadow-lg">
-                <p v-if="menuTitle" class="px-3 pb-1 pt-2 text-xs font-medium uppercase text-converse-textMuted">{{ menuTitle }}</p>
+            <div class="w-48 rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg">
+                <p v-if="menuTitle" class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-converse-textMuted">{{ menuTitle }}</p>
                 <button
                     v-for="option in options"
                     :key="option.key"
                     type="button"
-                    class="block w-full px-3 py-2 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
+                    class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
                     @click="pick(option)"
                 >
                     {{ option.label }}
                 </button>
                 <template v-if="isOn">
                     <div class="my-1 border-t border-converse-border" />
-                    <button type="button" class="block w-full px-3 py-2 text-left text-sm text-converse-accent hover:bg-converse-surfaceHover" @click="turnOff">
+                    <button type="button" class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-accent hover:bg-converse-surfaceHover" @click="turnOff">
                         {{ offLabel }}
                     </button>
                 </template>
