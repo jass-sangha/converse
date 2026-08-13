@@ -3,6 +3,7 @@ import { computed, onMounted, watch } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import PresenceDot from "../shared/PresenceDot.vue";
 import ConversationMenu from "./ConversationMenu.vue";
+import ConversationRowActions from "./ConversationRowActions.vue";
 import ReadReceiptTicks from "../chat/ReadReceiptTicks.vue";
 import { useUsers } from "../../composables/useUsers";
 import { useConversations } from "../../composables/useConversations";
@@ -200,61 +201,7 @@ const lastActivityLabel = computed(() => {
                 <span
                     class="cv-conversation-item__badges flex shrink-0 items-center gap-1"
                 >
-                    <span
-                        v-if="isMuted"
-                        class="flex h-4 w-4 items-center justify-center text-converse-textMuted"
-                        title="Muted"
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            width="14"
-                            height="14"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.6"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path
-                                fill="currentColor"
-                                stroke="none"
-                                d="M18 16v-5a6 6 0 0 0-5-5.91V4a1 1 0 1 0-2 0v1.09A6 6 0 0 0 6 11v5l-2 2v1h16v-1Zm-6 6a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2Z"
-                            />
-                            <line x1="3" y1="3" x2="21" y2="21" />
-                        </svg>
-                    </span>
-                    <span
-                        v-if="isFavourited"
-                        class="flex h-4 w-4 items-center justify-center text-converse-textMuted"
-                        title="Favourite"
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            width="14"
-                            height="14"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.02 6.02 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z"
-                            />
-                        </svg>
-                    </span>
-                    <span
-                        v-if="isPinned"
-                        class="flex h-4 w-4 items-center justify-center text-converse-textMuted"
-                        title="Pinned"
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            width="14"
-                            height="14"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2Z"
-                            />
-                        </svg>
-                    </span>
+                    <ConversationRowActions :conversation="conversation" />
                     <span
                         v-if="conversation.unread_count > 0"
                         class="cv-conversation-item__unread flex h-4 min-w-[1.1rem] items-center justify-center rounded-full bg-converse-accent px-1 text-[10px] font-medium text-converse-accentContrast"

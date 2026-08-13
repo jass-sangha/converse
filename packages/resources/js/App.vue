@@ -1,6 +1,9 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
 import AppShell from './components/layout/AppShell.vue';
+import CallOverlay from './components/call/CallOverlay.vue';
+import MinimizedCallBar from './components/call/MinimizedCallBar.vue';
+import Toast from './components/shared/Toast.vue';
 import { setCurrentChatable } from './store';
 import { useEcho } from './composables/useEcho';
 import { usePresence } from './composables/usePresence';
@@ -27,4 +30,7 @@ onUnmounted(() => {
 
 <template>
     <AppShell />
+    <CallOverlay />
+    <MinimizedCallBar />
+    <Toast />
 </template>

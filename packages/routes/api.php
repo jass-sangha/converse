@@ -2,6 +2,7 @@
 
 use Converse\Chat\Http\Controllers\AttachmentController;
 use Converse\Chat\Http\Controllers\BlockedUserController;
+use Converse\Chat\Http\Controllers\CallController;
 use Converse\Chat\Http\Controllers\ChatListController;
 use Converse\Chat\Http\Controllers\ConversationController;
 use Converse\Chat\Http\Controllers\EventRsvpController;
@@ -63,6 +64,8 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::post('conversations/{conversation}/receipts/read', [MessageReceiptController::class, 'markRead']);
 
         Route::post('conversations/{conversation}/typing', [TypingController::class, 'update']);
+
+        Route::post('conversations/{conversation}/call/signal', [CallController::class, 'signal']);
 
         Route::patch('notifications/mute', [NotificationController::class, 'muteAll']);
 

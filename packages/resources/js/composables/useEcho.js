@@ -12,6 +12,7 @@ import {
 } from '../store';
 import { chatableKey } from '../chatable';
 import { useConversations } from './useConversations';
+import { useCall } from './useCall';
 
 window.Pusher = Pusher;
 
@@ -78,6 +79,11 @@ export function useEcho() {
                     if (iWasAdded) {
                         useConversations().refresh();
                     }
+                })
+                // Personal channel, not the per-conversation one — joined at boot regardless
+                // of which conversation (if any) is open, so an incoming call always arrives.
+                .listen('.call.signal', (payload) => {
+                    useCall().handleSignal(payload);
                 });
         }
     } catch (error) {

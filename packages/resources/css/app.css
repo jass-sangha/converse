@@ -68,3 +68,12 @@
 .cv-animate-pop-in {
     animation: cv-pop-in 0.14s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+@keyframes cv-call-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgb(var(--cv-accent) / 0.35); }
+    50% { box-shadow: 0 0 0 16px rgb(var(--cv-accent) / 0); }
+}
+
+.cv-animate-call-pulse {
+    animation: cv-call-pulse 1.8s ease-out infinite;
+}
