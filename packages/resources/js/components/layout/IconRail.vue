@@ -42,7 +42,7 @@ function cycleTheme() {
 
 <template>
     <nav
-        class="cv-icon-rail flex w-[72px] shrink-0 flex-col items-center gap-1.5 border-r border-converse-border bg-converse-railBg pb-4 pt-[18px]"
+        class="cv-icon-rail flex h-full w-[72px] shrink-0 flex-col items-center gap-1.5 border-r border-converse-border bg-converse-railBg pb-4 pt-[18px]"
     >
         <div
             class="font-display mb-3.5 flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-converse-accent text-[19px] text-converse-accentContrast"
