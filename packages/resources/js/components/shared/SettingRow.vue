@@ -1,18 +1,17 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 import { useExclusiveDropdown } from '../../composables/useExclusiveDropdown';
 
 const props = defineProps({
-    icon: { type: String, required: true },
+    icon: { type: String, default: null },
     label: { type: String, required: true },
-    subtitle: { type: String, default: null },
+    hint: { type: String, default: null },
     isOn: { type: Boolean, default: false },
     options: { type: Array, default: () => [] },
     menuTitle: { type: String, default: '' },
-    offLabel: { type: String, default: 'Off' },
 });
 
-const emit = defineEmits(['toggle', 'pick', 'off']);
+const emit = defineEmits(['toggle', 'pick']);
 
 const root = ref(null);
 const showMenu = ref(false);
@@ -43,80 +42,57 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', onDocumentClick);
 });
 
-// A row always has *something* to show in its dropdown once it's on (at minimum the "Off"
-// entry below), even with no `options` list — a plain boolean row (no duration/options) still
-// needs that same menu, just without a picker list above the Off button.
-const hasMenu = computed(() => props.options.length > 0 || props.isOn);
-
-// Switch and row both do the exact same thing: if there's a menu to show (any options, or
-// just the Off entry once on), open it — never toggle instantly. That keeps a labeled "Off"
-// button always the one and only way to turn a row off, instead of the switch silently doing
-// it with no visible control.
+// Off rows turn back on the instant you click them — no confirmation needed.
+// On rows open a menu so turning one off always goes through a duration pick
+// (the options list should include an indefinite/"always" entry for that).
 function onRowClick() {
-    if (hasMenu.value) {
+    if (props.isOn) {
         showMenu.value = !showMenu.value;
     } else {
         emit('toggle');
     }
 }
 
-function onSwitchClick() {
-    onRowClick();
-}
-
 function pick(option) {
     showMenu.value = false;
     emit('pick', option);
 }
-
-function turnOff() {
-    showMenu.value = false;
-    emit('off');
-}
 </script>
 
 <template>
-    <div ref="root" class="cv-setting-row relative flex w-full items-center gap-4 px-4 py-3">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="shrink-0 text-converse-textMuted">
-            <path :d="icon" />
-        </svg>
-        <button type="button" class="flex-1 text-left" :class="{ 'cursor-default': !hasMenu }" @click="onRowClick">
-            <span class="block text-[15px] text-converse-text">{{ label }}</span>
-            <span v-if="isOn && subtitle" class="block text-xs text-converse-textMuted">{{ subtitle }}</span>
-        </button>
-        <button
-            type="button"
-            class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
-            :class="isOn ? 'bg-converse-sage' : 'bg-converse-border'"
+    <div ref="root" data-menu-root="1" class="cv-setting-row relative">
+        <div
+            class="flex w-full cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-converse-surfaceHover"
             role="switch"
             :aria-checked="isOn"
-            @click="onSwitchClick"
+            @click="onRowClick"
         >
-            <span
-                class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
-                :class="isOn ? 'translate-x-5' : 'translate-x-0.5'"
-            />
-        </button>
+            <svg v-if="icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="shrink-0 text-converse-textMuted">
+                <path :d="icon" />
+            </svg>
+            <span class="min-w-0 flex-1">
+                <span class="block text-[14px] font-semibold text-converse-text">{{ label }}</span>
+                <span v-if="hint" class="mt-0.5 block text-xs text-converse-textMuted">{{ hint }}</span>
+            </span>
+            <span class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors" :class="isOn ? 'bg-converse-sage' : 'bg-converse-border'">
+                <span
+                    class="absolute top-[3px] h-[21px] w-[21px] rounded-full bg-white shadow transition-[left] duration-150 ease-out"
+                    :class="isOn ? 'left-[22px]' : 'left-[3px]'"
+                />
+            </span>
+        </div>
 
-        <div v-if="hasMenu && showMenu" class="cv-animate-pop-in absolute right-4 top-full z-20 mt-1">
-            <div class="w-48 rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg">
-                <p v-if="menuTitle" class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-converse-textMuted">{{ menuTitle }}</p>
-                <button
-                    v-for="option in options"
-                    :key="option.key"
-                    type="button"
-                    class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
-                    @click="pick(option)"
-                >
-                    {{ option.label }}
-                </button>
-                <template v-if="isOn">
-                    <div class="my-1 border-t border-converse-border" />
-                    <button type="button" class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-accent hover:bg-converse-surfaceHover" @click="turnOff">
-                        {{ offLabel }}
-                    </button>
-                </template>
-            </div>
+        <div v-if="isOn && showMenu" class="cv-animate-pop-in absolute right-4 top-full z-20 mt-1 max-h-[250px] w-[180px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg">
+            <p v-if="menuTitle" class="px-3 pb-2 pt-1.5 text-[10.5px] font-bold uppercase tracking-wide text-converse-textDim">{{ menuTitle }}</p>
+            <button
+                v-for="option in options"
+                :key="option.key"
+                type="button"
+                class="block w-full rounded-full px-3 py-2.5 text-left text-[13px] font-medium text-converse-text hover:bg-converse-surfaceHover"
+                @click="pick(option)"
+            >
+                {{ option.label }}
+            </button>
         </div>
     </div>
 </template>

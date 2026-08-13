@@ -26,6 +26,9 @@
     --cv-chat-bg: 245 234 216;
     --cv-sage: 122 138 94;
     --cv-sage-contrast: 245 234 216;
+    --cv-text-dim: 130 121 106;
+    --cv-accent-text: 140 73 26;
+    --cv-accent-tint: 255 242 235;
 }
 
 :root[data-theme='dark'] {
@@ -46,4 +49,7 @@
     --cv-chat-bg: 46 43 37;
     --cv-sage: 143 160 115;
     --cv-sage-contrast: 32 30 29;
+    --cv-text-dim: 161 151 134;
+    --cv-accent-text: 246 160 107;
+    --cv-accent-tint: 64 35 16;
 }

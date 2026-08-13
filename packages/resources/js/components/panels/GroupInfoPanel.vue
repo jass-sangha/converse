@@ -16,8 +16,6 @@ import { useParticipants } from "../../composables/useParticipants";
 import { useBlockedUsers } from "../../composables/useBlockedUsers";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
-import { useChatLists } from "../../composables/useChatLists";
-import { useSidebarUi } from "../../composables/useSidebarUi";
 import { WALLPAPER_PRESETS } from "../../wallpapers";
 
 const props = defineProps({
@@ -30,15 +28,16 @@ const store = useChatStore();
 const { resolve, get } = useUsers();
 const { add, remove, changeRole } = useParticipants();
 const { block, unblock, list: listBlocked } = useBlockedUsers();
-const { refreshOne, leave, setWallpaper, setFavourited, mute, setHidden, updateAvatar } =
-    useConversations();
-const { clear: clearMessages } = useMessages();
 const {
-    index: listChatLists,
-    create: createChatList,
-    addConversation: addConversationToList,
-} = useChatLists();
-const { setView } = useSidebarUi();
+    refreshOne,
+    leave,
+    setWallpaper,
+    setFavourited,
+    mute,
+    setHidden,
+    updateAvatar,
+} = useConversations();
+const { clear: clearMessages } = useMessages();
 
 const showAddMember = ref(false);
 const picked = ref([]);
@@ -46,8 +45,6 @@ const error = ref("");
 const blockedKeys = ref([]);
 const showStarred = ref(false);
 const showMedia = ref(false);
-const showListMenu = ref(false);
-const availableLists = ref([]);
 const mediaCount = ref(0);
 const clearing = ref(false);
 const cleared = ref(false);
@@ -71,7 +68,10 @@ function isMe(participant) {
 }
 
 const currentParticipantRefs = computed(() =>
-    (props.conversation.participants ?? []).map((p) => ({ type: p.chatable_type, id: p.chatable_id })),
+    (props.conversation.participants ?? []).map((p) => ({
+        type: p.chatable_type,
+        id: p.chatable_id,
+    })),
 );
 
 const otherParticipantRow = computed(() => {
@@ -153,7 +153,8 @@ async function onAvatarFileChange(event) {
     try {
         await updateAvatar(props.conversation.id, file);
     } catch (e) {
-        avatarError.value = e.response?.data?.message ?? "Could not update photo.";
+        avatarError.value =
+            e.response?.data?.message ?? "Could not update photo.";
     } finally {
         avatarUploading.value = false;
         event.target.value = "";
@@ -224,7 +225,8 @@ async function toggleBlockOther() {
 
 const showMuteMenu = ref(false);
 const muteMenuRoot = ref(null);
-const { opened: muteMenuOpened, closed: muteMenuClosed } = useExclusiveDropdown();
+const { opened: muteMenuOpened, closed: muteMenuClosed } =
+    useExclusiveDropdown();
 
 function closeMuteMenu() {
     showMuteMenu.value = false;
@@ -239,16 +241,16 @@ function onMuteMenuDocumentClick(event) {
 watch(showMuteMenu, (open) => {
     if (open) {
         muteMenuOpened(closeMuteMenu);
-        document.addEventListener('click', onMuteMenuDocumentClick);
+        document.addEventListener("click", onMuteMenuDocumentClick);
     } else {
         muteMenuClosed(closeMuteMenu);
-        document.removeEventListener('click', onMuteMenuDocumentClick);
+        document.removeEventListener("click", onMuteMenuDocumentClick);
     }
 });
 
 onBeforeUnmount(() => {
     muteMenuClosed(closeMuteMenu);
-    document.removeEventListener('click', onMuteMenuDocumentClick);
+    document.removeEventListener("click", onMuteMenuDocumentClick);
 });
 
 async function onPickMuteDuration(durationKey) {
@@ -281,23 +283,6 @@ async function onClearChat() {
 async function onDeleteChat() {
     await setHidden(props.conversation.id, true);
     emit("close");
-}
-
-async function openListMenu() {
-    showListMenu.value = !showListMenu.value;
-    if (showListMenu.value) {
-        availableLists.value = await listChatLists();
-    }
-}
-
-async function addToList(list) {
-    await addConversationToList(list.id, props.conversation.id);
-    showListMenu.value = false;
-}
-
-function goCreateList() {
-    showListMenu.value = false;
-    setView("create-list");
 }
 </script>
 
@@ -364,7 +349,9 @@ function goCreateList() {
                 "
                 :size="120"
             />
-            <p v-if="avatarError" class="mt-1 text-xs text-converse-danger">{{ avatarError }}</p>
+            <p v-if="avatarError" class="mt-1 text-xs text-converse-danger">
+                {{ avatarError }}
+            </p>
             <p class="font-display mt-2 text-lg font-normal text-converse-text">
                 {{ displayName }}
             </p>
@@ -451,7 +438,10 @@ function goCreateList() {
                 >
             </button>
 
-            <div ref="muteMenuRoot" class="relative flex w-full items-center gap-4 px-4 py-3">
+            <div
+                ref="muteMenuRoot"
+                class="relative flex w-full items-center gap-4 px-4 py-3"
+            >
                 <svg
                     viewBox="0 0 24 24"
                     width="20"
@@ -488,9 +478,7 @@ function goCreateList() {
                 <button
                     type="button"
                     class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
-                    :class="
-                        isMuted ? 'bg-converse-sage' : 'bg-converse-border'
-                    "
+                    :class="isMuted ? 'bg-converse-sage' : 'bg-converse-border'"
                     role="switch"
                     :aria-checked="isMuted"
                     @click="showMuteMenu = !showMuteMenu"
@@ -505,7 +493,11 @@ function goCreateList() {
                     v-if="showMuteMenu"
                     class="cv-animate-pop-in absolute right-4 top-full z-20 mt-1"
                 >
-                    <MuteDurationMenu :show-unmute="isMuted" @pick="onPickMuteDuration" @unmute="onUnmute" />
+                    <MuteDurationMenu
+                        :show-unmute="isMuted"
+                        @pick="onPickMuteDuration"
+                        @unmute="onUnmute"
+                    />
                 </div>
             </div>
 
@@ -656,58 +648,6 @@ function goCreateList() {
                 }}</span>
             </button>
 
-            <div class="relative">
-                <button
-                    type="button"
-                    class="flex w-full items-center gap-4 px-4 py-3 text-left hover:bg-converse-surfaceHover"
-                    @click="openListMenu"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="shrink-0 text-converse-textMuted"
-                    >
-                        <path
-                            d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm11 10.5-2.5-3-3.5 4.5H16Zm-8-6.5A1.5 1.5 0 1 0 7 9.5 1.5 1.5 0 0 0 7 6Z"
-                        />
-                    </svg>
-                    <span class="text-[15px] text-converse-text"
-                        >Add to list</span
-                    >
-                </button>
-
-                <div
-                    v-if="showListMenu"
-                    class="cv-animate-pop-in absolute left-4 right-4 top-full z-10 mb-2 rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
-                >
-                    <button
-                        v-for="list in availableLists"
-                        :key="list.id"
-                        type="button"
-                        class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
-                        @click="addToList(list)"
-                    >
-                        {{ list.name }}
-                    </button>
-                    <p
-                        v-if="!availableLists.length"
-                        class="px-3.5 py-2.5 text-sm text-converse-textMuted"
-                    >
-                        No lists yet.
-                    </p>
-                    <div class="my-1 border-t border-converse-border" />
-                    <button
-                        type="button"
-                        class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-accent hover:bg-converse-surfaceHover"
-                        @click="goCreateList"
-                    >
-                        + Create new list
-                    </button>
-                </div>
-            </div>
-
             <button
                 type="button"
                 class="flex w-full items-center gap-4 px-4 py-3 text-left hover:bg-converse-surfaceHover disabled:opacity-50"
@@ -817,9 +757,19 @@ function goCreateList() {
 
         <StarredMessagesPanel v-if="showStarred" @close="showStarred = false" />
 
-        <Modal v-if="showAddMember" title="Add participants" @close="closeAddMember">
-            <UserPicker v-model="picked" :multiple="true" :exclude="currentParticipantRefs" />
-            <p v-if="error" class="mt-2 text-xs text-converse-danger">{{ error }}</p>
+        <Modal
+            v-if="showAddMember"
+            title="Add participants"
+            @close="closeAddMember"
+        >
+            <UserPicker
+                v-model="picked"
+                :multiple="true"
+                :exclude="currentParticipantRefs"
+            />
+            <p v-if="error" class="mt-2 text-xs text-converse-danger">
+                {{ error }}
+            </p>
 
             <template #footer>
                 <button

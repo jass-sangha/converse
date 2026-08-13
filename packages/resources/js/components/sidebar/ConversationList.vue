@@ -10,7 +10,6 @@ import Avatar from "../shared/Avatar.vue";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
 import { useUsers } from "../../composables/useUsers";
-import { useChatLists } from "../../composables/useChatLists";
 import { usePreferences } from "../../composables/usePreferences";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 import { useChatStore } from "../../store";
@@ -20,7 +19,6 @@ const store = useChatStore();
 const { refresh, setActive } = useConversations();
 const { search: searchMessages } = useMessages();
 const { resolve, get } = useUsers();
-const { index: listChatLists, destroy: destroyChatList } = useChatLists();
 const { effectiveTheme, toggleTheme } = usePreferences();
 const { filter, setFilter, setView } = useSidebarUi();
 
@@ -41,63 +39,10 @@ const menuRoot = ref(null);
 const searchQuery = ref("");
 const messageHits = ref([]);
 const searching = ref(false);
-const lists = ref([]);
-const showListsMenu = ref(false);
-const listsMenuTrigger = ref(null);
-const listsMenuPanel = ref(null);
-const listsMenuPosition = ref({ top: 0, left: 0 });
-
-function toggleListsMenu() {
-    if (!showListsMenu.value && listsMenuTrigger.value) {
-        const rect = listsMenuTrigger.value.getBoundingClientRect();
-        listsMenuPosition.value = { top: rect.bottom + 4, left: rect.left };
-    }
-    showListsMenu.value = !showListsMenu.value;
-}
-
-const activeList = computed(() => {
-    if (!filter.value.startsWith("list:")) return null;
-    return (
-        lists.value.find((l) => l.id === Number(filter.value.slice(5))) ?? null
-    );
-});
 
 onMounted(() => {
     refresh();
-    loadLists();
 });
-
-async function loadLists() {
-    lists.value = await listChatLists();
-}
-
-async function deleteList(list) {
-    await destroyChatList(list.id);
-    if (filter.value === `list:${list.id}`) {
-        setFilter("all");
-    }
-    await loadLists();
-}
-
-function onListsMenuDocumentClick(event) {
-    const clickedTrigger = listsMenuTrigger.value?.contains(event.target);
-    const clickedPanel = listsMenuPanel.value?.contains(event.target);
-    if (!clickedTrigger && !clickedPanel) {
-        showListsMenu.value = false;
-    }
-}
-
-watch(showListsMenu, (open) => {
-    if (open) {
-        document.addEventListener("click", onListsMenuDocumentClick);
-    } else {
-        document.removeEventListener("click", onListsMenuDocumentClick);
-    }
-});
-
-onBeforeUnmount(() =>
-    document.removeEventListener("click", onListsMenuDocumentClick),
-);
 
 function onDocumentClick(event) {
     if (menuRoot.value && !menuRoot.value.contains(event.target)) {
@@ -129,13 +74,6 @@ function isFavourited(conversation) {
 }
 
 const filteredConversations = computed(() => {
-    if (filter.value.startsWith("list:")) {
-        const listId = Number(filter.value.slice(5));
-        const list = lists.value.find((l) => l.id === listId);
-        const ids = list?.conversation_ids ?? [];
-        return store.conversations.filter((c) => ids.includes(c.id));
-    }
-
     switch (filter.value) {
         case "unread":
             return store.conversations.filter((c) => c.unread_count > 0);
@@ -229,18 +167,33 @@ function openHit(hit) {
                 title="Back to chats"
                 @click="toggleArchived"
             >
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"/></svg>
+                <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                >
+                    <path
+                        d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"
+                    />
+                </svg>
             </button>
-            <h1 class="text-lg font-semibold text-converse-text">Archived chats</h1>
+            <h1 class="text-lg font-semibold text-converse-text">
+                Archived chats
+            </h1>
         </div>
 
         <div
             v-else
             class="cv-conversation-list__header flex items-center justify-between px-4 py-3"
         >
-            <h1 class="font-display text-2xl font-normal text-converse-text">Converse</h1>
+            <h1 class="font-display text-2xl font-normal text-converse-text">
+                Converse
+            </h1>
 
-            <div class="cv-conversation-list__actions flex items-center gap-1.5">
+            <div
+                class="cv-conversation-list__actions flex items-center gap-1.5"
+            >
                 <button
                     type="button"
                     title="New chat"
@@ -332,7 +285,11 @@ function openHit(hit) {
                                 showMenu = false;
                             "
                         >
-                            {{ effectiveTheme === "dark" ? "Light mode" : "Dark mode" }}
+                            {{
+                                effectiveTheme === "dark"
+                                    ? "Light mode"
+                                    : "Dark mode"
+                            }}
                         </button>
                         <button
                             type="button"
@@ -378,88 +335,6 @@ function openHit(hit) {
             >
                 {{ f.label }}
             </button>
-
-            <div class="shrink-0">
-                <button
-                    ref="listsMenuTrigger"
-                    type="button"
-                    class="flex shrink-0 items-center gap-1 rounded-full py-1 px-2 text-sm font-medium"
-                    :class="
-                        activeList
-                            ? 'bg-converse-accent/15 text-converse-accent'
-                            : 'bg-converse-surfaceHover text-converse-text hover:bg-converse-border/50'
-                    "
-                    @click="toggleListsMenu"
-                >
-                    {{ activeList ? activeList.name : "" }}
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="14"
-                        height="14"
-                        fill="currentColor"
-                    >
-                        <path d="M7 10l5 5 5-5Z" />
-                    </svg>
-                </button>
-
-                <Teleport to="body">
-                    <div
-                        v-if="showListsMenu"
-                        ref="listsMenuPanel"
-                        class="cv-conversation-list__lists-menu cv-animate-pop-in fixed z-50 w-56 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
-                        :style="{
-                            top: `${listsMenuPosition.top}px`,
-                            left: `${listsMenuPosition.left}px`,
-                        }"
-                    >
-                        <p
-                            v-if="!lists.length"
-                            class="px-3.5 py-2.5 text-converse-textMuted"
-                        >
-                            No lists yet.
-                        </p>
-                        <div
-                            v-for="list in lists"
-                            :key="list.id"
-                            class="group/list flex items-center justify-between rounded-full px-2 py-1 hover:bg-converse-surfaceHover"
-                        >
-                            <button
-                                type="button"
-                                class="flex-1 truncate px-2 py-1 text-left"
-                                :class="
-                                    filter === `list:${list.id}`
-                                        ? 'text-converse-accent'
-                                        : 'text-converse-text'
-                                "
-                                @click="
-                                    setFilter(`list:${list.id}`);
-                                    showListsMenu = false;
-                                "
-                            >
-                                {{ list.name }}
-                            </button>
-                            <span
-                                role="button"
-                                title="Delete list"
-                                class="hidden shrink-0 rounded-full px-2 text-converse-textMuted opacity-0 hover:text-converse-danger group-hover/list:inline group-hover/list:opacity-100"
-                                @click.stop="deleteList(list)"
-                                >×</span
-                            >
-                        </div>
-                        <hr class="my-1 border-converse-border" />
-                        <button
-                            type="button"
-                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
-                            @click="
-                                setView('create-list');
-                                showListsMenu = false;
-                            "
-                        >
-                            Create new list
-                        </button>
-                    </div>
-                </Teleport>
-            </div>
         </div>
 
         <div
@@ -530,7 +405,10 @@ function openHit(hit) {
             </template>
         </div>
 
-        <ul v-else class="cv-conversation-list__items flex-1 overflow-y-auto px-2 py-1">
+        <ul
+            v-else
+            class="cv-conversation-list__items flex-1 overflow-y-auto px-2 py-1"
+        >
             <ConversationListItem
                 v-for="conversation in filteredConversations"
                 :key="conversation.id"

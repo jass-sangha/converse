@@ -34,6 +34,9 @@ export default {
                     chatBg: withOpacity('--cv-chat-bg'),
                     sage: withOpacity('--cv-sage'),
                     sageContrast: withOpacity('--cv-sage-contrast'),
+                    textDim: withOpacity('--cv-text-dim'),
+                    accentText: withOpacity('--cv-accent-text'),
+                    accentTint: withOpacity('--cv-accent-tint'),
                 },
             },
             borderRadius: {

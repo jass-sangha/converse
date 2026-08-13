@@ -1,14 +1,16 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import Avatar from "../shared/Avatar.vue";
-import BlockedUsersPanel from "./BlockedUsersPanel.vue";
 import SettingRow from "../shared/SettingRow.vue";
+import UserPicker from "../shared/UserPicker.vue";
 import { useChatStore } from "../../store";
 import { useProfile } from "../../composables/useProfile";
 import { usePreferences } from "../../composables/usePreferences";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 import { usePrivacySettings } from "../../composables/usePrivacySettings";
 import { useNotifications } from "../../composables/useNotifications";
+import { useBlockedUsers } from "../../composables/useBlockedUsers";
+import { useUsers } from "../../composables/useUsers";
 import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
 
 const store = useChatStore();
@@ -18,6 +20,8 @@ const { theme, setTheme } = usePreferences();
 const { setView } = useSidebarUi();
 const { get: getPrivacySettings, update: updatePrivacySettings } =
     usePrivacySettings();
+const { list: listBlocked, block, unblock } = useBlockedUsers();
+const { resolve: resolveUsers, get: getUser } = useUsers();
 
 const uploadError = ref("");
 const uploading = ref(false);
@@ -26,124 +30,55 @@ const lastSeenHidden = ref(false);
 const lastSeenHiddenUntil = ref(null);
 const readReceiptsHidden = ref(false);
 const readReceiptsHiddenUntil = ref(null);
-const showBlocked = ref(false);
-const search = ref("");
-const section = ref(null);
 const about = ref("");
 const savingAbout = ref(false);
 const mutedScopes = ref({ private: false, group: false });
 const mutedUntil = ref({ private: null, group: null });
 
-const MUTE_ICON =
-    "M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z";
-const EYE_ICON =
-    "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5Zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5Zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3Z";
-const RECEIPT_ICON =
-    "M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7Zm4.24-1.41L11.66 16.17l-3.88-3.88-1.41 1.41 5.29 5.29L23.66 7l-1.42-1.41ZM.41 13.59 5.7 18.88l1.41-1.41-5.29-5.29L.41 13.59Z";
-
-const LIGHT_PREVIEW = { bg: "#f0f2f5", accent: "#00a884", line: "#c4c9cf" };
-const DARK_PREVIEW = { bg: "#111b21", accent: "#00a884", line: "#3a4a53" };
+const blockedRows = ref([]);
+const loadingBlocked = ref(true);
+const showAddBlock = ref(false);
+const picked = ref([]);
 
 const THEME_OPTIONS = [
     {
         key: "light",
         label: "Light",
         hint: "Always use the light theme",
-        previewStyle: { background: LIGHT_PREVIEW.bg },
-        previewAccentStyle: { background: LIGHT_PREVIEW.accent },
-        previewLineStyle: { background: LIGHT_PREVIEW.line },
+        swatch: "bg-[#f5ead8]",
     },
     {
         key: "dark",
         label: "Dark",
         hint: "Always use the dark theme",
-        previewStyle: { background: DARK_PREVIEW.bg },
-        previewAccentStyle: { background: DARK_PREVIEW.accent },
-        previewLineStyle: { background: DARK_PREVIEW.line },
+        swatch: "bg-[#2e2b25]",
     },
     {
         key: "system",
-        label: "System default",
+        label: "System",
         hint: "Match your device's appearance",
-        previewStyle: {
-            background: `linear-gradient(90deg, ${LIGHT_PREVIEW.bg} 50%, ${DARK_PREVIEW.bg} 50%)`,
-        },
-        previewAccentStyle: {
-            background: `linear-gradient(90deg, ${LIGHT_PREVIEW.accent} 50%, ${DARK_PREVIEW.accent} 50%)`,
-        },
-        previewLineStyle: {
-            background: `linear-gradient(90deg, ${LIGHT_PREVIEW.line} 50%, ${DARK_PREVIEW.line} 50%)`,
-        },
+        swatch: "bg-[linear-gradient(90deg,#f5ead8_50%,#2e2b25_50%)]",
     },
 ];
-
-async function onMuteAll(scope, durationKey) {
-    const until = mutedUntilFor(durationKey);
-    await muteAll(scope, until);
-    mutedScopes.value[scope] = true;
-    mutedUntil.value[scope] = until;
-}
-
-async function onUnmuteAll(scope) {
-    await muteAll(scope, null);
-    mutedScopes.value[scope] = false;
-    mutedUntil.value[scope] = null;
-}
 
 const me = computed(() => store.usersById[store.currentKey] ?? null);
 
-const ROWS = [
-    {
-        key: "profile",
-        label: "Profile",
-        hint: "Name, profile picture, username",
-        path: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-3.87 0-8 1.95-8 5v2h16v-2c0-3.05-4.13-5-8-5Z",
-    },
-    // {
-    //     key: 'account',
-    //     label: 'Account',
-    //     hint: 'Security notifications, account info',
-    //     path: 'M14 2a5 5 0 0 0-4.9 6.1L2 15.2V19h3.8l1-1h2v-2h2l2.6-2.6A5 5 0 1 0 14 2Zm2 5.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z',
-    // },
-    {
-        key: "privacy",
-        label: "Privacy",
-        hint: "Blocked contacts, disappearing messages",
-        path: "M12 1a4 4 0 0 0-4 4v3H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V5a4 4 0 0 0-4-4Zm-2 7V5a2 2 0 1 1 4 0v3Z",
-    },
-    {
-        key: "chats",
-        label: "Chats",
-        hint: "Theme, wallpaper, chat settings",
-        path: "M12 2C6.48 2 2 6.03 2 11c0 2.4 1.05 4.58 2.77 6.2-.15 1.34-.72 2.55-1.55 3.5a.5.5 0 0 0 .5.8c1.9-.32 3.55-1.18 4.86-2.27C9.5 19.72 10.72 20 12 20c5.52 0 10-4.03 10-9s-4.48-9-10-9Z",
-    },
-    {
-        key: "notifications",
-        label: "Notifications",
-        hint: "Messages, groups, sounds",
-        path: "M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z",
-    },
-    // {
-    //     key: "shortcuts",
-    //     label: "Keyboard shortcuts",
-    //     hint: "Speed up your workflow",
-    //     path: "M4 6h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Zm1 3v2h2V9H5Zm4 0v2h2V9H9Zm4 0v2h2V9h-2Zm4 0v2h2V9h-2ZM5 13v2h2v-2H5Zm4 0v2h6v-2H9Zm8 0v2h2v-2h-2Z",
-    // },
-];
-
-const filteredRows = computed(() => {
-    const q = search.value.trim().toLowerCase();
-    if (!q) return ROWS;
-    return ROWS.filter(
-        (row) =>
-            row.label.toLowerCase().includes(q) ||
-            row.hint.toLowerCase().includes(q),
-    );
-});
-
-const sectionTitle = computed(
-    () => ROWS.find((row) => row.key === section.value)?.label ?? "",
-);
+function offHint(iso) {
+    if (!iso) return "Turned off until you turn it back on";
+    const date = new Date(iso);
+    const farFuture =
+        date.getTime() - Date.now() > 1000 * 60 * 60 * 24 * 365 * 2;
+    if (farFuture) return "Turned off until you turn it back on";
+    const day = date.toLocaleDateString(undefined, {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+    });
+    const time = date
+        .toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+        .toLowerCase();
+    return `Turned off till ${day} · ${time}`;
+}
 
 function applyPrivacySettings(settings) {
     lastSeenHidden.value = !settings.show_last_seen;
@@ -152,10 +87,21 @@ function applyPrivacySettings(settings) {
     readReceiptsHiddenUntil.value = settings.read_receipts_hidden_until ?? null;
 }
 
+async function refreshBlocked() {
+    loadingBlocked.value = true;
+    const rows = await listBlocked();
+    blockedRows.value = rows;
+    await resolveUsers(
+        rows.map((r) => ({ type: r.blocked_type, id: r.blocked_id })),
+    );
+    loadingBlocked.value = false;
+}
+
 onMounted(async () => {
     const settings = await getPrivacySettings();
     applyPrivacySettings(settings);
     about.value = settings.about ?? "";
+    await refreshBlocked();
 });
 
 async function onFileChange(event) {
@@ -198,14 +144,6 @@ async function onAboutBlur() {
     }
 }
 
-async function onHideLastSeen(option) {
-    const settings = await updatePrivacySettings({
-        show_last_seen: true,
-        last_seen_hidden_until: mutedUntilFor(option.key),
-    });
-    applyPrivacySettings(settings);
-}
-
 async function onShowLastSeen() {
     const settings = await updatePrivacySettings({
         show_last_seen: true,
@@ -214,10 +152,10 @@ async function onShowLastSeen() {
     applyPrivacySettings(settings);
 }
 
-async function onHideReadReceipts(option) {
+async function onHideLastSeen(option) {
     const settings = await updatePrivacySettings({
-        show_read_receipts: true,
-        read_receipts_hidden_until: mutedUntilFor(option.key),
+        show_last_seen: true,
+        last_seen_hidden_until: mutedUntilFor(option.key),
     });
     applyPrivacySettings(settings);
 }
@@ -230,97 +168,83 @@ async function onShowReadReceipts() {
     applyPrivacySettings(settings);
 }
 
-function untilLabel(prefix, iso) {
-    if (!iso) return null;
-    const date = new Date(iso);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = date.toLocaleString("en-US", { month: "short" });
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${prefix} until ${day} ${month} ${date.getFullYear()}, ${hours}:${minutes}`;
+async function onHideReadReceipts(option) {
+    const settings = await updatePrivacySettings({
+        show_read_receipts: true,
+        read_receipts_hidden_until: mutedUntilFor(option.key),
+    });
+    applyPrivacySettings(settings);
 }
 
-function logout() {
-    document.getElementById("cv-logout-form")?.submit();
+async function onUnmuteAll(scope) {
+    await muteAll(scope, null);
+    mutedScopes.value[scope] = false;
+    mutedUntil.value[scope] = null;
+}
+
+async function onMuteAll(scope, durationKey) {
+    const until = mutedUntilFor(durationKey);
+    await muteAll(scope, until);
+    mutedScopes.value[scope] = true;
+    mutedUntil.value[scope] = until;
+}
+
+async function onUnblock(row) {
+    await unblock(row.blocked_type, row.blocked_id);
+    await refreshBlocked();
+}
+
+async function addBlock() {
+    if (!picked.value.length) return;
+    await Promise.all(picked.value.map((user) => block(user)));
+    picked.value = [];
+    showAddBlock.value = false;
+    await refreshBlocked();
 }
 </script>
 
 <template>
     <div class="cv-settings-panel flex h-full flex-col bg-converse-surface">
-        <template v-if="!section">
-            <div
-                class="cv-settings-panel__header flex items-center gap-3 px-4 py-3"
+        <div
+            class="cv-settings-panel__header flex items-center gap-3 px-4 py-3"
+        >
+            <button
+                type="button"
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover sm:hidden"
+                @click="setView('chats')"
             >
-                <button
-                    type="button"
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover sm:hidden"
-                    @click="setView('chats')"
+                <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"
-                        />
-                    </svg>
-                </button>
-                <div class="min-w-0">
-                    <h1 class="font-display truncate text-xl font-normal text-converse-text">
-                        {{ me?.name ?? "Settings" }}
-                    </h1>
-                    <p
-                        v-if="about"
-                        class="truncate text-sm text-converse-textMuted"
-                    >
-                        {{ about }}
-                    </p>
-                </div>
-            </div>
-
-            <div class="cv-settings-panel__search px-3 pb-3">
-                <div class="relative">
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-converse-textMuted"
-                    >
-                        <path
-                            d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"
-                        />
-                    </svg>
-                    <input
-                        v-model="search"
-                        type="text"
-                        placeholder="Search"
-                        class="w-full rounded-lg bg-converse-surfaceHover py-2 pl-9 pr-3 text-sm text-converse-text focus:outline-none"
+                    <path
+                        d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"
                     />
-                </div>
-            </div>
+                </svg>
+            </button>
+            <h1 class="font-display text-[25px] font-normal text-converse-text">
+                You
+            </h1>
+        </div>
 
+        <div class="cv-scroll flex-1 overflow-y-auto px-4 pb-5">
             <div
-                class="cv-settings-panel__avatar flex flex-col items-center gap-3 pb-4"
+                class="flex items-start gap-3.5 rounded-[24px] bg-converse-railBg p-4"
             >
-                <span
-                    class="rounded-full bg-converse-surfaceHover px-3 py-1 text-xs text-converse-textMuted"
-                    >Available</span
-                >
                 <label
-                    class="cv-settings-panel__avatar-upload group relative cursor-pointer rounded-full"
+                    class="group relative shrink-0 cursor-pointer rounded-full"
                 >
                     <Avatar
                         :name="me?.name ?? ''"
                         :avatar-url="me?.avatar_url"
-                        :size="96"
+                        :size="52"
                     />
                     <span
-                        class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-xs font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
+                        class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-[10px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
                     >
-                        {{ uploading ? "Uploading…" : "Change photo" }}
+                        {{ uploading ? "…" : "Edit" }}
                     </span>
                     <input
                         type="file"
@@ -330,298 +254,232 @@ function logout() {
                         @change="onFileChange"
                     />
                 </label>
-                <button
-                    v-if="me?.avatar_url"
-                    type="button"
-                    class="text-xs text-converse-danger disabled:opacity-50"
-                    :disabled="removingAvatar"
-                    @click="onRemoveAvatar"
-                >
-                    {{ removingAvatar ? "Removing…" : "Remove photo" }}
-                </button>
-                <p
-                    v-if="uploadError"
-                    class="cv-settings-panel__avatar-error text-xs text-converse-danger"
-                >
-                    {{ uploadError }}
-                </p>
-            </div>
-
-            <div
-                class="cv-settings-panel__rows flex-1 overflow-y-auto border-t border-converse-border"
-            >
-                <button
-                    v-for="row in filteredRows"
-                    :key="row.key"
-                    type="button"
-                    class="cv-settings-panel__row flex w-full items-center gap-4 px-4 py-3 text-left hover:bg-converse-surfaceHover"
-                    @click="section = row.key"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="shrink-0 text-converse-textMuted"
-                    >
-                        <path :d="row.path" />
-                    </svg>
-                    <span class="min-w-0">
-                        <span class="block text-[15px] text-converse-text">{{
-                            row.label
-                        }}</span>
-                        <span
-                            class="block truncate text-xs text-converse-textMuted"
-                            >{{ row.hint }}</span
-                        >
-                    </span>
-                </button>
-
-                <!-- <button
-                    type="button"
-                    class="cv-settings-panel__logout flex w-full items-center gap-4 px-4 py-3 text-left text-converse-danger hover:bg-converse-surfaceHover"
-                    @click="logout"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="shrink-0"
-                    >
-                        <path
-                            d="M10 3v2H5v14h5v2H3V3h7Zm5.29 3.71L18.59 10H8v2h10.59l-3.3 3.29 1.42 1.42L22 11.41l-5.29-5.3-1.42 1.6Z"
-                        />
-                    </svg>
-                    <span class="text-[15px]">Log out</span>
-                </button> -->
-            </div>
-        </template>
-
-        <template v-else>
-            <div
-                class="cv-settings-panel__section-header flex items-center gap-3 border-b border-converse-border px-3 py-3"
-            >
-                <button
-                    type="button"
-                    class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click="section = null"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"
-                        />
-                    </svg>
-                </button>
-                <h2 class="text-lg font-semibold text-converse-text">
-                    {{ sectionTitle }}
-                </h2>
-            </div>
-
-            <div
-                class="cv-settings-panel__section-body flex-1 overflow-y-auto p-4"
-            >
-                <template v-if="section === 'profile'">
-                    <div class="mb-6 flex flex-col items-center gap-2">
-                        <label
-                            class="group relative cursor-pointer rounded-full"
-                        >
-                            <Avatar
-                                :name="me?.name ?? ''"
-                                :avatar-url="me?.avatar_url"
-                                :size="120"
-                            />
-                            <span
-                                class="absolute inset-0 flex items-center justify-center rounded-full text-xs font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
-                            >
-                                {{ uploading ? "Uploading…" : "Change photo" }}
-                            </span>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                class="hidden"
-                                :disabled="uploading"
-                                @change="onFileChange"
-                            />
-                        </label>
-                        <p class="text-base font-medium text-converse-text">
-                            {{ me?.name ?? "—" }}
-                        </p>
-                        <button
-                            v-if="me?.avatar_url"
-                            type="button"
-                            class="text-xs text-converse-danger disabled:opacity-50"
-                            :disabled="removingAvatar"
-                            @click="onRemoveAvatar"
-                        >
-                            {{ removingAvatar ? "Removing…" : "Remove photo" }}
-                        </button>
-                        <p
-                            v-if="uploadError"
-                            class="text-xs text-converse-danger"
-                        >
-                            {{ uploadError }}
-                        </p>
+                <div class="min-w-0 flex-1">
+                    <div class="text-[15.5px] font-semibold text-converse-text">
+                        {{ me?.name ?? "—" }}
                     </div>
-                    <div class="rounded-cv border border-converse-border p-3">
-                        <p class="mb-1 text-xs text-converse-textMuted">
-                            About
-                        </p>
+                    <div class="mt-[3px] flex items-center gap-1.5">
                         <input
                             v-model="about"
                             type="text"
                             maxlength="139"
-                            placeholder="Add a few words about yourself"
-                            class="w-full bg-transparent text-[15px] text-converse-text focus:outline-none"
+                            placeholder="Add a short description"
+                            title="Click to edit your description"
+                            class="h-[30px] min-w-0 flex-1 -ml-[11px] rounded-full border border-transparent bg-transparent px-[11px] text-[12.5px] text-converse-textMuted outline-none hover:border-converse-border hover:bg-converse-surface focus:border-converse-accent focus:bg-converse-surface focus:text-converse-text"
                             :disabled="savingAbout"
                             @blur="onAboutBlur"
                             @keyup.enter="$event.target.blur()"
                         />
-                    </div>
-                </template>
-
-                <template v-else-if="section === 'privacy'">
-                    <div class="mb-3">
-                        <SettingRow
-                            :icon="EYE_ICON"
-                            label="Hide my last seen & online status"
-                            :subtitle="
-                                untilLabel('Hidden', lastSeenHiddenUntil)
-                            "
-                            :is-on="lastSeenHidden"
-                            :options="MUTE_DURATIONS"
-                            menu-title="Hide for"
-                            @pick="onHideLastSeen"
-                            @off="onShowLastSeen"
-                        />
-                        <SettingRow
-                            :icon="RECEIPT_ICON"
-                            label="Hide my read receipts"
-                            :subtitle="
-                                untilLabel('Hidden', readReceiptsHiddenUntil)
-                            "
-                            :is-on="readReceiptsHidden"
-                            :options="MUTE_DURATIONS"
-                            menu-title="Hide for"
-                            @pick="onHideReadReceipts"
-                            @off="onShowReadReceipts"
-                        />
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="14"
+                            height="14"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.75"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="shrink-0 text-converse-textDim"
+                        >
+                            <path d="M4 20h4L20 8l-4-4L4 16v4Z" />
+                        </svg>
                     </div>
                     <button
+                        v-if="me?.avatar_url"
                         type="button"
-                        class="w-full rounded-cv border border-converse-border p-3 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
-                        @click="showBlocked = true"
+                        class="mt-1 text-xs text-converse-danger disabled:opacity-50"
+                        :disabled="removingAvatar"
+                        @click="onRemoveAvatar"
                     >
-                        Blocked contacts
+                        {{ removingAvatar ? "Removing…" : "Remove photo" }}
                     </button>
-                </template>
-
-                <template v-else-if="section === 'chats'">
                     <p
-                        class="mb-2 text-xs font-medium uppercase text-converse-textMuted"
+                        v-if="uploadError"
+                        class="mt-1 text-xs text-converse-danger"
                     >
-                        Theme
+                        {{ uploadError }}
                     </p>
-                    <div class="flex flex-col gap-2">
-                        <button
-                            v-for="option in THEME_OPTIONS"
-                            :key="option.key"
-                            type="button"
-                            class="flex items-center gap-3 rounded-cv border p-3 text-left"
-                            :class="
-                                theme === option.key
-                                    ? 'border-converse-accent bg-converse-accent/5'
-                                    : 'border-converse-border hover:bg-converse-surfaceHover'
-                            "
-                            role="radio"
-                            :aria-checked="theme === option.key"
-                            @click="setTheme(option.key)"
-                        >
-                            <span
-                                class="cv-theme-preview flex h-8 w-11 shrink-0 flex-col gap-1 overflow-hidden rounded-md border border-converse-border p-1"
-                                :style="option.previewStyle"
-                            >
-                                <span
-                                    class="block h-1.5 w-5 rounded-full"
-                                    :style="option.previewAccentStyle"
-                                />
-                                <span
-                                    class="block h-1.5 w-3/4 rounded-full"
-                                    :style="option.previewLineStyle"
-                                />
-                            </span>
-                            <span class="min-w-0 flex-1">
-                                <span
-                                    class="block text-[15px] text-converse-text"
-                                    >{{ option.label }}</span
-                                >
-                                <span
-                                    class="block text-xs text-converse-textMuted"
-                                    >{{ option.hint }}</span
-                                >
-                            </span>
-                            <svg
-                                v-if="theme === option.key"
-                                viewBox="0 0 24 24"
-                                width="18"
-                                height="18"
-                                fill="currentColor"
-                                class="shrink-0 text-converse-accent"
-                            >
-                                <path
-                                    d="m9 16.2-3.5-3.6L4 14.1l5 5 11-11-1.4-1.4Z"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                    <p class="mt-3 text-xs text-converse-textMuted">
-                        Per-chat wallpaper can be changed from that chat's info
-                        panel.
-                    </p>
-                </template>
-
-                <template v-else-if="section === 'notifications'">
-                    <p class="mb-3 text-xs text-converse-textMuted">
-                        Mute notifications in bulk across every chat of a kind.
-                        This doesn't change any chat you've already muted or
-                        unmuted individually.
-                    </p>
-
-                    <SettingRow
-                        :icon="MUTE_ICON"
-                        label="Mute notifications for individual chats"
-                        :subtitle="untilLabel('Muted', mutedUntil.private)"
-                        :is-on="mutedScopes.private"
-                        :options="MUTE_DURATIONS"
-                        menu-title="Mute for"
-                        @pick="(option) => onMuteAll('private', option.key)"
-                        @off="onUnmuteAll('private')"
-                    />
-                    <SettingRow
-                        :icon="MUTE_ICON"
-                        label="Mute notifications for group chats"
-                        :subtitle="untilLabel('Muted', mutedUntil.group)"
-                        :is-on="mutedScopes.group"
-                        :options="MUTE_DURATIONS"
-                        menu-title="Mute for"
-                        @pick="(option) => onMuteAll('group', option.key)"
-                        @off="onUnmuteAll('group')"
-                    />
-                </template>
-
-                <template v-else>
-                    <p class="text-sm text-converse-textMuted">
-                        This setting isn't available yet.
-                    </p>
-                </template>
+                </div>
             </div>
-        </template>
 
-        <BlockedUsersPanel v-if="showBlocked" @close="showBlocked = false" />
+            <div
+                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+            >
+                Privacy
+            </div>
+            <SettingRow
+                label="Enable last seen &amp; online status"
+                :hint="
+                    !lastSeenHidden
+                        ? 'Visible to everyone'
+                        : offHint(lastSeenHiddenUntil)
+                "
+                :is-on="!lastSeenHidden"
+                :options="MUTE_DURATIONS"
+                menu-title="Turn off for"
+                @toggle="onShowLastSeen"
+                @pick="onHideLastSeen"
+            />
+            <SettingRow
+                label="Enable read receipts"
+                :hint="
+                    !readReceiptsHidden
+                        ? 'Visible to everyone'
+                        : offHint(readReceiptsHiddenUntil)
+                "
+                :is-on="!readReceiptsHidden"
+                :options="MUTE_DURATIONS"
+                menu-title="Turn off for"
+                @toggle="onShowReadReceipts"
+                @pick="onHideReadReceipts"
+            />
+
+            <div
+                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+            >
+                Notifications
+            </div>
+            <p
+                class="mb-1.5 px-1.5 text-[12.5px] leading-relaxed text-converse-textMuted"
+            >
+                Turn notifications on or off in bulk across every chat of a
+                kind. This doesn't change any chat you've already muted
+                individually.
+            </p>
+            <SettingRow
+                label="Individual chats"
+                :hint="
+                    !mutedScopes.private
+                        ? 'Alerts on for these chats'
+                        : offHint(mutedUntil.private)
+                "
+                :is-on="!mutedScopes.private"
+                :options="MUTE_DURATIONS"
+                menu-title="Turn off for"
+                @toggle="onUnmuteAll('private')"
+                @pick="(option) => onMuteAll('private', option.key)"
+            />
+            <SettingRow
+                label="Group chats"
+                :hint="
+                    !mutedScopes.group
+                        ? 'Alerts on for these chats'
+                        : offHint(mutedUntil.group)
+                "
+                :is-on="!mutedScopes.group"
+                :options="MUTE_DURATIONS"
+                menu-title="Turn off for"
+                @toggle="onUnmuteAll('group')"
+                @pick="(option) => onMuteAll('group', option.key)"
+            />
+
+            <div
+                class="flex items-center justify-between px-1.5 pb-1 pt-[18px]"
+            >
+                <span
+                    class="text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+                    >Blocked contacts</span
+                >
+                <button
+                    type="button"
+                    class="text-xs font-semibold text-converse-accentText"
+                    @click="showAddBlock = !showAddBlock"
+                >
+                    {{ showAddBlock ? "Cancel" : "Add" }}
+                </button>
+            </div>
+            <div v-if="showAddBlock" class="mb-2 px-1.5">
+                <UserPicker v-model="picked" :multiple="true" />
+                <button
+                    type="button"
+                    class="mt-2 w-full rounded-full bg-converse-danger py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    :disabled="!picked.length"
+                    @click="addBlock"
+                >
+                    Block
+                    {{ picked.length > 1 ? `${picked.length} people` : "" }}
+                </button>
+            </div>
+            <p
+                v-if="!loadingBlocked && !blockedRows.length"
+                class="mb-1.5 px-1.5 text-[13px] text-converse-textDim"
+            >
+                No blocked contacts
+            </p>
+            <div
+                v-for="row in blockedRows"
+                :key="row.id"
+                class="flex items-center gap-3 rounded-[18px] p-2.5 hover:bg-converse-surfaceHover"
+            >
+                <Avatar
+                    :name="
+                        getUser({ type: row.blocked_type, id: row.blocked_id })
+                            .name
+                    "
+                    :avatar-url="
+                        getUser({ type: row.blocked_type, id: row.blocked_id })
+                            .avatar_url
+                    "
+                    :size="38"
+                />
+                <div
+                    class="min-w-0 flex-1 text-[13.5px] font-medium text-converse-text"
+                >
+                    {{
+                        getUser({ type: row.blocked_type, id: row.blocked_id })
+                            .name
+                    }}
+                </div>
+                <button
+                    type="button"
+                    class="shrink-0 rounded-full border border-converse-border px-3.5 py-2 text-xs font-semibold text-converse-accentText hover:bg-converse-accentTint"
+                    @click="onUnblock(row)"
+                >
+                    Unblock
+                </button>
+            </div>
+
+            <div
+                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+            >
+                Theme
+            </div>
+            <div
+                class="flex gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1"
+            >
+                <button
+                    v-for="option in THEME_OPTIONS"
+                    :key="option.key"
+                    type="button"
+                    class="relative h-[38px] flex-1 rounded-full text-[12.5px] font-semibold text-converse-textMuted"
+                    :title="option.hint"
+                    role="radio"
+                    :aria-checked="theme === option.key"
+                    @click="setTheme(option.key)"
+                >
+                    <span
+                        v-if="theme === option.key"
+                        class="absolute inset-0 rounded-full bg-converse-accent shadow"
+                    />
+                    <span
+                        class="relative flex items-center justify-center gap-1.5"
+                        :class="
+                            theme === option.key
+                                ? 'text-converse-accentContrast'
+                                : 'text-converse-textMuted'
+                        "
+                    >
+                        <span
+                            class="h-3.5 w-3.5 rounded-full border border-converse-border"
+                            :class="option.swatch"
+                        />
+                        {{ option.label }}
+                    </span>
+                </button>
+            </div>
+            <p class="mt-0.5 px-1.5 text-xs text-converse-textMuted">
+                Per-chat wallpaper can be changed from that chat's info panel.
+            </p>
+        </div>
     </div>
 </template>
