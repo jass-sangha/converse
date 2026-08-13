@@ -3,6 +3,8 @@ import { computed, watch } from "vue";
 import IconRail from "./IconRail.vue";
 import MobileTabBar from "./MobileTabBar.vue";
 import ConversationList from "../sidebar/ConversationList.vue";
+import NewChatPanel from "../sidebar/NewChatPanel.vue";
+import NewGroupPanel from "../sidebar/NewGroupPanel.vue";
 import MediaPanel from "../panels/MediaPanel.vue";
 import SettingsPanel from "../panels/SettingsPanel.vue";
 import GroupInfoPanel from "../panels/GroupInfoPanel.vue";
@@ -61,7 +63,9 @@ watch(
                 }"
                 :style="{ '--sidebar-width': sidebarWidth + 'px' }"
             >
-                <ConversationList v-if="view === 'chats'" />
+                <ConversationList v-if="view === 'chats' || view === 'archived'" />
+                <NewChatPanel v-else-if="view === 'new-chat'" />
+                <NewGroupPanel v-else-if="view === 'new-group'" />
                 <MediaPanel v-else-if="view === 'media'" />
                 <StarredMessagesPanel v-else-if="view === 'starred'" />
                 <GroupInfoPanel

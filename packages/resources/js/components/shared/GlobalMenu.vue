@@ -53,9 +53,16 @@ function go(view) {
             <button
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
-                @click="go('chats')"
+                @click="go('new-chat')"
             >
-                Chats
+                New chat
+            </button>
+            <button
+                type="button"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="go('new-group')"
+            >
+                New group
             </button>
             <button
                 type="button"
@@ -63,6 +70,13 @@ function go(view) {
                 @click="go('starred')"
             >
                 Starred messages
+            </button>
+            <button
+                type="button"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="go('archived')"
+            >
+                Archived chats
             </button>
             <button
                 type="button"

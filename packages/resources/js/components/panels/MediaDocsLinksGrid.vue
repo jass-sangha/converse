@@ -187,15 +187,15 @@ function formatSize(bytes) {
             </div>
         </div>
 
-        <div class="flex items-center gap-1 px-4 pb-1 pt-3">
+        <div class="flex items-center justify-center gap-1 px-4 pb-1 pt-3">
             <div
-                class="flex items-center gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1"
+                class="flex items-center w-full gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1"
             >
                 <button
                     v-for="t in TABS"
                     :key="t.key"
                     type="button"
-                    class="shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold"
+                    class="w-1/3 shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold"
                     :class="
                         state.tab === t.key
                             ? 'bg-converse-accent text-converse-accentContrast'
