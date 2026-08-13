@@ -2,10 +2,10 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 import Avatar from "../shared/Avatar.vue";
-import Modal from "../shared/Modal.vue";
 import UserPicker from "../shared/UserPicker.vue";
+import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
+import GlobalMenu from "../shared/GlobalMenu.vue";
 import DisappearingToggle from "./DisappearingToggle.vue";
-import StarredMessagesPanel from "./StarredMessagesPanel.vue";
 import MediaDocsLinksGrid from "./MediaDocsLinksGrid.vue";
 import MuteDurationMenu from "../shared/MuteDurationMenu.vue";
 import { mutedUntilFor } from "../../muteDurations";
@@ -16,13 +16,14 @@ import { useParticipants } from "../../composables/useParticipants";
 import { useBlockedUsers } from "../../composables/useBlockedUsers";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
+import { useSidebarUi } from "../../composables/useSidebarUi";
 import { WALLPAPER_PRESETS } from "../../wallpapers";
 
 const props = defineProps({
     conversation: { type: Object, required: true },
 });
 
-const emit = defineEmits(["close", "search"]);
+const emit = defineEmits(["close"]);
 
 const store = useChatStore();
 const { resolve, get } = useUsers();
@@ -38,12 +39,12 @@ const {
     updateAvatar,
 } = useConversations();
 const { clear: clearMessages } = useMessages();
+const { setView } = useSidebarUi();
 
 const showAddMember = ref(false);
 const picked = ref([]);
 const error = ref("");
 const blockedKeys = ref([]);
-const showStarred = ref(false);
 const showMedia = ref(false);
 const mediaCount = ref(0);
 const clearing = ref(false);
@@ -288,31 +289,14 @@ async function onDeleteChat() {
 
 <template>
     <div
-        class="cv-group-info-panel fixed inset-0 z-40 flex flex-col overflow-y-auto bg-converse-surface sm:relative sm:z-auto sm:w-96 sm:shrink-0 sm:border-l sm:border-converse-border"
+        class="cv-group-info-panel relative flex h-full flex-col overflow-y-auto bg-converse-surface"
     >
-        <div
-            class="cv-group-info-panel__header flex items-center gap-3 border-b border-converse-border px-3 py-3"
+        <SidebarScreenHeader
+            :title="isGroup ? 'Group info' : 'Contact info'"
+            @back="emit('close')"
         >
-            <button
-                type="button"
-                class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                @click="emit('close')"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="18"
-                    height="18"
-                    fill="currentColor"
-                >
-                    <path
-                        d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"
-                    />
-                </svg>
-            </button>
-            <h2 class="text-lg font-semibold text-converse-text">
-                {{ isGroup ? "Group info" : "Contact info" }}
-            </h2>
-        </div>
+            <GlobalMenu />
+        </SidebarScreenHeader>
 
         <div
             class="cv-group-info-panel__avatar flex flex-col items-center gap-1 border-b border-converse-border py-6"
@@ -361,28 +345,6 @@ async function onDeleteChat() {
             >
                 {{ conversation.description }}
             </p>
-
-            <!-- <button
-                type="button"
-                class="mt-4 flex flex-col items-center gap-1 text-converse-accent"
-                @click="emit('search')"
-            >
-                <span
-                    class="flex h-11 w-11 items-center justify-center rounded-full bg-converse-accent/10"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="18"
-                        height="18"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"
-                        />
-                    </svg>
-                </span>
-                <span class="text-xs">Search</span>
-            </button> -->
         </div>
 
         <p
@@ -420,7 +382,7 @@ async function onDeleteChat() {
             <button
                 type="button"
                 class="flex w-full items-center gap-4 px-4 py-3 text-left hover:bg-converse-surfaceHover"
-                @click="showStarred = true"
+                @click="setView('starred')"
             >
                 <svg
                     viewBox="0 0 24 24"
@@ -755,61 +717,45 @@ async function onDeleteChat() {
             </button>
         </div>
 
-        <StarredMessagesPanel v-if="showStarred" @close="showStarred = false" />
-
-        <Modal
+        <div
             v-if="showAddMember"
-            title="Add participants"
-            @close="closeAddMember"
+            class="absolute inset-0 z-10 flex flex-col bg-converse-surface"
         >
-            <UserPicker
-                v-model="picked"
-                :multiple="true"
-                :exclude="currentParticipantRefs"
-            />
-            <p v-if="error" class="mt-2 text-xs text-converse-danger">
-                {{ error }}
-            </p>
-
-            <template #footer>
+            <SidebarScreenHeader title="Add participants" @back="closeAddMember">
+                <GlobalMenu />
+            </SidebarScreenHeader>
+            <div class="flex-1 overflow-y-auto p-4">
+                <UserPicker
+                    v-model="picked"
+                    :multiple="true"
+                    :exclude="currentParticipantRefs"
+                />
+                <p v-if="error" class="mt-2 text-xs text-converse-danger">
+                    {{ error }}
+                </p>
+            </div>
+            <div class="border-t border-converse-border p-3">
                 <button
                     type="button"
-                    class="w-full rounded bg-converse-accent py-1.5 text-sm text-white disabled:opacity-50"
+                    class="w-full rounded-full bg-converse-accent py-2 text-sm font-semibold text-converse-accentContrast disabled:opacity-50"
                     :disabled="!picked.length"
                     @click="addMembers"
                 >
                     Add selected
                 </button>
-            </template>
-        </Modal>
+            </div>
+        </div>
 
         <div
             v-if="showMedia"
             class="absolute inset-0 z-10 flex flex-col bg-converse-surface"
         >
-            <div
-                class="flex items-center gap-3 border-b border-converse-border px-3 py-3"
+            <SidebarScreenHeader
+                title="Media, links and docs"
+                @back="showMedia = false"
             >
-                <button
-                    type="button"
-                    class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click="showMedia = false"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"
-                        />
-                    </svg>
-                </button>
-                <h2 class="text-lg font-semibold text-converse-text">
-                    Media, links and docs
-                </h2>
-            </div>
+                <GlobalMenu />
+            </SidebarScreenHeader>
             <MediaDocsLinksGrid
                 :conversation-id="conversation.id"
                 class="flex-1"

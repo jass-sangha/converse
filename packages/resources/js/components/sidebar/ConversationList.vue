@@ -4,8 +4,6 @@ import ConversationListItem from "./ConversationListItem.vue";
 import SearchBar from "./SearchBar.vue";
 import NewChatModal from "./NewChatModal.vue";
 import NewGroupModal from "./NewGroupModal.vue";
-import StarredMessagesPanel from "../panels/StarredMessagesPanel.vue";
-import BlockedUsersPanel from "../panels/BlockedUsersPanel.vue";
 import Avatar from "../shared/Avatar.vue";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
@@ -32,8 +30,6 @@ const FILTERS = [
 const showNewChat = ref(false);
 const showNewGroup = ref(false);
 const showArchived = ref(false);
-const showStarred = ref(false);
-const showBlocked = ref(false);
 const showMenu = ref(false);
 const menuRoot = ref(null);
 const searchQuery = ref("");
@@ -251,7 +247,7 @@ function openHit(hit) {
                             type="button"
                             class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
-                                showStarred = true;
+                                setView('starred');
                                 showMenu = false;
                             "
                         >
@@ -261,7 +257,7 @@ function openHit(hit) {
                             type="button"
                             class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                             @click="
-                                showBlocked = true;
+                                setView('profile');
                                 showMenu = false;
                             "
                         >
@@ -426,7 +422,5 @@ function openHit(hit) {
 
         <NewChatModal v-if="showNewChat" @close="showNewChat = false" />
         <NewGroupModal v-if="showNewGroup" @close="showNewGroup = false" />
-        <StarredMessagesPanel v-if="showStarred" @close="showStarred = false" />
-        <BlockedUsersPanel v-if="showBlocked" @close="showBlocked = false" />
     </div>
 </template>

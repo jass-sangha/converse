@@ -1,15 +1,16 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import Modal from '../shared/Modal.vue';
 import MessageBubble from '../chat/MessageBubble.vue';
+import SidebarScreenHeader from '../shared/SidebarScreenHeader.vue';
+import GlobalMenu from '../shared/GlobalMenu.vue';
 import { useApi } from '../../composables/useApi';
 import { useConversations } from '../../composables/useConversations';
 import { useUsers } from '../../composables/useUsers';
+import { useSidebarUi } from '../../composables/useSidebarUi';
 import { useChatStore } from '../../store';
 import { chatableKeyOf, chatableKey } from '../../chatable';
 
-const emit = defineEmits(['close']);
-
+const { setView } = useSidebarUi();
 const api = useApi();
 const { setActive } = useConversations();
 const { resolve, get } = useUsers();
@@ -66,7 +67,7 @@ function conversationLabel(message) {
 
 function jumpTo(message) {
     setActive(message.conversation_id);
-    emit('close');
+    setView('chats');
 }
 
 function onStarChanged(message) {
@@ -77,35 +78,41 @@ function onStarChanged(message) {
 </script>
 
 <template>
-    <Modal class="cv-starred-messages-panel" title="Starred messages" @close="emit('close')">
-        <p v-if="loading" class="text-sm text-converse-textMuted">Loading&hellip;</p>
-        <p v-else-if="!messages.length" class="text-sm text-converse-textMuted">No starred messages yet.</p>
+    <div class="cv-starred-messages-panel flex h-full flex-col bg-converse-surface">
+        <SidebarScreenHeader title="Starred messages" @back="setView('chats')">
+            <GlobalMenu />
+        </SidebarScreenHeader>
 
-        <div v-else class="cv-starred-messages-panel__list flex flex-col gap-2">
-            <div
-                v-for="message in messages"
-                :key="message.id"
-                class="cv-starred-messages-panel__item rounded"
-            >
-                <p
-                    class="cv-starred-messages-panel__conversation-label cursor-pointer px-1 text-xs text-converse-textMuted hover:underline"
-                    @click="jumpTo(message)"
+        <div class="flex-1 overflow-y-auto p-4">
+            <p v-if="loading" class="text-sm text-converse-textMuted">Loading&hellip;</p>
+            <p v-else-if="!messages.length" class="text-sm text-converse-textMuted">No starred messages yet.</p>
+
+            <div v-else class="cv-starred-messages-panel__list flex flex-col gap-2">
+                <div
+                    v-for="message in messages"
+                    :key="message.id"
+                    class="cv-starred-messages-panel__item rounded"
                 >
-                    in {{ conversationLabel(message) }}
-                </p>
-                <div class="cursor-pointer hover:bg-converse-surfaceHover" @click="jumpTo(message)">
-                    <MessageBubble :message="message" @star-changed="onStarChanged" />
+                    <p
+                        class="cv-starred-messages-panel__conversation-label cursor-pointer px-1 text-xs text-converse-textMuted hover:underline"
+                        @click="jumpTo(message)"
+                    >
+                        in {{ conversationLabel(message) }}
+                    </p>
+                    <div class="cursor-pointer hover:bg-converse-surfaceHover" @click="jumpTo(message)">
+                        <MessageBubble :message="message" @star-changed="onStarChanged" />
+                    </div>
                 </div>
-            </div>
 
-            <button
-                v-if="hasMore"
-                type="button"
-                class="cv-starred-messages-panel__load-more mt-2 text-sm text-converse-accent"
-                @click="loadMore"
-            >
-                Load more
-            </button>
+                <button
+                    v-if="hasMore"
+                    type="button"
+                    class="cv-starred-messages-panel__load-more mt-2 text-sm text-converse-accent"
+                    @click="loadMore"
+                >
+                    Load more
+                </button>
+            </div>
         </div>
-    </Modal>
+    </div>
 </template>

@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import SettingRow from "../shared/SettingRow.vue";
 import UserPicker from "../shared/UserPicker.vue";
+import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
+import GlobalMenu from "../shared/GlobalMenu.vue";
 import { useChatStore } from "../../store";
 import { useProfile } from "../../composables/useProfile";
 import { usePreferences } from "../../composables/usePreferences";
@@ -205,29 +207,9 @@ async function addBlock() {
 
 <template>
     <div class="cv-settings-panel flex h-full flex-col bg-converse-surface">
-        <div
-            class="cv-settings-panel__header flex items-center gap-3 px-4 py-3"
-        >
-            <button
-                type="button"
-                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover sm:hidden"
-                @click="setView('chats')"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                >
-                    <path
-                        d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"
-                    />
-                </svg>
-            </button>
-            <h1 class="font-display text-[25px] font-normal text-converse-text">
-                You
-            </h1>
-        </div>
+        <SidebarScreenHeader title="You" @back="setView('chats')">
+            <GlobalMenu />
+        </SidebarScreenHeader>
 
         <div class="cv-scroll flex-1 overflow-y-auto px-4 pb-5">
             <div
