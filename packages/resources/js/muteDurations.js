@@ -1,7 +1,9 @@
 export const MUTE_DURATIONS = [
     { key: '8h', label: '8 hours', hours: 8 },
-    { key: '1w', label: '1 week', hours: 24 * 7 },
-    { key: 'always', label: 'Always', hours: null },
+    { key: '24h', label: '24 hours', hours: 24 },
+    { key: '7d', label: '7 days', hours: 24 * 7 },
+    { key: '90d', label: '90 days', hours: 24 * 90 },
+    { key: 'always', label: 'Until I turn it back on', hours: null },
 ];
 
 export function mutedUntilFor(durationKey) {

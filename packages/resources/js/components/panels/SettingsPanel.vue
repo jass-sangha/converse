@@ -477,9 +477,6 @@ async function addBlock() {
                     </span>
                 </button>
             </div>
-            <p class="mt-0.5 px-1.5 text-xs text-converse-textMuted">
-                Per-chat wallpaper can be changed from that chat's info panel.
-            </p>
         </div>
     </div>
 </template>
