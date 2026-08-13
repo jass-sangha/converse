@@ -132,6 +132,7 @@ const isGroupConversation = computed(
 
 const showMenu = ref(false);
 const showReactionPicker = ref(false);
+const showFullEmojiPicker = ref(false);
 const showForward = ref(false);
 const showInfo = ref(false);
 const showReactionDetails = ref(false);
@@ -160,6 +161,7 @@ function onDocumentClick(event) {
     if (root.value && !root.value.contains(event.target)) {
         showMenu.value = false;
         showReactionPicker.value = false;
+        showFullEmojiPicker.value = false;
     }
 }
 
@@ -175,6 +177,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 
 async function onPickReaction(emoji) {
     showReactionPicker.value = false;
+    showFullEmojiPicker.value = false;
     const mine = props.message.reactions?.find((r) => r.self);
     if (mine && mine.emoji === emoji) {
         await unreact(props.message.id, props.message.conversation_id);
@@ -242,6 +245,7 @@ function onMenuAction(key) {
         case "react":
             showMenu.value = false;
             showReactionPicker.value = true;
+            showFullEmojiPicker.value = false;
             return;
         case "forward":
             showMenu.value = false;
@@ -277,11 +281,11 @@ function onMenuAction(key) {
         @dblclick="!message.deleted_for_everyone && emit('reply', message)"
     >
         <div
-            class="cv-message-bubble__content group relative max-w-[70%] rounded-cv px-3 py-1.5 shadow-sm"
+            class="cv-message-bubble__content group relative max-w-[70%] rounded-cv px-4 py-2 shadow-sm"
             :class="[
                 isOwn
-                    ? 'rounded-tr-sm bg-converse-bubbleOut'
-                    : 'rounded-tl-sm bg-converse-bubbleIn',
+                    ? 'rounded-br-md bg-converse-bubbleOut'
+                    : 'rounded-bl-md bg-converse-bubbleIn',
                 message.reactions?.length ? 'mb-3' : '',
             ]"
         >
@@ -333,51 +337,52 @@ function onMenuAction(key) {
                 :class="isOwn ? 'right-1' : 'left-1'"
             >
                 <button
+                    type="button"
+                    title="React"
+                    class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    @click.stop="showReactionPicker = !showReactionPicker; showFullEmojiPicker = false"
+                >
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" /><path d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01" /></svg>
+                </button>
+                <button
+                    type="button"
+                    title="More"
+                    class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    @click.stop="toggleMenu"
+                >
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
+                </button>
+            </div>
+
+            <div
+                v-if="showReactionPicker && !showFullEmojiPicker"
+                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute bottom-full z-20 mb-1 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-lg"
+                :class="isOwn ? 'right-1' : 'left-1'"
+            >
+                <button
                     v-for="emoji in QUICK_REACTIONS"
                     :key="emoji"
                     type="button"
-                    class="flex h-7 w-7 items-center justify-center rounded-full text-base hover:scale-125 hover:bg-converse-surfaceHover"
-                    @click="onPickReaction(emoji)"
+                    class="flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-converse-surfaceHover"
+                    @click.stop="onPickReaction(emoji)"
                 >
                     {{ emoji }}
                 </button>
                 <button
                     type="button"
                     title="More reactions"
-                    class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click="showReactionPicker = !showReactionPicker"
+                    class="flex h-8 w-8 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    @click.stop="showFullEmojiPicker = true"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                    >
-                        <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" />
-                    </svg>
-                </button>
-                <span class="mx-0.5 h-5 w-px bg-converse-border" />
-                <button
-                    type="button"
-                    title="More"
-                    class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click="toggleMenu"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                    >
-                        <path d="M7 10l5 5 5-5Z" />
-                    </svg>
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" /></svg>
                 </button>
             </div>
 
             <div
-                v-if="showReactionPicker"
+                v-if="showReactionPicker && showFullEmojiPicker"
                 class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute bottom-full z-20 mb-1"
                 :class="isOwn ? 'right-1' : 'left-1'"
+                @click.stop
             >
                 <EmojiPicker @pick="onPickReaction" />
             </div>

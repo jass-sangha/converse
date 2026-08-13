@@ -104,29 +104,31 @@ function formatSize(bytes) {
 
 <template>
     <div class="cv-media-docs-links flex h-full flex-col">
-        <div class="px-3 pt-2">
+        <div class="px-4 pt-3">
             <div class="relative">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-converse-textMuted"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-converse-textMuted"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
                 <input
                     v-model="state.search"
                     type="text"
                     placeholder="Search by chat, contact, or filename"
-                    class="cv-media-docs-links__search w-full rounded-lg bg-converse-surfaceHover py-2 pl-9 pr-3 text-sm text-converse-text focus:outline-none"
+                    class="cv-media-docs-links__search h-11 w-full rounded-full border border-converse-border bg-converse-surfaceHover pl-10 pr-4 text-sm text-converse-text focus:outline-none"
                 >
             </div>
         </div>
 
-        <div class="flex items-center gap-2 border-b border-converse-border px-3 pt-1">
-            <button
-                v-for="t in TABS"
-                :key="t.key"
-                type="button"
-                class="shrink-0 border-b-2 px-3 py-2 text-sm font-medium"
-                :class="state.tab === t.key ? 'border-converse-accent text-converse-accent' : 'border-transparent text-converse-textMuted hover:text-converse-text'"
-                @click="state.tab = t.key"
-            >
-                {{ t.label }}
-            </button>
+        <div class="flex items-center gap-1 px-4 pb-1 pt-3">
+            <div class="flex items-center gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1">
+                <button
+                    v-for="t in TABS"
+                    :key="t.key"
+                    type="button"
+                    class="shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold"
+                    :class="state.tab === t.key ? 'bg-converse-accent text-converse-accentContrast' : 'text-converse-textMuted hover:text-converse-text'"
+                    @click="state.tab = t.key"
+                >
+                    {{ t.label }}
+                </button>
+            </div>
         </div>
 
         <div class="flex-1 overflow-y-auto p-3">
