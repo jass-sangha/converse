@@ -17,7 +17,8 @@ import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
 const store = useChatStore();
 const { muteAll } = useNotifications();
 const { updateAvatar, removeAvatar } = useProfile();
-const { theme, setTheme, defaultWallpaper, setDefaultWallpaper } = usePreferences();
+const { theme, setTheme, defaultWallpaper, setDefaultWallpaper } =
+    usePreferences();
 const { setView } = useSidebarUi();
 const { get: getPrivacySettings, update: updatePrivacySettings } =
     usePrivacySettings();
@@ -332,7 +333,7 @@ async function onMuteAll(scope, durationKey) {
             </div>
 
             <div
-                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+                class="px-1.5 pb-1 pt-[30px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
             >
                 Default chat wallpaper
             </div>

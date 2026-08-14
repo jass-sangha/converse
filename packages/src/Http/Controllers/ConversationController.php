@@ -207,7 +207,7 @@ class ConversationController extends Controller
     {
         Gate::authorize('view', $conversation);
 
-        $request->validate(['wallpaper' => ['nullable', 'string', 'max:32']]);
+        $request->validate(['wallpaper' => ['nullable', 'string', 'max:255']]);
 
         $this->conversations->setWallpaper(
             $conversation,

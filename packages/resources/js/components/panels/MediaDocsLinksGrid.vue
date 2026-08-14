@@ -193,7 +193,7 @@ function formatSize(bytes) {
 
         <div class="flex items-center justify-center gap-1 px-4 pb-1 pt-3">
             <div
-                class="flex items-center w-full gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1"
+                class="flex items-center w-full gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1 mb-2"
             >
                 <button
                     v-for="t in TABS"
@@ -212,7 +212,7 @@ function formatSize(bytes) {
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-3 pb-12">
+        <div class="flex-1 overflow-y-auto p-3 pt-0 pb-12">
             <template v-if="state.tab === 'media'">
                 <div v-if="mediaItems.length" class="grid grid-cols-3 gap-1">
                     <button

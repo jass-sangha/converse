@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import {
     WALLPAPER_PATTERNS,
     WALLPAPER_COLORS,
@@ -14,12 +14,51 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue"]);
 
+const OPACITY_OPTIONS = [8, 12, 16, 20, 28, 36, 48, 60];
+
 const { uploadAttachment } = useMessages();
 const imageInput = ref(null);
 const uploadingImage = ref(false);
+const opacityRoot = ref(null);
+const showOpacityMenu = ref(false);
+
+function onDocumentClick(event) {
+    if (opacityRoot.value && !opacityRoot.value.contains(event.target)) {
+        showOpacityMenu.value = false;
+    }
+}
+
+watch(showOpacityMenu, (open) => {
+    if (open) {
+        document.addEventListener("click", onDocumentClick);
+    } else {
+        document.removeEventListener("click", onDocumentClick);
+    }
+});
+
+onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 
 const current = computed(() => decodeWallpaper(props.modelValue));
 const isImage = computed(() => current.value.colorKeyOrHex?.startsWith("image:"));
+// A custom color is stored as an 8-digit "#rrggbbaa" hex so the chosen opacity travels with it —
+// legacy 6-digit "#rrggbb" values (picked before opacity existed) are treated as fully opaque.
+const isCustomHex = computed(() => /^#[0-9a-fA-F]{6,8}$/.test(current.value.colorKeyOrHex ?? ""));
+const customBaseHex = computed(() =>
+    isCustomHex.value ? current.value.colorKeyOrHex.slice(0, 7) : "#c67139",
+);
+const customOpacityPercent = computed(() => {
+    if (isCustomHex.value && current.value.colorKeyOrHex.length === 9) {
+        return Math.round((parseInt(current.value.colorKeyOrHex.slice(7, 9), 16) / 255) * 100);
+    }
+    return 20;
+});
+
+function hexWithAlpha(hex, opacityPercent) {
+    const alphaHex = Math.round((opacityPercent / 100) * 255)
+        .toString(16)
+        .padStart(2, "0");
+    return `${hex}${alphaHex}`;
+}
 
 function pickPattern(patternKey) {
     emit("update:modelValue", encodeWallpaper(patternKey, current.value.colorKeyOrHex));
@@ -30,7 +69,14 @@ function pickColor(colorKey) {
 }
 
 function pickCustomColor(event) {
-    emit("update:modelValue", encodeWallpaper(current.value.patternKey, event.target.value));
+    const hex = hexWithAlpha(event.target.value, customOpacityPercent.value);
+    emit("update:modelValue", encodeWallpaper(current.value.patternKey, hex));
+}
+
+function pickCustomOpacity(percent) {
+    showOpacityMenu.value = false;
+    const hex = hexWithAlpha(customBaseHex.value, percent);
+    emit("update:modelValue", encodeWallpaper(current.value.patternKey, hex));
 }
 
 function pickImage() {
@@ -102,15 +148,23 @@ async function onImageChange(event) {
             <label
                 class="relative h-8 w-8 cursor-pointer rounded-full border border-converse-border"
                 title="Custom color"
+                :style="{ backgroundColor: isCustomHex ? current.colorKeyOrHex : 'transparent' }"
             >
                 <input
                     type="color"
+                    :value="customBaseHex"
                     class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                     @input="pickCustomColor"
                 />
-                <span class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs"
+                <span
+                    v-if="!isCustomHex"
+                    class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs"
                     >🎨</span
                 >
+                <span
+                    v-if="!isImage && isCustomHex"
+                    class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
+                />
             </label>
             <button
                 type="button"
@@ -129,6 +183,34 @@ async function onImageChange(event) {
                 class="hidden"
                 @change="onImageChange"
             />
+        </div>
+
+        <div v-if="isCustomHex && !isImage" ref="opacityRoot" class="relative mt-3 inline-block">
+            <button
+                type="button"
+                class="flex h-8 items-center gap-1.5 rounded-full border border-converse-border px-3 text-[12px] font-medium text-converse-textMuted hover:bg-converse-surfaceHover"
+                @click="showOpacityMenu = !showOpacityMenu"
+            >
+                Opacity: {{ customOpacityPercent }}%
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                </svg>
+            </button>
+            <div
+                v-if="showOpacityMenu"
+                class="cv-animate-pop-in absolute left-0 top-full z-20 mt-1 w-24 rounded-2xl border border-converse-border bg-converse-surface p-1.5 shadow-lg"
+            >
+                <button
+                    v-for="pct in OPACITY_OPTIONS"
+                    :key="pct"
+                    type="button"
+                    class="block w-full rounded-full px-3 py-1.5 text-left text-[12.5px] text-converse-text hover:bg-converse-surfaceHover"
+                    :class="{ 'font-semibold text-converse-accent': pct === customOpacityPercent }"
+                    @click="pickCustomOpacity(pct)"
+                >
+                    {{ pct }}%
+                </button>
+            </div>
         </div>
     </div>
 </template>
