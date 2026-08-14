@@ -3,7 +3,8 @@ import { computed, nextTick, onMounted, onUpdated, ref, watch } from 'vue';
 import MessageBubble from './MessageBubble.vue';
 import { useChatStore } from '../../store';
 import { useMessages } from '../../composables/useMessages';
-import { resolveWallpaperCss } from '../../wallpapers';
+import { resolveWallpaper } from '../../wallpapers';
+import { usePreferences } from '../../composables/usePreferences';
 
 const props = defineProps({
     conversationId: { type: Number, required: true },
@@ -13,9 +14,12 @@ const emit = defineEmits(['reply', 'edit']);
 
 const store = useChatStore();
 const { loadOlder } = useMessages();
+const { defaultWallpaper } = usePreferences();
 
 const conversation = computed(() => store.conversations.find((c) => c.id === props.conversationId));
-const wallpaperCss = computed(() => resolveWallpaperCss(conversation.value?.me?.wallpaper));
+const wallpaper = computed(() =>
+    resolveWallpaper(conversation.value?.me?.wallpaper ?? defaultWallpaper.value),
+);
 
 const scrollEl = ref(null);
 const sentinelEl = ref(null);
@@ -112,11 +116,15 @@ function onScroll() {
 <template>
     <div class="cv-message-list-wrap relative h-full overflow-hidden">
         <div
-            class="pointer-events-none absolute inset-0"
-            :class="{ 'cv-message-list--pattern bg-converse-chatBg': !wallpaperCss }"
-            :style="wallpaperCss ? { backgroundColor: wallpaperCss } : {}"
+            class="pointer-events-none absolute inset-0 bg-converse-chatBg"
+            :style="{
+                backgroundColor: wallpaper.backgroundColor ?? undefined,
+                backgroundImage: wallpaper.backgroundImage ?? undefined,
+                backgroundSize: wallpaper.backgroundSize ?? undefined,
+                backgroundPosition: wallpaper.backgroundPosition ?? undefined,
+            }"
         >
-            <template v-if="!wallpaperCss">
+            <template v-if="wallpaper.isDefault">
                 <div class="absolute h-[320px] w-[320px] rounded-full bg-converse-bubbleOut opacity-55" style="top: -90px; right: -60px" />
                 <div class="absolute h-[380px] w-[380px] rounded-full bg-converse-sageTint opacity-50" style="bottom: -120px; left: 40px" />
             </template>
@@ -146,10 +154,3 @@ function onScroll() {
         </div>
     </div>
 </template>
-
-<style scoped>
-.cv-message-list--pattern {
-    background-image: radial-gradient(circle at 1px 1px, var(--cv-dots) 1px, transparent 0);
-    background-size: 22px 22px;
-}
-</style>

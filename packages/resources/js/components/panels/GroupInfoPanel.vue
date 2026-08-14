@@ -19,7 +19,7 @@ import { useParticipants } from "../../composables/useParticipants";
 import { useBlockedUsers } from "../../composables/useBlockedUsers";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
-import { WALLPAPER_PRESETS } from "../../wallpapers";
+import WallpaperPicker from "../shared/WallpaperPicker.vue";
 
 const props = defineProps({
     conversation: { type: Object, required: true },
@@ -258,12 +258,8 @@ async function leaveGroup() {
     }
 }
 
-async function onPickWallpaper(key) {
-    await setWallpaper(props.conversation.id, key === "default" ? null : key);
-}
-
-async function onPickCustomColor(event) {
-    await setWallpaper(props.conversation.id, event.target.value);
+async function onPickWallpaper(value) {
+    await setWallpaper(props.conversation.id, value);
 }
 
 async function toggleBlockOther() {
@@ -475,41 +471,10 @@ async function onDeleteChat() {
                 >
                     Chat wallpaper
                 </h3>
-                <div class="flex flex-wrap gap-[9px]">
-                    <button
-                        v-for="preset in WALLPAPER_PRESETS"
-                        :key="preset.key"
-                        type="button"
-                        :title="preset.label"
-                        class="relative h-8 w-8 rounded-full border border-converse-border"
-                        :style="{
-                            backgroundColor: preset.css ?? 'transparent',
-                        }"
-                        @click="onPickWallpaper(preset.key)"
-                    >
-                        <span
-                            v-if="
-                                (conversation.me?.wallpaper ?? 'default') ===
-                                preset.key
-                            "
-                            class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
-                        />
-                    </button>
-                    <label
-                        class="relative h-8 w-8 cursor-pointer rounded-full border border-converse-border"
-                        title="Custom color"
-                    >
-                        <input
-                            type="color"
-                            class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                            @input="onPickCustomColor"
-                        />
-                        <span
-                            class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs"
-                            >🎨</span
-                        >
-                    </label>
-                </div>
+                <WallpaperPicker
+                    :model-value="conversation.me?.wallpaper"
+                    @update:model-value="onPickWallpaper"
+                />
             </div>
 
             <template v-if="isGroup">

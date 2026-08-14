@@ -25,6 +25,7 @@ const systemPrefersDark = ref(darkMediaQuery?.matches ?? false);
 const theme = ref(read('theme', 'system'));
 const sidebarWidth = ref(read('sidebarWidth', 352));
 const settingsPanelWidth = ref(read('settingsPanelWidth', 320));
+const defaultWallpaper = ref(read('defaultWallpaper', null));
 
 const effectiveTheme = computed(() => (theme.value === 'system' ? (systemPrefersDark.value ? 'dark' : 'light') : theme.value));
 
@@ -43,6 +44,7 @@ watch(effectiveTheme, applyTheme);
 
 watch(sidebarWidth, (value) => write('sidebarWidth', value));
 watch(settingsPanelWidth, (value) => write('settingsPanelWidth', value));
+watch(defaultWallpaper, (value) => write('defaultWallpaper', value));
 
 export function usePreferences() {
     return {
@@ -54,5 +56,7 @@ export function usePreferences() {
         setSidebarWidth: (px) => { sidebarWidth.value = px; },
         settingsPanelWidth,
         setSettingsPanelWidth: (px) => { settingsPanelWidth.value = px; },
+        defaultWallpaper,
+        setDefaultWallpaper: (value) => { defaultWallpaper.value = value; },
     };
 }

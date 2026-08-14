@@ -121,7 +121,7 @@ class ConversationRepository implements ConversationRepositoryInterface
 
             $this->participants->addMany($conversation->id, $participants, $creator);
 
-            return $conversation->load('participants');
+            return $conversation->load(['participants' => fn ($query) => $query->whereNull('left_at')]);
         });
     }
 
@@ -129,6 +129,6 @@ class ConversationRepository implements ConversationRepositoryInterface
     {
         $conversation->fill($data)->save();
 
-        return $conversation->fresh('participants');
+        return $conversation->fresh(['participants' => fn ($query) => $query->whereNull('left_at')]);
     }
 }

@@ -53,7 +53,10 @@ class ConversationController extends Controller
 
             $result = $this->conversations->findOrCreatePrivate($actor, $other);
 
-            return (new ConversationResource($result['conversation']->load(['participants', 'lastMessage'])))
+            return (new ConversationResource($result['conversation']->load([
+                'participants' => fn ($query) => $query->whereNull('left_at'),
+                'lastMessage',
+            ])))
                 ->response()
                 ->setStatusCode($result['created'] ? 201 : 200);
         }
@@ -64,7 +67,10 @@ class ConversationController extends Controller
             $actor,
         );
 
-        return (new ConversationResource($conversation->load(['participants', 'lastMessage'])))
+        return (new ConversationResource($conversation->load([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ])))
             ->response()
             ->setStatusCode(201);
     }
@@ -73,7 +79,10 @@ class ConversationController extends Controller
     {
         Gate::authorize('view', $conversation);
 
-        return new ConversationResource($conversation->load(['participants', 'lastMessage']));
+        return new ConversationResource($conversation->load([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function update(UpdateConversationRequest $request, Conversation $conversation)
@@ -82,7 +91,10 @@ class ConversationController extends Controller
 
         $updated = $this->conversations->update($conversation, $request->validated());
 
-        return new ConversationResource($updated->load(['participants', 'lastMessage']));
+        return new ConversationResource($updated->load([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function updateAvatar(Request $request, Conversation $conversation)
@@ -93,7 +105,10 @@ class ConversationController extends Controller
 
         $updated = $this->conversations->updateAvatar($conversation, $request->file('avatar'));
 
-        return new ConversationResource($updated->load(['participants', 'lastMessage']));
+        return new ConversationResource($updated->load([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function destroyAvatar(Request $request, Conversation $conversation)
@@ -102,7 +117,10 @@ class ConversationController extends Controller
 
         $updated = $this->conversations->removeAvatar($conversation);
 
-        return new ConversationResource($updated->load(['participants', 'lastMessage']));
+        return new ConversationResource($updated->load([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function mute(MuteConversationRequest $request, Conversation $conversation)
@@ -115,7 +133,10 @@ class ConversationController extends Controller
             $request->validated()['muted_until'] ?? null,
         );
 
-        return new ConversationResource($conversation->fresh(['participants', 'lastMessage']));
+        return new ConversationResource($conversation->fresh([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function archive(Request $request, Conversation $conversation)
@@ -128,7 +149,10 @@ class ConversationController extends Controller
             $request->boolean('archived', true),
         );
 
-        return new ConversationResource($conversation->fresh(['participants', 'lastMessage']));
+        return new ConversationResource($conversation->fresh([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function pin(Request $request, Conversation $conversation)
@@ -141,7 +165,10 @@ class ConversationController extends Controller
             $request->boolean('pinned', true),
         );
 
-        return new ConversationResource($conversation->fresh(['participants', 'lastMessage']));
+        return new ConversationResource($conversation->fresh([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function favourite(Request $request, Conversation $conversation)
@@ -154,7 +181,10 @@ class ConversationController extends Controller
             $request->boolean('favourited', true),
         );
 
-        return new ConversationResource($conversation->fresh(['participants', 'lastMessage']));
+        return new ConversationResource($conversation->fresh([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function hide(Request $request, Conversation $conversation)
@@ -167,7 +197,10 @@ class ConversationController extends Controller
             $request->boolean('hidden', true),
         );
 
-        return new ConversationResource($conversation->fresh(['participants', 'lastMessage']));
+        return new ConversationResource($conversation->fresh([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function wallpaper(Request $request, Conversation $conversation)
@@ -182,7 +215,10 @@ class ConversationController extends Controller
             $request->input('wallpaper'),
         );
 
-        return new ConversationResource($conversation->fresh(['participants', 'lastMessage']));
+        return new ConversationResource($conversation->fresh([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 
     public function disappearing(Request $request, Conversation $conversation)
@@ -195,6 +231,9 @@ class ConversationController extends Controller
 
         $updated = $this->conversations->setDisappearingTtl($conversation, $request->input('ttl_seconds'));
 
-        return new ConversationResource($updated->load(['participants', 'lastMessage']));
+        return new ConversationResource($updated->load([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
     }
 }
