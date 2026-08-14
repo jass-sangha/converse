@@ -340,7 +340,7 @@ async function onMuteAll(scope, durationKey) {
             <p class="mx-3 mb-3 text-xs text-converse-textMuted">
                 Used for chats that don't have their own wallpaper set.
             </p>
-            <div class="mx-3">
+            <div class="mx-3 mb-6">
                 <WallpaperPicker
                     :model-value="defaultWallpaper"
                     @update:model-value="setDefaultWallpaper"
