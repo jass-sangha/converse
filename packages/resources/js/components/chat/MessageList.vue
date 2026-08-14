@@ -121,6 +121,7 @@ function onScroll() {
                 backgroundImage: wallpaper.backgroundImage ?? undefined,
                 backgroundSize: wallpaper.backgroundSize ?? undefined,
                 backgroundPosition: wallpaper.backgroundPosition ?? undefined,
+                backgroundRepeat: wallpaper.backgroundRepeat ?? undefined,
             }"
         />
 

@@ -69,6 +69,8 @@ async function onImageChange(event) {
                 :style="{
                     backgroundImage: pattern.image ?? 'none',
                     backgroundSize: pattern.size ?? 'auto',
+                    backgroundPosition: pattern.position ?? undefined,
+                    backgroundRepeat: pattern.repeat ?? undefined,
                 }"
                 @click="pickPattern(pattern.key)"
             >
