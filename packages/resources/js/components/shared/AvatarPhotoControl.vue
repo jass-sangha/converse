@@ -3,6 +3,7 @@ import { onBeforeUnmount, ref, watch } from "vue";
 import Avatar from "./Avatar.vue";
 import MediaViewerModal from "./MediaViewerModal.vue";
 import CameraCapture from "../composer/CameraCapture.vue";
+import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 
 const props = defineProps({
     name: { type: String, default: "" },
@@ -25,9 +26,15 @@ const menuOpen = ref(false);
 const showCamera = ref(false);
 const inputEl = ref(null);
 const root = ref(null);
+const { openUp, maxHeight, place } = useDropdownPlacement();
 
 function openViewer() {
     if (props.avatarUrl) viewerOpen.value = true;
+}
+
+function toggleMenu() {
+    if (!menuOpen.value) place(root.value, { preferredHeight: 220 });
+    menuOpen.value = !menuOpen.value;
 }
 
 function onDocumentClick(event) {
@@ -87,18 +94,19 @@ function pickRemove() {
             <span
                 v-if="editable"
                 class="absolute inset-0 flex items-center justify-center gap-1.5 rounded-full bg-converse-overlay/0 text-[10px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
-                :class="{ 'pointer-events-none': uploading }"
+                :class="{ 'pointer-events-none': uploading, 'bg-converse-overlay/40 opacity-100': menuOpen }"
             >
                 <span v-if="avatarUrl" class="hover:underline" @click.stop="openViewer">View</span>
                 <span v-if="avatarUrl" class="opacity-60">&middot;</span>
-                <span class="hover:underline" @click.stop="menuOpen = !menuOpen">{{ uploading ? "…" : "Edit" }}</span>
+                <span class="hover:underline" @click.stop="toggleMenu">{{ uploading ? "…" : "Edit" }}</span>
             </span>
         </button>
 
         <div
             v-if="menuOpen"
-            class="cv-animate-pop-in absolute top-full z-20 mt-2 w-52 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
-            :class="menuAlign === 'left' ? 'left-0' : 'right-0'"
+            class="cv-animate-pop-in absolute z-20 w-52 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            :class="[menuAlign === 'left' ? 'left-0' : 'right-0', openUp ? 'bottom-full mb-2' : 'top-full mt-2']"
+            :style="{ maxHeight: maxHeight + 'px' }"
         >
             <button
                 type="button"

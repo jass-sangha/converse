@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useConversations } from "../../composables/useConversations";
+import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 
 const props = defineProps({
     conversation: { type: Object, required: true },
@@ -22,11 +23,18 @@ const isMuted = computed(() => !!props.conversation.me?.muted_until);
 
 const menuOpen = ref(false);
 const root = ref(null);
+const triggerEl = ref(null);
+const { openUp, maxHeight, place } = useDropdownPlacement();
 
 function onDocumentClick(event) {
     if (root.value && !root.value.contains(event.target)) {
         menuOpen.value = false;
     }
+}
+
+function toggleMenu() {
+    if (!menuOpen.value) place(triggerEl.value, { preferredHeight: 190 });
+    menuOpen.value = !menuOpen.value;
 }
 
 watch(menuOpen, (open) => {
@@ -66,20 +74,23 @@ function togglePin(event) {
 <template>
     <span ref="root" class="cv-conversation-row-actions relative flex shrink-0 items-center">
         <button
+            ref="triggerEl"
             type="button"
             title="Chat options"
-            class="flex h-6 w-6 items-center justify-center rounded-full text-converse-textMuted opacity-0 transition-opacity hover:bg-converse-surfaceHover group-hover:opacity-100 group-focus-within:opacity-100"
-            :class="{ 'opacity-100': menuOpen }"
-            @click.stop="menuOpen = !menuOpen"
+            class="flex h-6 w-0 shrink-0 items-center justify-center overflow-hidden rounded-full text-converse-textMuted opacity-0 transition-all duration-150 hover:bg-converse-surfaceHover group-hover:w-6 group-hover:opacity-100 group-focus-within:w-6 group-focus-within:opacity-100"
+            :class="{ 'w-6 opacity-100': menuOpen }"
+            @click.stop="toggleMenu"
         >
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="shrink-0">
                 <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
             </svg>
         </button>
 
         <div
             v-if="menuOpen"
-            class="cv-animate-pop-in absolute right-0 top-full z-20 mt-1 w-52 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            class="cv-animate-pop-in absolute right-0 z-20 w-52 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+            :style="{ maxHeight: maxHeight + 'px' }"
             @click.stop
         >
             <button
