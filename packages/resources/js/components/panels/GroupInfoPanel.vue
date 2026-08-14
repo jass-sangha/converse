@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
+import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 import Avatar from "../shared/Avatar.vue";
 import AvatarPhotoControl from "../shared/AvatarPhotoControl.vue";
 import UserPicker from "../shared/UserPicker.vue";
@@ -270,9 +271,16 @@ const showMuteMenu = ref(false);
 const muteMenuRoot = ref(null);
 const { opened: muteMenuOpened, closed: muteMenuClosed } =
     useExclusiveDropdown();
+const { openUp: muteMenuUp, maxHeight: muteMenuMaxHeight, place: placeMuteMenu } =
+    useDropdownPlacement();
 
 function closeMuteMenu() {
     showMuteMenu.value = false;
+}
+
+function toggleMuteMenu() {
+    if (!showMuteMenu.value) placeMuteMenu(muteMenuRoot.value, { preferredHeight: 300 });
+    showMuteMenu.value = !showMuteMenu.value;
 }
 
 function onMuteMenuDocumentClick(event) {
@@ -462,7 +470,7 @@ async function onDeleteChat() {
                 <button
                     type="button"
                     class="flex-1 text-left"
-                    @click="showMuteMenu = !showMuteMenu"
+                    @click="toggleMuteMenu"
                 >
                     <span class="block text-[15px] text-converse-text"
                         >Mute notifications</span
@@ -487,7 +495,7 @@ async function onDeleteChat() {
                     :class="isMuted ? 'bg-converse-sage' : 'bg-converse-border'"
                     role="switch"
                     :aria-checked="isMuted"
-                    @click="showMuteMenu = !showMuteMenu"
+                    @click="toggleMuteMenu"
                 >
                     <span
                         class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
@@ -497,7 +505,9 @@ async function onDeleteChat() {
 
                 <div
                     v-if="showMuteMenu"
-                    class="cv-animate-pop-in absolute right-4 top-full z-20 mt-1"
+                    class="cv-animate-pop-in absolute right-4 z-20 overflow-y-auto rounded-[22px]"
+                    :class="muteMenuUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+                    :style="{ maxHeight: muteMenuMaxHeight + 'px' }"
                 >
                     <MuteDurationMenu
                         :show-unmute="isMuted"

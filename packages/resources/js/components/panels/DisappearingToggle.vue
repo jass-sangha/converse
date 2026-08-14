@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useConversations } from '../../composables/useConversations';
 import { useExclusiveDropdown } from '../../composables/useExclusiveDropdown';
+import { useDropdownPlacement } from '../../composables/useDropdownPlacement';
 
 const props = defineProps({
     conversation: { type: Object, required: true },
@@ -18,6 +19,12 @@ const OPTIONS = [
 const root = ref(null);
 const showMenu = ref(false);
 const { opened, closed } = useExclusiveDropdown();
+const { openUp, maxHeight, place } = useDropdownPlacement();
+
+function toggleMenu() {
+    if (!showMenu.value) place(root.value, { preferredHeight: 230 });
+    showMenu.value = !showMenu.value;
+}
 
 function close() {
     showMenu.value = false;
@@ -64,7 +71,7 @@ function turnOff() {
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="shrink-0 text-converse-textMuted">
             <path d="M15 1H9v2h6Zm-4 13h2V8h-2Zm8.03-6.61 1.42-1.42a13.98 13.98 0 0 0-1.42-1.42l-1.42 1.42A9 9 0 1 0 21 12a8.96 8.96 0 0 0-1.97-5.61ZM12 20a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z" />
         </svg>
-        <button type="button" class="flex-1 text-left" @click="showMenu = !showMenu">
+        <button type="button" class="flex-1 text-left" @click="toggleMenu">
             <span class="block text-[15px] text-converse-text">Disappearing messages</span>
             <span v-if="isOn" class="block text-xs text-converse-textMuted">{{ currentLabel }}</span>
         </button>
@@ -74,7 +81,7 @@ function turnOff() {
             :class="isOn ? 'bg-converse-sage' : 'bg-converse-border'"
             role="switch"
             :aria-checked="isOn"
-            @click="showMenu = !showMenu"
+            @click="toggleMenu"
         >
             <span
                 class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
@@ -82,8 +89,12 @@ function turnOff() {
             />
         </button>
 
-        <div v-if="showMenu" class="cv-animate-pop-in absolute right-4 top-full z-20 mt-1">
-            <div class="w-48 rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg">
+        <div
+            v-if="showMenu"
+            class="cv-animate-pop-in absolute right-4 z-20"
+            :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+        >
+            <div class="w-48 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg" :style="{ maxHeight: maxHeight + 'px' }">
                 <p class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-converse-textMuted">Disappear after</p>
                 <button
                     v-for="option in OPTIONS"

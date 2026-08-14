@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { useExclusiveDropdown } from '../../composables/useExclusiveDropdown';
+import { useDropdownPlacement } from '../../composables/useDropdownPlacement';
 
 const props = defineProps({
     icon: { type: String, default: null },
@@ -16,6 +17,7 @@ const emit = defineEmits(['toggle', 'pick']);
 const root = ref(null);
 const showMenu = ref(false);
 const { opened, closed } = useExclusiveDropdown();
+const { openUp, maxHeight, place } = useDropdownPlacement();
 
 function close() {
     showMenu.value = false;
@@ -47,6 +49,7 @@ onBeforeUnmount(() => {
 // (the options list should include an indefinite/"always" entry for that).
 function onRowClick() {
     if (props.isOn) {
+        if (!showMenu.value) place(root.value, { preferredHeight: 250 });
         showMenu.value = !showMenu.value;
     } else {
         emit('toggle');
@@ -82,7 +85,12 @@ function pick(option) {
             </span>
         </div>
 
-        <div v-if="isOn && showMenu" class="cv-animate-pop-in absolute right-4 top-full z-20 mt-1 max-h-[250px] w-[180px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg">
+        <div
+            v-if="isOn && showMenu"
+            class="cv-animate-pop-in absolute right-4 z-20 w-[180px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
+            :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+            :style="{ maxHeight: maxHeight + 'px' }"
+        >
             <p v-if="menuTitle" class="px-3 pb-2 pt-1.5 text-[10.5px] font-bold uppercase tracking-wide text-converse-textDim">{{ menuTitle }}</p>
             <button
                 v-for="option in options"
