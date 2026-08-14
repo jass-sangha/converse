@@ -9,26 +9,32 @@ export const WALLPAPER_PATTERNS = [
         key: "default",
         label: "Dots",
         image: `radial-gradient(circle at 1px 1px, ${INK} 1px, transparent 0)`,
-        size: "30px 30px",
+        size: "50px 50px",
     },
     { key: "none", label: "Plain", image: null, size: null },
     {
-        key: "dots-spread",
-        label: "Dots (large gaps)",
+        key: "dots-tighter",
+        label: "Dots (tighter gaps)",
         image: `radial-gradient(circle at 1px 1px, ${INK} 1px, transparent 0)`,
-        size: "50px 50px",
+        size: "30px 30px",
     },
     {
         key: "lines",
         label: "Lines",
         image: `repeating-linear-gradient(45deg, ${INK}, ${INK} 2px, transparent 2px, transparent 64px)`,
-        size: null,
+        size: "auto",
     },
     {
         key: "checks",
         label: "Boxes",
+        // Two layers (horizontal + vertical grid lines) both tiled at the same size — spelled out
+        // per-layer rather than as a single "84px 84px" value, because when `resolveWallpaper`
+        // appends a color-tint layer after this pattern's own layers, CSS cycles a shorter
+        // background-size list across all image layers; a single value would then land on the
+        // wrong layer (the vertical lines would get the tint's "cover" instead of their own tile
+        // size and stop repeating).
         image: `linear-gradient(${INK} 1.5px, transparent 1.5px), linear-gradient(90deg, ${INK} 1.5px, transparent 1.5px)`,
-        size: "84px 84px",
+        size: "84px 84px, 84px 84px",
     },
 ];
 
@@ -43,7 +49,11 @@ export const WALLPAPER_COLORS = [
 ];
 
 export function encodeWallpaper(patternKey, colorKeyOrHex) {
-    if (patternKey === "default" && colorKeyOrHex === "default") return null;
+    // Every explicit pick — including "default" pattern + "default" color — is stored as-is, never
+    // collapsed to null. Null is reserved for a conversation that has never had its wallpaper
+    // touched (falls back to the user's global default); collapsing an explicit "default|default"
+    // pick to null used to make it indistinguishable from "untouched", so picking Default could
+    // resurface a stale global default (e.g. an old uploaded photo) instead of the plain pattern.
     return `${patternKey}|${colorKeyOrHex}`;
 }
 

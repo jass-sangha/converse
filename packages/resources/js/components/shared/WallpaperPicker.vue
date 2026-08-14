@@ -91,7 +91,13 @@ async function onImageChange(event) {
     uploadingImage.value = true;
     try {
         const attachment = await uploadAttachment(file);
-        emit("update:modelValue", encodeWallpaper("none", `image:${attachment.url}`));
+        // Keep whatever pattern was already selected (even though it's inert while an image is
+        // active) so pattern and image/color choices stay independent — switching away from the
+        // image later restores the pattern instead of always landing back on "Plain".
+        emit(
+            "update:modelValue",
+            encodeWallpaper(current.value.patternKey, `image:${attachment.url}`),
+        );
     } finally {
         uploadingImage.value = false;
     }
