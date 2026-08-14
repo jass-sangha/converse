@@ -63,7 +63,7 @@ function cycleTheme() {
             </svg>
             <span
                 v-if="unreadCount > 0"
-                class="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-converse-sage px-1 text-[10.5px] font-bold text-converse-sageContrast"
+                class="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-converse-sage px-1 text-[10.5px] font-bold text-white"
             >{{ unreadCount }}</span>
         </button>
 

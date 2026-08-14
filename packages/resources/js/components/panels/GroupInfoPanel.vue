@@ -17,6 +17,7 @@ import { useBlockedUsers } from "../../composables/useBlockedUsers";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
 import { useSidebarUi } from "../../composables/useSidebarUi";
+import { useCall } from "../../composables/useCall";
 import { WALLPAPER_PRESETS } from "../../wallpapers";
 
 const props = defineProps({
@@ -40,6 +41,7 @@ const {
 } = useConversations();
 const { clear: clearMessages } = useMessages();
 const { setView } = useSidebarUi();
+const { startCall } = useCall();
 
 const showAddMember = ref(false);
 const picked = ref([]);
@@ -101,6 +103,34 @@ const displayName = computed(() =>
         ? props.conversation.name || "Group"
         : otherParticipant.value?.name,
 );
+
+const otherPresence = computed(() => {
+    const row = otherParticipantRow.value;
+    if (!row) return null;
+    return store.presenceByUser[chatableKey(row.chatable_type, row.chatable_id)];
+});
+
+const subLabel = computed(() => {
+    if (isGroup.value) {
+        const count = props.conversation.participants?.length ?? 0;
+        return `${count} participant${count === 1 ? "" : "s"}`;
+    }
+    if (otherPresence.value?.is_online) return "online";
+    if (otherPresence.value?.last_seen_at) {
+        const diffMs = Date.now() - new Date(otherPresence.value.last_seen_at).getTime();
+        const minutes = Math.round(diffMs / 60000);
+        if (minutes < 1) return "last seen just now";
+        if (minutes < 60) return `last seen ${minutes}m ago`;
+        const hours = Math.round(minutes / 60);
+        if (hours < 24) return `last seen ${hours}h ago`;
+        return `last seen ${Math.round(hours / 24)}d ago`;
+    }
+    return "";
+});
+
+async function toggleQuickMute() {
+    await mute(props.conversation.id, isMuted.value ? null : mutedUntilFor("always"));
+}
 
 async function loadAll() {
     const refs = (props.conversation.participants ?? []).map((p) => ({
@@ -289,17 +319,10 @@ async function onDeleteChat() {
 
 <template>
     <div
-        class="cv-group-info-panel relative flex h-full flex-col overflow-y-auto bg-converse-surface"
+        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex flex-col overflow-y-auto bg-converse-surface sm:relative sm:z-auto sm:w-[330px] sm:shrink-0 sm:border-l sm:border-converse-border"
     >
-        <SidebarScreenHeader
-            :title="isGroup ? 'Group info' : 'Contact info'"
-            @back="emit('close')"
-        >
-            <GlobalMenu />
-        </SidebarScreenHeader>
-
         <div
-            class="cv-group-info-panel__avatar flex flex-col items-center gap-1 border-b border-converse-border py-6"
+            class="cv-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-converse-border px-5 py-6 text-center"
         >
             <label
                 v-if="isGroup && isAdmin"
@@ -308,7 +331,7 @@ async function onDeleteChat() {
                 <Avatar
                     :name="displayName ?? ''"
                     :avatar-url="conversation.avatar_url"
-                    :size="120"
+                    :size="96"
                 />
                 <span
                     class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-xs font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
@@ -331,20 +354,48 @@ async function onDeleteChat() {
                         ? conversation.avatar_url
                         : otherParticipant?.avatar_url
                 "
-                :size="120"
+                :size="96"
             />
-            <p v-if="avatarError" class="mt-1 text-xs text-converse-danger">
+            <p v-if="avatarError" class="text-xs text-converse-danger">
                 {{ avatarError }}
             </p>
-            <p class="font-display mt-2 text-lg font-normal text-converse-text">
-                {{ displayName }}
-            </p>
-            <p
-                v-if="conversation.description"
-                class="px-6 text-center text-sm text-converse-textMuted"
-            >
-                {{ conversation.description }}
-            </p>
+            <div>
+                <p class="font-display text-xl font-normal text-converse-text">
+                    {{ displayName }}
+                </p>
+                <p v-if="subLabel" class="mt-1 text-xs text-converse-textMuted">
+                    {{ subLabel }}
+                </p>
+                <p
+                    v-if="conversation.description"
+                    class="mt-1 px-4 text-center text-sm text-converse-textMuted"
+                >
+                    {{ conversation.description }}
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <button
+                    type="button"
+                    class="h-9 rounded-full bg-converse-sageTint px-4 text-xs font-semibold text-converse-sageText hover:bg-converse-sage hover:text-white"
+                    @click="startCall(conversation, { video: false })"
+                >
+                    Call
+                </button>
+                <button
+                    type="button"
+                    class="h-9 rounded-full border border-converse-border px-4 text-xs font-semibold text-converse-textMuted hover:bg-converse-surfaceHover"
+                    @click="toggleQuickMute"
+                >
+                    {{ isMuted ? "Unmute" : "Mute" }}
+                </button>
+                <button
+                    type="button"
+                    class="h-9 rounded-full border border-converse-border px-4 text-xs font-semibold text-converse-textMuted hover:bg-converse-surfaceHover"
+                    @click="emit('close')"
+                >
+                    Close
+                </button>
+            </div>
         </div>
 
         <p

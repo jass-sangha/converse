@@ -69,6 +69,15 @@
     animation: cv-pop-in 0.14s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@keyframes cv-panel-in {
+    from { opacity: 0; transform: translateX(46px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.cv-animate-panel-in {
+    animation: cv-panel-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @keyframes cv-call-pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgb(var(--cv-accent) / 0.35); }
     50% { box-shadow: 0 0 0 16px rgb(var(--cv-accent) / 0); }

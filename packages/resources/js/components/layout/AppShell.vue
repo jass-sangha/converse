@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import IconRail from "./IconRail.vue";
 import MobileTabBar from "./MobileTabBar.vue";
 import ConversationList from "../sidebar/ConversationList.vue";
@@ -7,7 +7,6 @@ import NewChatPanel from "../sidebar/NewChatPanel.vue";
 import NewGroupPanel from "../sidebar/NewGroupPanel.vue";
 import MediaPanel from "../panels/MediaPanel.vue";
 import SettingsPanel from "../panels/SettingsPanel.vue";
-import GroupInfoPanel from "../panels/GroupInfoPanel.vue";
 import StarredMessagesPanel from "../panels/StarredMessagesPanel.vue";
 import ProfileEmptyState from "../panels/ProfileEmptyState.vue";
 import ChatWindow from "../chat/ChatWindow.vue";
@@ -21,24 +20,11 @@ const store = useChatStore();
 
 const { sidebarWidth } = usePreferences();
 const { startDrag } = useResizable(sidebarWidth, { invert: false });
-const { view, setView } = useSidebarUi();
+const { view } = useSidebarUi();
 const { isActive: callIsActive } = useCall();
 
 const showMobileTabBar = computed(
     () => !store.activeConversationId && !callIsActive.value,
-);
-
-const activeConversation = computed(() =>
-    store.conversations.find((c) => c.id === store.activeConversationId),
-);
-
-// Group info only makes sense for the conversation it was opened from — if the active
-// conversation goes away (or changes) out from under it, fall back to the chat list.
-watch(
-    () => store.activeConversationId,
-    () => {
-        if (view.value === "info") setView("chats");
-    },
 );
 </script>
 
@@ -68,11 +54,6 @@ watch(
                 <NewGroupPanel v-else-if="view === 'new-group'" />
                 <MediaPanel v-else-if="view === 'media'" />
                 <StarredMessagesPanel v-else-if="view === 'starred'" />
-                <GroupInfoPanel
-                    v-else-if="view === 'info' && activeConversation"
-                    :conversation="activeConversation"
-                    @close="setView('chats')"
-                />
                 <SettingsPanel v-else />
                 <div
                     class="cv-app-shell__sidebar-resize-handle absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize sm:block"

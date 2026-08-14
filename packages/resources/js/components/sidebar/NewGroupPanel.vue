@@ -65,13 +65,13 @@ async function create() {
                 v-model="name"
                 type="text"
                 placeholder="Group name"
-                class="cv-new-group-panel__name-input mb-2 w-full rounded border border-converse-border bg-converse-surface px-3 py-2 text-sm text-converse-text focus:border-converse-accent focus:outline-none"
+                class="cv-new-group-panel__name-input mb-2 h-11 w-full rounded-full border border-converse-border bg-converse-surfaceHover px-4 text-[13.5px] text-converse-text outline-none focus:border-converse-accent"
             >
             <input
                 v-model="description"
                 type="text"
                 placeholder="Description (optional)"
-                class="cv-new-group-panel__description-input mb-3 w-full rounded border border-converse-border bg-converse-surface px-3 py-2 text-sm text-converse-text focus:border-converse-accent focus:outline-none"
+                class="cv-new-group-panel__description-input mb-3 h-11 w-full rounded-full border border-converse-border bg-converse-surfaceHover px-4 text-[13.5px] text-converse-text outline-none focus:border-converse-accent"
             >
             <UserPicker v-model="selected" :multiple="true" />
         </div>

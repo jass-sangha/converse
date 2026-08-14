@@ -187,7 +187,7 @@ const lastActivityLabel = computed(() => {
                     <span class="truncate">{{ lastMessagePreview }}</span>
                 </span>
                 <span class="flex shrink-0 items-center gap-1">
-                    <div>
+                    <div class="flex gap-1">
                         <svg
                             v-if="isMuted"
                             viewBox="0 0 24 24"

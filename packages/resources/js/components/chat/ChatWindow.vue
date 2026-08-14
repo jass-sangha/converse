@@ -4,13 +4,13 @@ import ChatHeader from './ChatHeader.vue';
 import MessageList from './MessageList.vue';
 import MessageBubble from './MessageBubble.vue';
 import MessageComposer from '../composer/MessageComposer.vue';
+import GroupInfoPanel from '../panels/GroupInfoPanel.vue';
 import { useChatStore } from '../../store';
 import { useConversations } from '../../composables/useConversations';
 import { useMessages } from '../../composables/useMessages';
 import { useMessagePins } from '../../composables/useMessagePins';
 import { useEcho } from '../../composables/useEcho';
 import { useBlockedUsers } from '../../composables/useBlockedUsers';
-import { useSidebarUi } from '../../composables/useSidebarUi';
 import { chatableKey, chatableKeyOf } from '../../chatable';
 
 const store = useChatStore();
@@ -18,10 +18,10 @@ const { setActive } = useConversations();
 const { load, markDelivered, markRead, search } = useMessages();
 const { list: listPinned, unpin, pinnedFor } = useMessagePins();
 const { unblock } = useBlockedUsers();
-const { view, setView } = useSidebarUi();
 
 const replyTo = ref(null);
 const editing = ref(null);
+const showInfo = ref(false);
 const searchResults = ref([]);
 const chatSearchOpen = ref(false);
 const chatSearchQuery = ref('');
@@ -50,13 +50,10 @@ function onToggleChatSearch() {
     if (!chatSearchOpen.value) chatSearchQuery.value = '';
 }
 
-function onOpenInfo() {
-    setView(view.value === 'info' ? 'chats' : 'info');
-}
-
 watch(() => store.activeConversationId, async (newId, oldId) => {
     replyTo.value = null;
     editing.value = null;
+    showInfo.value = false;
 
     if (oldId) useEcho().leaveConversation(oldId);
 
@@ -149,7 +146,7 @@ function onEdit(message) {
                 :conversation="conversation"
                 :search-open="chatSearchOpen"
                 @back="onBack"
-                @open-info="onOpenInfo"
+                @open-info="showInfo = !showInfo"
                 @toggle-search="onToggleChatSearch"
             />
 
@@ -215,5 +212,11 @@ function onEdit(message) {
                 @dismiss-edit="editing = null"
             />
         </div>
+
+        <GroupInfoPanel
+            v-if="showInfo"
+            :conversation="conversation"
+            @close="showInfo = false"
+        />
     </div>
 </template>

@@ -39,6 +39,7 @@ export default {
                     accentTint: withOpacity('--cv-accent-tint'),
                     sageTint: withOpacity('--cv-sage-tint'),
                     sageLine: withOpacity('--cv-sage-line'),
+                    sageText: withOpacity('--cv-sage-text'),
                 },
             },
             borderRadius: {

@@ -62,12 +62,18 @@ function toggle(user) {
 
 <template>
     <div class="cv-user-picker">
-        <input
-            v-model="query"
-            type="text"
-            placeholder="Search people…"
-            class="cv-user-picker__search-input mb-2 w-full rounded border border-converse-border bg-converse-surface px-3 py-2 text-sm text-converse-text focus:border-converse-accent focus:outline-none"
-        />
+        <div class="mb-3 flex items-center gap-2.5 rounded-full border border-converse-border bg-converse-surfaceHover px-4 h-11">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" class="shrink-0 text-converse-textDim">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="M16 16l4 4" />
+            </svg>
+            <input
+                v-model="query"
+                type="text"
+                placeholder="Search people…"
+                class="cv-user-picker__search-input min-w-0 flex-1 border-none bg-transparent text-[13.5px] text-converse-text outline-none"
+            />
+        </div>
 
         <div
             v-if="modelValue.length"
@@ -76,12 +82,12 @@ function toggle(user) {
             <span
                 v-for="user in modelValue"
                 :key="user.id"
-                class="cv-user-picker__chip flex items-center gap-1 rounded-full bg-converse-accent/15 px-2 py-1 text-xs text-converse-accent"
+                class="cv-user-picker__chip flex items-center gap-1.5 rounded-full bg-converse-accentTint px-3 py-1.5 text-xs font-medium text-converse-accentText"
             >
                 {{ user.name }}
                 <button
                     type="button"
-                    class="text-converse-accent hover:text-converse-danger"
+                    class="text-converse-accentText hover:text-converse-danger"
                     @click="toggle(user)"
                 >
                     ×
@@ -89,14 +95,14 @@ function toggle(user) {
             </span>
         </div>
 
-        <ul class="cv-user-picker__results overflow-y-auto rounded">
+        <ul class="cv-user-picker__results overflow-y-auto">
             <li
                 v-for="user in results"
                 :key="user.id"
-                class="cv-user-picker__result-row flex cursor-pointer items-center gap-3 px-3 py-2"
+                class="cv-user-picker__result-row flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3"
                 :class="
                     isSelected(user)
-                        ? 'bg-converse-accent/10'
+                        ? 'bg-converse-accentTint'
                         : 'hover:bg-converse-surfaceHover'
                 "
                 @click="toggle(user)"
@@ -104,9 +110,9 @@ function toggle(user) {
                 <Avatar
                     :name="user.name"
                     :avatar-url="user.avatar_url"
-                    :size="32"
+                    :size="46"
                 />
-                <span class="flex-1 text-sm text-converse-text">{{
+                <span class="min-w-0 flex-1 truncate text-[14.5px] font-semibold text-converse-text">{{
                     user.name
                 }}</span>
                 <span
@@ -132,7 +138,7 @@ function toggle(user) {
             </li>
             <li
                 v-if="!results.length"
-                class="px-3 py-2 text-sm text-converse-textMuted"
+                class="px-3 py-2 text-[13px] text-converse-textDim"
             >
                 No people found.
             </li>
