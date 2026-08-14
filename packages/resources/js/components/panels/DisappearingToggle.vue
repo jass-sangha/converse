@@ -22,6 +22,10 @@ const { opened, closed } = useExclusiveDropdown();
 const { openUp, maxHeight, place } = useDropdownPlacement();
 
 function toggleMenu() {
+    if (isOn.value) {
+        turnOff();
+        return;
+    }
     if (!showMenu.value) place(root.value, { preferredHeight: 230 });
     showMenu.value = !showMenu.value;
 }
@@ -80,11 +84,13 @@ function turnOff() {
             width="20"
             height="20"
             fill="currentColor"
-            class="shrink-0 text-converse-textMuted"
+            class="shrink-0"
+            :class="isOn ? 'text-converse-sage' : 'text-converse-textMuted'"
         >
             <path
-                d="M15 1H9v2h6Zm-4 13h2V8h-2Zm8.03-6.61 1.42-1.42a13.98 13.98 0 0 0-1.42-1.42l-1.42 1.42A9 9 0 1 0 21 12a8.96 8.96 0 0 0-1.97-5.61ZM12 20a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z"
+                d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Zm0-18a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z"
             />
+            <path d="M13 7h-2v6l5.2 3.2 1-1.6-4.2-2.5V7Z" />
         </svg>
         <button type="button" class="flex-1 text-left" @click="toggleMenu">
             <span class="block text-[15px] text-nowrap text-converse-text"
@@ -131,16 +137,6 @@ function turnOff() {
                 >
                     {{ option.label }}
                 </button>
-                <template v-if="isOn">
-                    <div class="my-1 border-t border-converse-border" />
-                    <button
-                        type="button"
-                        class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-accent hover:bg-converse-surfaceHover"
-                        @click="turnOff"
-                    >
-                        Off
-                    </button>
-                </template>
             </div>
         </div>
     </div>

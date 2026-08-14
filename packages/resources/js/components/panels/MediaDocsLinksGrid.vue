@@ -181,7 +181,7 @@ function formatSize(bytes) {
                 <input
                     v-model="state.search"
                     type="text"
-                    placeholder="Search by chat, contact, or filename"
+                    :placeholder="conversationId ? 'Search by filename' : 'Search by chat, contact, or filename'"
                     class="cv-media-docs-links__search h-11 w-full rounded-full border border-converse-border bg-converse-surfaceHover pl-10 pr-4 text-sm text-converse-text focus:outline-none"
                 />
             </div>

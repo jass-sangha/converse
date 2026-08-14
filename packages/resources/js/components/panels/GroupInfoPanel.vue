@@ -294,8 +294,12 @@ const {
 } = useDropdownPlacement();
 
 function toggleMuteMenu() {
+    if (isMuted.value) {
+        onUnmute();
+        return;
+    }
     if (!showMuteMenu.value)
-        placeMuteMenu(muteMenuRoot.value, { preferredHeight: 230 });
+        placeMuteMenu(muteMenuRoot.value, { preferredHeight: 320 });
     showMuteMenu.value = !showMuteMenu.value;
 }
 
@@ -410,13 +414,6 @@ async function onDeleteChat() {
             </div>
         </div>
 
-        <p
-            v-if="error"
-            class="cv-group-info-panel__error mx-3 mt-3 rounded bg-converse-danger/10 p-2 text-xs text-converse-danger"
-        >
-            {{ error }}
-        </p>
-
         <div class="border-b border-converse-border px-[22px] py-5">
             <div class="mb-3 flex items-baseline justify-between gap-2.5">
                 <h3
@@ -499,8 +496,10 @@ async function onDeleteChat() {
         </div>
 
         <template v-if="isGroup">
-            <div class="border-b border-converse-border px-[22px] py-5">
-                <div class="mb-2.5 flex items-baseline justify-between gap-2.5">
+            <div class="border-b border-converse-border px-[10px] py-5">
+                <div
+                    class="mb-2.5 mx-3 flex items-baseline justify-between gap-2.5"
+                >
                     <h3
                         class="text-[11.5px] font-bold uppercase tracking-[.08em] text-converse-textDim"
                     >
@@ -521,7 +520,7 @@ async function onDeleteChat() {
                     <div
                         v-for="participant in conversation.participants"
                         :key="chatableKeyOf(participant)"
-                        class="group flex items-center gap-[11px] rounded-2xl px-1.5 py-2 hover:bg-converse-surfaceHover"
+                        class="group flex items-center gap-[11px] rounded-2xl pl-3 pr-5 py-2 hover:bg-converse-surfaceHover"
                     >
                         <Avatar
                             :name="
@@ -584,12 +583,30 @@ async function onDeleteChat() {
             </div>
         </template>
 
+        <p
+            v-if="error"
+            class="cv-group-info-panel__error mx-[10px] mt-3 rounded bg-converse-danger/10 p-2 text-xs text-converse-danger"
+        >
+            {{ error }}
+        </p>
+
         <div class="flex flex-col gap-0.5 px-[10px] py-5">
             <button
                 type="button"
-                class="flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
+                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
                 @click="toggleFavourite"
             >
+                <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    class="shrink-0 text-converse-textMuted"
+                >
+                    <path
+                        d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.02 6.02 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z"
+                    />
+                </svg>
                 <span>{{
                     isFavourite ? "Remove from favourites" : "Add to favourites"
                 }}</span>
@@ -597,27 +614,58 @@ async function onDeleteChat() {
 
             <button
                 type="button"
-                class="flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
+                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
                 @click="setView('starred')"
             >
+                <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    class="shrink-0 text-converse-textMuted"
+                >
+                    <path
+                        d="M12 2 15 9l7 .6-5.3 4.6L18.2 21 12 17.3 5.8 21l1.5-6.8L2 9.6 9 9Z"
+                    />
+                </svg>
                 <span>Starred messages</span>
             </button>
 
             <button
                 type="button"
-                class="flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover disabled:opacity-50"
+                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover disabled:opacity-50"
                 :disabled="clearing"
                 @click="onClearChat"
             >
+                <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    class="shrink-0 text-converse-accentText"
+                >
+                    <path d="M15 4V3H9v1H4v2h16V4h-5ZM6 8l1 12h10l1-12H6Z" />
+                </svg>
                 <span>{{ cleared ? "Chat cleared" : "Clear chat" }}</span>
             </button>
 
             <button
                 v-if="!isGroup"
                 type="button"
-                class="flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
+                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
                 @click="toggleBlockOther"
             >
+                <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    class="shrink-0 text-converse-accentText"
+                >
+                    <path
+                        d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.94 7.94 0 0 1 4 12a8 8 0 0 1 8-8Zm0 16c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.94 7.94 0 0 1 20 12a8 8 0 0 1-8 8Z"
+                    />
+                </svg>
                 <span
                     >{{ isOtherBlocked ? "Unblock" : "Block" }}
                     {{ otherParticipant?.name }}</span
@@ -626,17 +674,37 @@ async function onDeleteChat() {
             <button
                 v-else
                 type="button"
-                class="flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
+                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
                 @click="leaveGroup"
             >
+                <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    class="shrink-0 text-converse-accentText"
+                >
+                    <path
+                        d="M10 3v2H5v14h5v2H3V3h7Zm5.29 3.71L18.59 10H8v2h10.59l-3.3 3.29 1.42 1.42L22 11.41l-5.29-5.3-1.42 1.6Z"
+                    />
+                </svg>
                 <span>Leave group</span>
             </button>
 
             <button
                 type="button"
-                class="flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
+                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
                 @click="onDeleteChat"
             >
+                <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    class="shrink-0 text-converse-accentText"
+                >
+                    <path d="M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z" />
+                </svg>
                 <span>Delete chat</span>
             </button>
         </div>
@@ -651,10 +719,23 @@ async function onDeleteChat() {
                     width="20"
                     height="20"
                     fill="currentColor"
-                    class="shrink-0 text-converse-textMuted"
+                    class="shrink-0"
+                    :class="
+                        isMuted
+                            ? 'text-converse-sage'
+                            : 'text-converse-textMuted'
+                    "
                 >
                     <path
                         d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z"
+                    />
+                    <path
+                        v-if="isMuted"
+                        d="M3.5 3.5l17 17"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        fill="none"
                     />
                 </svg>
                 <button
@@ -710,16 +791,6 @@ async function onDeleteChat() {
                     >
                         {{ option.label }}
                     </button>
-                    <template v-if="isMuted">
-                        <div class="my-1 border-t border-converse-border" />
-                        <button
-                            type="button"
-                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-accent hover:bg-converse-surfaceHover"
-                            @click="onUnmute"
-                        >
-                            Unmute
-                        </button>
-                    </template>
                 </div>
             </div>
 
