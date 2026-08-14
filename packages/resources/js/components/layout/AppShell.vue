@@ -8,6 +8,7 @@ import NewGroupPanel from "../sidebar/NewGroupPanel.vue";
 import MediaPanel from "../panels/MediaPanel.vue";
 import SettingsPanel from "../panels/SettingsPanel.vue";
 import StarredMessagesPanel from "../panels/StarredMessagesPanel.vue";
+import BlockedContactsPanel from "../panels/BlockedContactsPanel.vue";
 import ProfileEmptyState from "../panels/ProfileEmptyState.vue";
 import ChatWindow from "../chat/ChatWindow.vue";
 import { useChatStore } from "../../store";
@@ -54,6 +55,7 @@ const showMobileTabBar = computed(
                 <NewGroupPanel v-else-if="view === 'new-group'" />
                 <MediaPanel v-else-if="view === 'media'" />
                 <StarredMessagesPanel v-else-if="view === 'starred'" />
+                <BlockedContactsPanel v-else-if="view === 'blocked'" />
                 <SettingsPanel v-else />
                 <div
                     class="cv-app-shell__sidebar-resize-handle absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize sm:block"

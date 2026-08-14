@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import AvatarPhotoControl from "../shared/AvatarPhotoControl.vue";
 import SettingRow from "../shared/SettingRow.vue";
-import UserPicker from "../shared/UserPicker.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
 import { useChatStore } from "../../store";
@@ -12,8 +11,6 @@ import { usePreferences } from "../../composables/usePreferences";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 import { usePrivacySettings } from "../../composables/usePrivacySettings";
 import { useNotifications } from "../../composables/useNotifications";
-import { useBlockedUsers } from "../../composables/useBlockedUsers";
-import { useUsers } from "../../composables/useUsers";
 import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
 
 const store = useChatStore();
@@ -23,8 +20,6 @@ const { theme, setTheme } = usePreferences();
 const { setView } = useSidebarUi();
 const { get: getPrivacySettings, update: updatePrivacySettings } =
     usePrivacySettings();
-const { list: listBlocked, block, unblock } = useBlockedUsers();
-const { resolve: resolveUsers, get: getUser } = useUsers();
 
 const uploadError = ref("");
 const uploading = ref(false);
@@ -37,11 +32,6 @@ const about = ref("");
 const savingAbout = ref(false);
 const mutedScopes = ref({ private: false, group: false });
 const mutedUntil = ref({ private: null, group: null });
-
-const blockedRows = ref([]);
-const loadingBlocked = ref(true);
-const showAddBlock = ref(false);
-const picked = ref([]);
 
 const THEME_OPTIONS = [
     {
@@ -90,21 +80,10 @@ function applyPrivacySettings(settings) {
     readReceiptsHiddenUntil.value = settings.read_receipts_hidden_until ?? null;
 }
 
-async function refreshBlocked() {
-    loadingBlocked.value = true;
-    const rows = await listBlocked();
-    blockedRows.value = rows;
-    await resolveUsers(
-        rows.map((r) => ({ type: r.blocked_type, id: r.blocked_id })),
-    );
-    loadingBlocked.value = false;
-}
-
 onMounted(async () => {
     const settings = await getPrivacySettings();
     applyPrivacySettings(settings);
     about.value = settings.about ?? "";
-    await refreshBlocked();
 });
 
 async function onAvatarUpload(file) {
@@ -188,18 +167,6 @@ async function onMuteAll(scope, durationKey) {
     mutedUntil.value[scope] = until;
 }
 
-async function onUnblock(row) {
-    await unblock(row.blocked_type, row.blocked_id);
-    await refreshBlocked();
-}
-
-async function addBlock() {
-    if (!picked.value.length) return;
-    await Promise.all(picked.value.map((user) => block(user)));
-    picked.value = [];
-    showAddBlock.value = false;
-    await refreshBlocked();
-}
 </script>
 
 <template>

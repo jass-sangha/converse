@@ -154,6 +154,7 @@ function openHit(hit) {
                 class="cv-conversation-list__actions flex items-center gap-1.5"
             >
                 <button
+                    v-if="view !== 'new-chat'"
                     type="button"
                     title="New chat"
                     class="flex h-9 items-center gap-1.5 rounded-full bg-converse-accent px-4 text-sm font-semibold text-converse-accentContrast hover:opacity-90"

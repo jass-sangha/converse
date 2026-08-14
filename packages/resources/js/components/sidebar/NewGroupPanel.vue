@@ -55,15 +55,23 @@ async function create() {
             <GlobalMenu />
         </SidebarScreenHeader>
 
-        <UserPicker v-model="selected" :multiple="true" class="min-h-0 flex-1" />
+        <UserPicker
+            v-model="selected"
+            :multiple="true"
+            class="min-h-0 flex-1"
+        />
 
-        <div class="cv-new-group-panel__details shrink-0 border-t border-converse-border p-3">
+        <div
+            class="cv-new-group-panel__details shrink-0 border-t border-converse-border p-3"
+        >
             <div class="mb-3 flex items-center gap-3">
-                <label class="group relative shrink-0 cursor-pointer rounded-full">
+                <label
+                    class="group relative shrink-0 cursor-pointer rounded-full"
+                >
                     <Avatar
                         :name="name || 'Group'"
                         :avatar-url="avatarPreview"
-                        :size="48"
+                        :size="70"
                     />
                     <span
                         class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-[9px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"

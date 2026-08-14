@@ -3,8 +3,7 @@ import { onBeforeUnmount, ref, watch } from "vue";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 import { usePreferences } from "../../composables/usePreferences";
 
-const { setView } = useSidebarUi();
-const { effectiveTheme, toggleTheme } = usePreferences();
+const { view, setView } = useSidebarUi();
 
 const showMenu = ref(false);
 const menuRoot = ref(null);
@@ -51,6 +50,15 @@ function go(view) {
             class="cv-animate-pop-in absolute right-0 top-full z-20 w-56 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
         >
             <button
+                v-if="view !== 'new-chat'"
+                type="button"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="go('new-chat')"
+            >
+                New chat
+            </button>
+            <button
+                v-if="view !== 'new-group'"
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="go('new-group')"
@@ -58,6 +66,7 @@ function go(view) {
                 New group
             </button>
             <button
+                v-if="view !== 'starred'"
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="go('starred')"
@@ -65,13 +74,15 @@ function go(view) {
                 Starred messages
             </button>
             <button
+                v-if="view !== 'blocked'"
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
-                @click="go('profile')"
+                @click="go('blocked')"
             >
                 Blocked contacts
             </button>
             <button
+                v-if="view !== 'archived'"
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="go('archived')"
@@ -79,16 +90,7 @@ function go(view) {
                 Archived chats
             </button>
             <button
-                type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
-                @click="
-                    toggleTheme();
-                    showMenu = false;
-                "
-            >
-                {{ effectiveTheme === "dark" ? "Light mode" : "Dark mode" }}
-            </button>
-            <button
+                v-if="view !== 'media'"
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="go('media')"
@@ -96,6 +98,7 @@ function go(view) {
                 Media
             </button>
             <button
+                v-if="view !== 'profile'"
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="go('profile')"

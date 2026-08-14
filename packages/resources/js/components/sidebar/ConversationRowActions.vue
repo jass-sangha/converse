@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useConversations } from "../../composables/useConversations";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
+import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 
 const props = defineProps({
     conversation: { type: Object, required: true },
@@ -25,10 +26,15 @@ const menuOpen = ref(false);
 const root = ref(null);
 const triggerEl = ref(null);
 const { openUp, maxHeight, place } = useDropdownPlacement();
+const { opened, closed } = useExclusiveDropdown();
+
+function close() {
+    menuOpen.value = false;
+}
 
 function onDocumentClick(event) {
     if (root.value && !root.value.contains(event.target)) {
-        menuOpen.value = false;
+        close();
     }
 }
 
@@ -39,13 +45,18 @@ function toggleMenu() {
 
 watch(menuOpen, (open) => {
     if (open) {
+        opened(close);
         document.addEventListener("click", onDocumentClick);
     } else {
+        closed(close);
         document.removeEventListener("click", onDocumentClick);
     }
 });
 
-onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
+onBeforeUnmount(() => {
+    closed(close);
+    document.removeEventListener("click", onDocumentClick);
+});
 
 function toggleMute(event) {
     event.stopPropagation();
@@ -99,8 +110,11 @@ function togglePin(event) {
 
         <div
             v-if="menuOpen"
-            class="cv-animate-pop-in absolute right-0 z-20 w-56 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
-            :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+            class="cv-animate-pop-in absolute right-0 z-20 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            :class="[
+                openUp ? 'bottom-full mb-1' : 'top-full mt-1',
+                isFavourited ? 'w-60' : 'w-52',
+            ]"
             :style="{ maxHeight: maxHeight + 'px' }"
             @click.stop
         >
