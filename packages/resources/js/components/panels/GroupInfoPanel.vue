@@ -745,7 +745,7 @@ async function onDeleteChat() {
                 >
                     <span
                         class="block text-[13.5px] font-medium text-converse-text"
-                        >Notifications</span
+                        >Mute notifications</span
                     >
                     <span
                         v-if="muteHint"

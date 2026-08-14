@@ -77,7 +77,7 @@ function turnOff() {
 <template>
     <div
         ref="root"
-        class="cv-disappearing-toggle relative flex w-full items-center gap-4 px-4 py-3"
+        class="cv-disappearing-toggle relative flex w-full items-center gap-4 px-3.5 py-3"
     >
         <svg
             viewBox="0 0 24 24"
