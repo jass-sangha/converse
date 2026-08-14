@@ -3,60 +3,32 @@
 // near-invisible `--cv-dots` token the app's default background used. It's still just a themed
 // token — never a hardcoded color — so it flips correctly between light and dark automatically.
 const INK = "rgb(var(--cv-text) / .16)";
-const DOT_SIZE = "22px 22px";
-
-// The two big soft corner circles from the app's original default background. They used to be
-// fixed 320px/380px `rounded-full` <div>s anchored past the container's edges; reproduced here as
-// solid-edge radial-gradient layers at the same size/position so they read as the same big
-// circles, not a diffuse glow, while still composing into the pattern/picker system.
-const BLOB_ONE_IMAGE =
-    "radial-gradient(circle, rgb(var(--cv-bubble-out) / .55) 100%, transparent 100%)";
-const BLOB_ONE_SIZE = "320px 320px";
-const BLOB_ONE_POSITION = "right -60px top -90px";
-
-const BLOB_TWO_IMAGE =
-    "radial-gradient(circle, rgb(var(--cv-sage-tint) / .5) 100%, transparent 100%)";
-const BLOB_TWO_SIZE = "380px 380px";
-const BLOB_TWO_POSITION = "left 40px bottom -120px";
-
-const BLOBS_IMAGE = `${BLOB_ONE_IMAGE}, ${BLOB_TWO_IMAGE}`;
-const BLOBS_SIZE = `${BLOB_ONE_SIZE}, ${BLOB_TWO_SIZE}`;
-const BLOBS_POSITION = `${BLOB_ONE_POSITION}, ${BLOB_TWO_POSITION}`;
-const BLOBS_REPEAT = "no-repeat, no-repeat";
 
 export const WALLPAPER_PATTERNS = [
     {
         key: "default",
-        label: "Default",
-        image: `radial-gradient(circle at 1px 1px, ${INK} 1px, transparent 0), ${BLOBS_IMAGE}`,
-        size: `${DOT_SIZE}, ${BLOBS_SIZE}`,
-        position: `0 0, ${BLOBS_POSITION}`,
-        repeat: `repeat, ${BLOBS_REPEAT}`,
+        label: "Dots",
+        image: `radial-gradient(circle at 1px 1px, ${INK} 1px, transparent 0)`,
+        size: "30px 30px",
     },
     { key: "none", label: "Plain", image: null, size: null },
     {
-        key: "dots-tight",
-        label: "Tight dots",
-        image: `radial-gradient(circle at 1px 1px, ${INK} 1px, transparent 0)`,
-        size: "20px 20px",
-    },
-    {
         key: "dots-spread",
-        label: "Spread dots",
+        label: "Dots (large gaps)",
         image: `radial-gradient(circle at 1px 1px, ${INK} 1px, transparent 0)`,
-        size: "46px 46px",
-    },
-    {
-        key: "checks",
-        label: "Boxes",
-        image: `linear-gradient(${INK} 1.5px, transparent 1.5px), linear-gradient(90deg, ${INK} 1.5px, transparent 1.5px)`,
-        size: "84px 84px",
+        size: "50px 50px",
     },
     {
         key: "lines",
         label: "Lines",
         image: `repeating-linear-gradient(45deg, ${INK}, ${INK} 2px, transparent 2px, transparent 64px)`,
         size: null,
+    },
+    {
+        key: "checks",
+        label: "Boxes",
+        image: `linear-gradient(${INK} 1.5px, transparent 1.5px), linear-gradient(90deg, ${INK} 1.5px, transparent 1.5px)`,
+        size: "84px 84px",
     },
 ];
 
@@ -76,7 +48,7 @@ export function encodeWallpaper(patternKey, colorKeyOrHex) {
 }
 
 export function decodeWallpaper(value) {
-    // Nothing customized yet — the app's own original look (dots + the two blobs).
+    // Nothing customized yet — the app's default dot pattern.
     if (!value) return { patternKey: "default", colorKeyOrHex: "default" };
 
     if (!value.includes("|")) {
@@ -137,10 +109,6 @@ export function resolveWallpaper(value) {
         colorKeyOrHex,
         backgroundImage: layers.length ? layers.join(", ") : null,
         backgroundSize: sizes.length ? sizes.join(", ") : null,
-        // Only a few patterns (default, checks) need non-default position/repeat for their own
-        // layers; when present, CSS cycles the values for any extra (e.g. tint) layer, which is
-        // harmless for a `cover`-sized solid fill — so these can be passed through as-is.
-        backgroundPosition: pattern.position ?? null,
-        backgroundRepeat: pattern.repeat ?? null,
+        backgroundPosition: null,
     };
 }

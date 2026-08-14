@@ -110,13 +110,11 @@ async function onImageChange(event) {
                 type="button"
                 :title="pattern.label"
                 class="relative h-10 w-10 rounded-[10px] border border-converse-border bg-converse-surfaceHover"
-                :class="{ 'opacity-50': isImage }"
+                :class="isImage ? 'cursor-not-allowed opacity-30 grayscale' : ''"
                 :disabled="isImage"
                 :style="{
                     backgroundImage: pattern.image ?? 'none',
                     backgroundSize: pattern.size ?? 'auto',
-                    backgroundPosition: pattern.position ?? undefined,
-                    backgroundRepeat: pattern.repeat ?? undefined,
                 }"
                 @click="pickPattern(pattern.key)"
             >
@@ -124,6 +122,19 @@ async function onImageChange(event) {
                     v-if="!isImage && current.patternKey === pattern.key"
                     class="pointer-events-none absolute -inset-1 rounded-xl border-2 border-converse-accent"
                 />
+                <svg
+                    v-if="isImage"
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    class="pointer-events-none absolute inset-0 m-auto text-converse-textMuted"
+                >
+                    <path d="M4 4l16 16" />
+                </svg>
             </button>
         </div>
 
