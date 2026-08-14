@@ -7,7 +7,7 @@ import GlobalMenu from "../shared/GlobalMenu.vue";
 import { useConversations } from "../../composables/useConversations";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 
-const { setView } = useSidebarUi();
+const { setView, setFilter } = useSidebarUi();
 
 const name = ref("");
 const description = ref("");
@@ -42,6 +42,7 @@ async function create() {
         }
 
         setActive(conversation.id);
+        setFilter("all");
         setView("chats");
     } finally {
         creating.value = false;

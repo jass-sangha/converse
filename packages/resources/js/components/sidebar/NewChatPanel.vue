@@ -6,7 +6,7 @@ import GlobalMenu from "../shared/GlobalMenu.vue";
 import { useConversations } from "../../composables/useConversations";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 
-const { setView } = useSidebarUi();
+const { setView, setFilter } = useSidebarUi();
 const selected = ref([]);
 const { createPrivate, setActive } = useConversations();
 
@@ -15,6 +15,7 @@ async function start() {
 
     const conversation = await createPrivate(selected.value[0]);
     setActive(conversation.id);
+    setFilter("all");
     setView("chats");
 }
 </script>
