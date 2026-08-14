@@ -77,6 +77,11 @@ function pickRemove() {
     menuOpen.value = false;
     emit("remove");
 }
+
+function pickView() {
+    menuOpen.value = false;
+    openViewer();
+}
 </script>
 
 <template>
@@ -106,6 +111,15 @@ function pickRemove() {
             :class="[menuAlign === 'left' ? 'left-0' : 'right-0', openUp ? 'bottom-full mb-2' : 'top-full mt-2']"
             :style="{ maxHeight: maxHeight + 'px' }"
         >
+            <button
+                v-if="avatarUrl"
+                type="button"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="pickView"
+            >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-converse-textMuted"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                <span>View photo</span>
+            </button>
             <button
                 type="button"
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
