@@ -166,7 +166,6 @@ async function onMuteAll(scope, durationKey) {
     mutedScopes.value[scope] = true;
     mutedUntil.value[scope] = until;
 }
-
 </script>
 
 <template>
@@ -298,7 +297,7 @@ async function onMuteAll(scope, durationKey) {
                 Theme
             </div>
             <div
-                class="flex gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1"
+                class="flex gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1 mx-3"
             >
                 <button
                     v-for="option in THEME_OPTIONS"

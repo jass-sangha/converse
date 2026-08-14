@@ -138,7 +138,7 @@ watch(remoteStream, (stream) => {
                     :class="speakerOn ? 'bg-converse-surface text-converse-text' : 'bg-converse-surfaceHover text-converse-textMuted'"
                     @click="toggleSpeaker"
                 >
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4Z" /><path d="M16 9.5a4.5 4.5 0 0 1 0 5M19 7a8 8 0 0 1 0 10" /></svg>
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4Z" /><path d="M16 9.5a4.5 4.5 0 0 1 0 5M19 7a8 8 0 0 1 0 10" /><path v-if="!speakerOn" d="M3.5 3.5l17 17" /></svg>
                 </button>
                 <button
                     type="button"
