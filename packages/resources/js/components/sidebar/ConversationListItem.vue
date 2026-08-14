@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import ReadReceiptTicks from "../chat/ReadReceiptTicks.vue";
 import ConversationRowActions from "./ConversationRowActions.vue";
@@ -124,6 +124,30 @@ const lastActivityLabel = computed(() => {
         year: "2-digit",
     });
 });
+
+const rowActions = ref(null);
+let pressTimer = null;
+let longPressed = false;
+
+function onTouchStart() {
+    longPressed = false;
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(() => {
+        longPressed = true;
+        rowActions.value?.openMenu();
+    }, 500);
+}
+
+function cancelPress() {
+    clearTimeout(pressTimer);
+}
+
+function onTouchEnd(event) {
+    clearTimeout(pressTimer);
+    if (longPressed) {
+        event.preventDefault();
+    }
+}
 </script>
 
 <template>
@@ -131,6 +155,9 @@ const lastActivityLabel = computed(() => {
         :data-conversation-id="conversation.id"
         class="cv-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3 hover:bg-converse-surfaceHover"
         @click="$emit('select', conversation.id)"
+        @touchstart="onTouchStart"
+        @touchend="onTouchEnd"
+        @touchmove="cancelPress"
     >
         <div
             v-if="active"
@@ -229,7 +256,7 @@ const lastActivityLabel = computed(() => {
                         </svg>
                     </span>
 
-                    <ConversationRowActions :conversation="conversation" />
+                    <ConversationRowActions ref="rowActions" :conversation="conversation" />
 
                     <span
                         v-if="conversation.unread_count > 0"

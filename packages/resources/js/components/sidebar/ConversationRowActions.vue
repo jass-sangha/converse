@@ -43,6 +43,14 @@ function toggleMenu() {
     menuOpen.value = !menuOpen.value;
 }
 
+function openMenu() {
+    if (menuOpen.value) return;
+    place(triggerEl.value, { preferredHeight: 190 });
+    menuOpen.value = true;
+}
+
+defineExpose({ openMenu });
+
 watch(menuOpen, (open) => {
     if (open) {
         opened(close);
@@ -91,7 +99,7 @@ function togglePin(event) {
             ref="triggerEl"
             type="button"
             title="Chat options"
-            class="flex h-6 w-0 shrink-0 items-center justify-center overflow-hidden rounded-full text-converse-textMuted opacity-0 transition-all duration-150 hover:bg-converse-surfaceHover group-hover:w-6 group-hover:opacity-100 group-focus-within:w-6 group-focus-within:opacity-100"
+            class="flex h-6 w-0 shrink-0 items-center justify-center overflow-hidden rounded-full text-converse-textMuted opacity-0 transition-all duration-150 [@media(hover:hover)]:hover:bg-converse-surfaceHover [@media(hover:hover)]:group-hover:w-6 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:w-6 group-focus-within:opacity-100"
             :class="{ 'w-6 opacity-100': menuOpen }"
             @click.stop="toggleMenu"
         >
