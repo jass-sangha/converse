@@ -394,7 +394,7 @@ async function onDeleteChat() {
             @back="emit('close')"
         />
 
-        <div class="cv-scroll min-h-0 flex-1 overflow-y-auto pb-12">
+        <div class="cv-scroll min-h-0 flex-1 overflow-y-auto pb-8">
             <div
                 class="cv-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-converse-border px-[22px] py-[26px] text-center"
             >
