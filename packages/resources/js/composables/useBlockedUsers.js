@@ -6,13 +6,24 @@ export function useBlockedUsers() {
     const api = useApi();
     const store = useChatStore();
 
-    async function list() {
-        const { data } = await api.get('/blocked-users');
-        return data.data;
+    async function list(page = 1) {
+        const { data } = await api.get('/blocked-users', { params: { page } });
+        return data;
     }
 
+    // Builds the full blocked-keys set used by `isBlocked()` checks throughout the UI, so it has
+    // to walk every page rather than just the first — unlike a listing a user scrolls through,
+    // this is a membership set that must be complete to be correct.
     async function loadBlocked() {
-        const rows = await list();
+        let page = 1;
+        let rows = [];
+        while (true) {
+            const response = await list(page);
+            rows = rows.concat(response.data);
+            const lastPage = response.meta?.last_page ?? page;
+            if (page >= lastPage) break;
+            page += 1;
+        }
         store.blockedKeys = rows.map((row) => chatableKey(row.blocked_type, row.blocked_id));
         return rows;
     }

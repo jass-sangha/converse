@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
@@ -14,18 +14,50 @@ const { resolve: resolveUsers, get: getUser } = useUsers();
 const blockedRows = ref([]);
 const loading = ref(true);
 const unblockingKey = ref(null);
+const page = ref(0);
+const lastPage = ref(1);
 
-async function refresh() {
+const scrollEl = ref(null);
+const sentinelEl = ref(null);
+let observer = null;
+
+async function loadPage() {
+    if (loading.value || page.value >= lastPage.value) return;
+
     loading.value = true;
-    const rows = await listBlocked();
-    blockedRows.value = rows;
-    await resolveUsers(
-        rows.map((r) => ({ type: r.blocked_type, id: r.blocked_id })),
-    );
-    loading.value = false;
+    try {
+        const nextPage = page.value + 1;
+        const response = await listBlocked(nextPage);
+        blockedRows.value = [...blockedRows.value, ...response.data];
+        await resolveUsers(
+            response.data.map((r) => ({ type: r.blocked_type, id: r.blocked_id })),
+        );
+        page.value = response.meta?.current_page ?? nextPage;
+        lastPage.value = response.meta?.last_page ?? page.value;
+    } finally {
+        loading.value = false;
+    }
 }
 
-onMounted(refresh);
+function onIntersect(entries) {
+    if (entries[0].isIntersecting) loadPage();
+}
+
+function setupObserver() {
+    observer?.disconnect();
+    if (sentinelEl.value) {
+        observer = new IntersectionObserver(onIntersect, { root: scrollEl.value });
+        observer.observe(sentinelEl.value);
+    }
+}
+
+onMounted(async () => {
+    await loadPage();
+    await nextTick();
+    setupObserver();
+});
+
+onBeforeUnmount(() => observer?.disconnect());
 
 async function onUnblock(row) {
     const key = `${row.blocked_type}:${row.blocked_id}`;
@@ -45,8 +77,8 @@ async function onUnblock(row) {
             <GlobalMenu />
         </SidebarScreenHeader>
 
-        <div class="cv-scroll flex-1 overflow-y-auto px-2 pb-5">
-            <p v-if="loading" class="px-3 py-4 text-sm text-converse-textMuted">Loading&hellip;</p>
+        <div ref="scrollEl" class="cv-scroll flex-1 overflow-y-auto px-2 pb-5">
+            <p v-if="!blockedRows.length && loading" class="px-3 py-4 text-sm text-converse-textMuted">Loading&hellip;</p>
             <p v-else-if="!blockedRows.length" class="px-3 py-4 text-sm text-converse-textMuted">
                 No blocked contacts.
             </p>
@@ -73,6 +105,11 @@ async function onUnblock(row) {
                     Unblock
                 </button>
             </div>
+
+            <div v-if="page < lastPage" ref="sentinelEl" class="h-1" />
+            <p v-if="blockedRows.length && loading" class="px-3 py-4 text-center text-sm text-converse-textMuted">
+                Loading&hellip;
+            </p>
         </div>
     </div>
 </template>

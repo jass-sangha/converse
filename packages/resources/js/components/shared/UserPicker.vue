@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import { useUsers } from "../../composables/useUsers";
 import Avatar from "./Avatar.vue";
 import SearchBar from "../sidebar/SearchBar.vue";
@@ -14,10 +14,24 @@ const emit = defineEmits(["update:modelValue"]);
 
 const { search } = useUsers();
 
-const rawResults = ref([]);
+const state = reactive({
+    query: "",
+    items: [],
+    page: 0,
+    lastPage: 1,
+    loading: false,
+});
+// Guards against out-of-order responses (a slow request for an older query resolving after a
+// newer one) overwriting the current results — only the response matching the latest request is
+// ever applied, which is what caused the list to sometimes flash empty or show stale results.
+let searchToken = 0;
+
+const scrollEl = ref(null);
+const sentinelEl = ref(null);
+let observer = null;
 
 const results = computed(() =>
-    rawResults.value.filter(
+    state.items.filter(
         (user) =>
             !props.exclude.some(
                 (u) => u.id === user.id && u.type === user.type,
@@ -25,11 +39,54 @@ const results = computed(() =>
     ),
 );
 
-async function onQuery(value) {
-    rawResults.value = await search(value);
+const hasMore = computed(() => state.page < state.lastPage);
+
+async function loadPage(reset = false) {
+    if (state.loading) return;
+    if (!reset && !hasMore.value) return;
+
+    const token = ++searchToken;
+    state.loading = true;
+    try {
+        const nextPage = reset ? 1 : state.page + 1;
+        const response = await search(state.query, null, nextPage);
+        if (token !== searchToken) return;
+
+        state.items = reset ? response.data : [...state.items, ...response.data];
+        state.page = response.meta?.current_page ?? nextPage;
+        state.lastPage = response.meta?.last_page ?? state.page;
+    } finally {
+        if (token === searchToken) state.loading = false;
+    }
 }
 
-search("").then((users) => (rawResults.value = users));
+function onIntersect(entries) {
+    if (entries[0].isIntersecting) loadPage();
+}
+
+function setupObserver() {
+    observer?.disconnect();
+    if (sentinelEl.value) {
+        observer = new IntersectionObserver(onIntersect, { root: scrollEl.value });
+        observer.observe(sentinelEl.value);
+    }
+}
+
+onMounted(() => {
+    loadPage(true);
+    setupObserver();
+});
+
+onBeforeUnmount(() => observer?.disconnect());
+
+function onQuery(value) {
+    state.query = value;
+    state.page = 0;
+    state.lastPage = 1;
+    loadPage(true).then(() => nextTick(setupObserver));
+}
+
+watch(results, () => nextTick(setupObserver));
 
 function isSelected(user) {
     return props.modelValue.some(
@@ -84,7 +141,7 @@ function toggle(user) {
             </span>
         </div>
 
-        <ul class="cv-user-picker__results min-h-0 flex-1 overflow-y-auto px-2 py-1">
+        <ul ref="scrollEl" class="cv-user-picker__results min-h-0 flex-1 overflow-y-auto px-2 py-1">
             <li
                 v-for="user in results"
                 :key="user.id"
@@ -128,8 +185,15 @@ function toggle(user) {
                     </svg>
                 </span>
             </li>
+            <li v-if="hasMore" ref="sentinelEl" class="cv-user-picker__sentinel h-1" />
             <li
-                v-if="!results.length"
+                v-if="state.loading"
+                class="p-4 text-center text-sm text-converse-textMuted"
+            >
+                Loading…
+            </li>
+            <li
+                v-if="!results.length && !state.loading"
                 class="cv-user-picker__empty p-4 text-center text-sm text-converse-textMuted"
             >
                 No people found.

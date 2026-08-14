@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 import Avatar from "../shared/Avatar.vue";
@@ -30,7 +30,7 @@ const emit = defineEmits(["close"]);
 const store = useChatStore();
 const { resolve, get } = useUsers();
 const { add, remove, changeRole } = useParticipants();
-const { block, unblock, list: listBlocked } = useBlockedUsers();
+const { block, unblock, isBlocked } = useBlockedUsers();
 const {
     refreshOne,
     leave,
@@ -46,7 +46,6 @@ const { clear: clearMessages, media: fetchMedia } = useMessages();
 const showAddMember = ref(false);
 const picked = ref([]);
 const error = ref("");
-const blockedKeys = ref([]);
 const showMedia = ref(false);
 const showStarred = ref(false);
 const clearing = ref(false);
@@ -55,6 +54,36 @@ const avatarUploading = ref(false);
 const avatarError = ref("");
 const previewMedia = ref([]);
 const viewerIndex = ref(null);
+
+// The full participant roster already arrives with the conversation payload — there's no
+// separate endpoint to page through — so "lazy" here means revealing it progressively as the
+// panel is scrolled rather than rendering a potentially large group's entire member list at once.
+const PARTICIPANTS_PAGE_SIZE = 30;
+const visibleParticipantCount = ref(PARTICIPANTS_PAGE_SIZE);
+const scrollBodyEl = ref(null);
+const participantsSentinelEl = ref(null);
+let participantsObserver = null;
+
+const visibleParticipants = computed(() =>
+    (props.conversation.participants ?? []).slice(0, visibleParticipantCount.value),
+);
+const hasMoreParticipants = computed(
+    () => visibleParticipantCount.value < (props.conversation.participants?.length ?? 0),
+);
+
+function onParticipantsIntersect(entries) {
+    if (entries[0].isIntersecting) visibleParticipantCount.value += PARTICIPANTS_PAGE_SIZE;
+}
+
+function setupParticipantsObserver() {
+    participantsObserver?.disconnect();
+    if (participantsSentinelEl.value) {
+        participantsObserver = new IntersectionObserver(onParticipantsIntersect, {
+            root: scrollBodyEl.value,
+        });
+        participantsObserver.observe(participantsSentinelEl.value);
+    }
+}
 
 const isGroup = computed(() => props.conversation.type === "group");
 const myRole = computed(() => props.conversation.me?.role);
@@ -94,9 +123,7 @@ const otherParticipant = computed(() => {
 const isOtherBlocked = computed(() => {
     const row = otherParticipantRow.value;
     return row
-        ? blockedKeys.value.includes(
-              chatableKey(row.chatable_type, row.chatable_id),
-          )
+        ? isBlocked({ type: row.chatable_type, id: row.chatable_id })
         : false;
 });
 
@@ -151,24 +178,22 @@ async function loadPreviewMedia() {
 }
 
 async function loadAll() {
+    visibleParticipantCount.value = PARTICIPANTS_PAGE_SIZE;
+    await nextTick();
+    setupParticipantsObserver();
+
     const refs = (props.conversation.participants ?? []).map((p) => ({
         type: p.chatable_type,
         id: p.chatable_id,
     }));
     if (refs.length) await resolve(refs);
 
-    if (!isGroup.value) {
-        const blocked = await listBlocked();
-        blockedKeys.value = blocked.map((b) =>
-            chatableKey(b.blocked_type, b.blocked_id),
-        );
-    }
-
     await loadPreviewMedia();
 }
 
 onMounted(loadAll);
 watch(() => props.conversation.id, loadAll);
+watch(hasMoreParticipants, () => nextTick(setupParticipantsObserver));
 
 function openMediaTile(index) {
     viewerIndex.value = index;
@@ -266,14 +291,10 @@ async function toggleBlockOther() {
     const row = otherParticipantRow.value;
     if (!row) return;
 
-    const key = chatableKey(row.chatable_type, row.chatable_id);
-
     if (isOtherBlocked.value) {
         await unblock(row.chatable_type, row.chatable_id);
-        blockedKeys.value = blockedKeys.value.filter((k) => k !== key);
     } else {
         await block({ type: row.chatable_type, id: row.chatable_id });
-        blockedKeys.value.push(key);
     }
 }
 
@@ -320,6 +341,7 @@ watch(showMuteMenu, (open) => {
 onBeforeUnmount(() => {
     muteMenuClosed(closeMuteMenu);
     document.removeEventListener("click", onMuteMenuDocumentClick);
+    participantsObserver?.disconnect();
 });
 
 const muteHint = computed(() => {
@@ -373,7 +395,7 @@ async function onDeleteChat() {
             @back="emit('close')"
         />
 
-        <div class="cv-scroll min-h-0 flex-1 overflow-y-auto pb-8">
+        <div ref="scrollBodyEl" class="cv-scroll min-h-0 flex-1 overflow-y-auto pb-8">
             <div
                 class="cv-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-converse-border px-[22px] py-[26px] text-center"
             >
@@ -500,7 +522,7 @@ async function onDeleteChat() {
 
                     <div class="flex flex-col gap-0.5">
                         <div
-                            v-for="participant in conversation.participants"
+                            v-for="participant in visibleParticipants"
                             :key="chatableKeyOf(participant)"
                             class="group flex items-center gap-[11px] rounded-2xl pl-3 pr-5 py-2 hover:bg-converse-surfaceHover"
                         >
@@ -561,6 +583,7 @@ async function onDeleteChat() {
                                 </button>
                             </div>
                         </div>
+                        <div v-if="hasMoreParticipants" ref="participantsSentinelEl" class="h-1" />
                     </div>
                 </div>
             </template>

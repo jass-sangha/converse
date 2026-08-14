@@ -6,11 +6,11 @@ export function useUsers() {
     const api = useApi();
     const store = useChatStore();
 
-    async function search(q, type = null) {
-        const params = { ...(q ? { q } : {}), ...(type ? { type } : {}) };
+    async function search(q, type = null, page = 1) {
+        const params = { ...(q ? { q } : {}), ...(type ? { type } : {}), page };
         const { data } = await api.get('/users', { params });
         cacheUsers(data.data);
-        return data.data;
+        return data;
     }
 
     /**

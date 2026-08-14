@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, onUpdated, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, watch } from 'vue';
 import MessageBubble from './MessageBubble.vue';
 import { useChatStore } from '../../store';
 import { useMessages } from '../../composables/useMessages';
@@ -23,7 +23,9 @@ const wallpaper = computed(() =>
 
 const scrollEl = ref(null);
 const sentinelEl = ref(null);
+const contentEl = ref(null);
 let observer = null;
+let resizeObserver = null;
 let stickToBottom = true;
 
 const messages = computed(() => store.messagesByConversation[props.conversationId] ?? []);
@@ -77,9 +79,23 @@ function scrollToBottom() {
 
 async function onIntersect(entries) {
     if (entries[0].isIntersecting) {
+        const conversationId = props.conversationId;
         const el = scrollEl.value;
         const prevHeight = el?.scrollHeight ?? 0;
-        await loadOlder(props.conversationId);
+        await loadOlder(conversationId);
+        // The scroll container is reused across conversations (not remounted per chat), so if the
+        // user switched chats while this "load older" request was in flight, applying its
+        // now-stale height adjustment here would misposition the *new* conversation's scroll —
+        // and the resulting scroll event would clear stickToBottom, leaving it stuck.
+        if (conversationId !== props.conversationId) return;
+        // On a short conversation the top sentinel can already be intersecting on first open
+        // (the whole list fits within the viewport, nothing to scroll), auto-triggering this
+        // older-messages load before the user has scrolled up at all. In that case the goal is
+        // still "stay at the bottom", not "preserve position while loading older content above".
+        if (stickToBottom) {
+            scrollToBottom();
+            return;
+        }
         nextTick(() => {
             if (el) el.scrollTop = el.scrollHeight - prevHeight;
         });
@@ -97,14 +113,33 @@ function setupObserver() {
 onMounted(() => {
     setupObserver();
     scrollToBottom();
+
+    // Message content (avatars, attachment images/videos) can finish loading and change height
+    // *after* Vue's own re-render has already settled, so onUpdated's stickToBottom check alone
+    // can miss it — an image popping in after scrollToBottom already ran would silently leave the
+    // view short of the real bottom. A ResizeObserver on the message list catches that too.
+    if (contentEl.value && window.ResizeObserver) {
+        resizeObserver = new ResizeObserver(() => {
+            if (stickToBottom) scrollToBottom();
+        });
+        resizeObserver.observe(contentEl.value);
+    }
 });
+
+onBeforeUnmount(() => resizeObserver?.disconnect());
 
 onUpdated(() => {
     if (stickToBottom) scrollToBottom();
 });
 
 watch(() => props.conversationId, () => {
+    // MessageList isn't keyed by conversationId in ChatWindow, so switching chats reuses this
+    // same instance — onMounted's initial scrollToBottom() only ever fires once. Scroll here
+    // explicitly rather than relying solely on onUpdated picking it up, since if the new
+    // conversation's messages are already cached (no re-render triggered by a fetch), onUpdated
+    // may never fire and the view would stay wherever the previous conversation left it.
     stickToBottom = true;
+    scrollToBottom();
     nextTick(setupObserver);
 });
 
@@ -132,7 +167,7 @@ function onScroll() {
         >
             <div ref="sentinelEl" class="cv-message-list__sentinel h-1" />
 
-            <div class="cv-message-list__messages mx-auto flex max-w-7xl flex-col gap-2">
+            <div ref="contentEl" class="cv-message-list__messages mx-auto flex max-w-7xl flex-col gap-2">
                 <template v-for="item in timeline" :key="item.key">
                     <div v-if="item.kind === 'date'" class="flex justify-center py-1">
                         <span class="rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-xs font-medium text-converse-textMuted shadow-sm">{{ item.label }}</span>
