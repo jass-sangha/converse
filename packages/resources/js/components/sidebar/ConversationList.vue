@@ -180,7 +180,7 @@ function openHit(hit) {
         <SearchBar :autofocus="false" @query="onSearchQuery" />
 
         <div
-            class="cv-conversation-list__filters flex items-center gap-2 overflow-x-auto px-3 pb-3.5"
+            class="cv-conversation-list__filters flex items-center gap-2 overflow-x-auto overflow-y-visible px-3 pb-3.5 pt-0.5"
         >
             <button
                 v-for="f in FILTERS"

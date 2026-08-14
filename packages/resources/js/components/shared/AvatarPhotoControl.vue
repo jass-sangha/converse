@@ -84,21 +84,19 @@ function pickRemove() {
         <button
             type="button"
             class="relative block shrink-0 overflow-hidden rounded-full disabled:cursor-default"
-            :class="avatarUrl ? 'cursor-pointer' : 'cursor-default'"
+            :class="editable || avatarUrl ? 'cursor-pointer' : 'cursor-default'"
             :disabled="!editable && !avatarUrl"
-            :title="avatarUrl ? 'View photo' : name"
-            @click="openViewer"
+            :title="editable ? 'Change photo' : 'View photo'"
+            @click="editable ? toggleMenu() : openViewer()"
         >
             <Avatar :name="name" :avatar-url="avatarUrl" :size="size" />
 
             <span
-                v-if="editable"
-                class="absolute inset-0 flex items-center justify-center gap-1.5 rounded-full bg-converse-overlay/0 text-[10px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
+                v-if="editable || avatarUrl"
+                class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-[10px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
                 :class="{ 'pointer-events-none': uploading, 'bg-converse-overlay/40 opacity-100': menuOpen }"
             >
-                <span v-if="avatarUrl" class="hover:underline" @click.stop="openViewer">View</span>
-                <span v-if="avatarUrl" class="opacity-60">&middot;</span>
-                <span class="hover:underline" @click.stop="toggleMenu">{{ uploading ? "…" : "Edit" }}</span>
+                {{ editable ? (uploading ? "…" : "Edit") : "View" }}
             </span>
         </button>
 
