@@ -43,7 +43,6 @@ const {
 } = useConversations();
 const { clear: clearMessages, media: fetchMedia } = useMessages();
 
-const panelRoot = ref(null);
 const showAddMember = ref(false);
 const picked = ref([]);
 const error = ref("");
@@ -170,21 +169,6 @@ async function loadAll() {
 
 onMounted(loadAll);
 watch(() => props.conversation.id, loadAll);
-
-function onPanelDocumentClick(event) {
-    if (showAddMember.value || showMedia.value || showStarred.value) return;
-    if (panelRoot.value && !panelRoot.value.contains(event.target)) {
-        emit("close");
-    }
-}
-
-onMounted(() => {
-    setTimeout(() => document.addEventListener("click", onPanelDocumentClick));
-});
-
-onBeforeUnmount(() => {
-    document.removeEventListener("click", onPanelDocumentClick);
-});
 
 function openMediaTile(index) {
     viewerIndex.value = index;
@@ -386,8 +370,7 @@ async function onDeleteChat() {
 
 <template>
     <div
-        ref="panelRoot"
-        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex w-full flex-col bg-converse-surface lg:relative lg:z-auto lg:w-[330px] lg:shrink-0 lg:border-l lg:border-converse-border"
+        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex w-full flex-col bg-converse-surface md:absolute md:inset-y-0 md:right-0 md:w-[330px] md:shadow-2xl md:border-l md:border-converse-border lg:relative lg:z-auto lg:shrink-0 lg:shadow-none"
     >
         <SidebarScreenHeader
             :title="isGroup ? 'Group info' : 'Contact info'"
