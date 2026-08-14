@@ -12,5 +12,5 @@ interface StarredMessageServiceInterface
 
     public function unstar(Message $message, Model $chatable): void;
 
-    public function listForUser(Model $chatable, int $perPage): LengthAwarePaginator;
+    public function listForUser(Model $chatable, int $perPage, ?int $conversationId = null): LengthAwarePaginator;
 }

@@ -10,6 +10,7 @@ import GlobalMenu from "../shared/GlobalMenu.vue";
 import MediaViewerModal from "../shared/MediaViewerModal.vue";
 import DisappearingToggle from "./DisappearingToggle.vue";
 import MediaDocsLinksGrid from "./MediaDocsLinksGrid.vue";
+import StarredMessagesPanel from "./StarredMessagesPanel.vue";
 import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
 import { useChatStore } from "../../store";
 import { chatableKey, chatableKeyOf } from "../../chatable";
@@ -18,8 +19,6 @@ import { useParticipants } from "../../composables/useParticipants";
 import { useBlockedUsers } from "../../composables/useBlockedUsers";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
-import { useSidebarUi } from "../../composables/useSidebarUi";
-import { useCall } from "../../composables/useCall";
 import { WALLPAPER_PRESETS } from "../../wallpapers";
 
 const props = defineProps({
@@ -43,14 +42,14 @@ const {
     removeAvatar,
 } = useConversations();
 const { clear: clearMessages, media: fetchMedia } = useMessages();
-const { setView } = useSidebarUi();
-const { startCall } = useCall();
 
+const panelRoot = ref(null);
 const showAddMember = ref(false);
 const picked = ref([]);
 const error = ref("");
 const blockedKeys = ref([]);
 const showMedia = ref(false);
+const showStarred = ref(false);
 const clearing = ref(false);
 const cleared = ref(false);
 const avatarUploading = ref(false);
@@ -171,6 +170,20 @@ async function loadAll() {
 
 onMounted(loadAll);
 watch(() => props.conversation.id, loadAll);
+
+function onPanelDocumentClick(event) {
+    if (panelRoot.value && !panelRoot.value.contains(event.target)) {
+        emit("close");
+    }
+}
+
+onMounted(() => {
+    setTimeout(() => document.addEventListener("click", onPanelDocumentClick));
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener("click", onPanelDocumentClick);
+});
 
 function openMediaTile(index) {
     viewerIndex.value = index;
@@ -372,429 +385,458 @@ async function onDeleteChat() {
 
 <template>
     <div
-        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex flex-col overflow-y-auto bg-converse-surface sm:relative sm:z-auto sm:w-[330px] sm:shrink-0 sm:border-l sm:border-converse-border"
+        ref="panelRoot"
+        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex flex-col bg-converse-surface sm:relative sm:z-auto sm:w-[330px] sm:shrink-0 sm:border-l sm:border-converse-border pb-12"
     >
-        <div
-            class="cv-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-converse-border px-[22px] py-[26px] text-center"
-        >
-            <AvatarPhotoControl
-                :name="displayName ?? ''"
-                :avatar-url="
-                    isGroup
-                        ? conversation.avatar_url
-                        : otherParticipant?.avatar_url
-                "
-                :size="96"
-                :editable="isGroup && isAdmin"
-                :uploading="avatarUploading"
-                @upload="onAvatarUpload"
-                @remove="onAvatarRemove"
-            />
-            <p v-if="avatarError" class="text-xs text-converse-danger">
-                {{ avatarError }}
-            </p>
-            <div>
-                <p
-                    class="font-display text-[21px] font-normal text-converse-text"
-                >
-                    {{ displayName }}
-                </p>
-                <p
-                    v-if="subLabel"
-                    class="mt-1 text-[12.5px] text-converse-textMuted"
-                >
-                    {{ subLabel }}
-                </p>
-                <p
-                    v-if="conversation.description"
-                    class="mt-1 px-4 text-center text-sm text-converse-textMuted"
-                >
-                    {{ conversation.description }}
-                </p>
-            </div>
-        </div>
+        <SidebarScreenHeader
+            :title="isGroup ? 'Group info' : 'Contact info'"
+            @back="emit('close')"
+        />
 
-        <div class="border-b border-converse-border px-[22px] py-5">
-            <div class="mb-3 flex items-baseline justify-between gap-2.5">
-                <h3
-                    class="text-[11.5px] font-bold uppercase tracking-[.08em] text-converse-textDim"
-                >
-                    Shared media
-                </h3>
-                <button
-                    type="button"
-                    class="text-[12.5px] font-semibold text-converse-accentText hover:underline"
-                    @click="showMedia = true"
-                >
-                    See all
-                </button>
-            </div>
-            <div v-if="previewMedia.length" class="grid grid-cols-3 gap-[7px]">
-                <button
-                    v-for="(item, i) in previewMedia"
-                    :key="item.id"
-                    type="button"
-                    class="relative aspect-square overflow-hidden rounded-[14px] bg-converse-surfaceHover"
-                    @click="openMediaTile(i)"
-                >
-                    <video
-                        v-if="item.kind === 'video'"
-                        :src="item.url"
-                        class="h-full w-full object-cover"
-                        muted
-                    />
-                    <img
-                        v-else
-                        :src="item.thumbnail_url || item.url"
-                        :alt="item.original_filename"
-                        class="h-full w-full object-cover"
-                    />
-                </button>
-            </div>
-            <p v-else class="text-xs text-converse-textMuted">No media yet.</p>
-        </div>
-
-        <div class="border-b border-converse-border px-[22px] py-5">
-            <h3
-                class="mb-3 text-[11.5px] font-bold uppercase tracking-[.08em] text-converse-textDim"
+        <div class="cv-scroll min-h-0 flex-1 overflow-y-auto">
+            <div
+                class="cv-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-converse-border px-[22px] py-[26px] text-center"
             >
-                Chat wallpaper
-            </h3>
-            <div class="flex flex-wrap gap-[9px]">
-                <button
-                    v-for="preset in WALLPAPER_PRESETS"
-                    :key="preset.key"
-                    type="button"
-                    :title="preset.label"
-                    class="relative h-8 w-8 rounded-full border border-converse-border"
-                    :style="{ backgroundColor: preset.css ?? 'transparent' }"
-                    @click="onPickWallpaper(preset.key)"
-                >
-                    <span
-                        v-if="
-                            (conversation.me?.wallpaper ?? 'default') ===
-                            preset.key
-                        "
-                        class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
-                    />
-                </button>
-                <label
-                    class="relative h-8 w-8 cursor-pointer rounded-full border border-converse-border"
-                    title="Custom color"
-                >
-                    <input
-                        type="color"
-                        class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                        @input="onPickCustomColor"
-                    />
-                    <span
-                        class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs"
-                        >🎨</span
+                <AvatarPhotoControl
+                    :name="displayName ?? ''"
+                    :avatar-url="
+                        isGroup
+                            ? conversation.avatar_url
+                            : otherParticipant?.avatar_url
+                    "
+                    :size="96"
+                    :editable="isGroup && isAdmin"
+                    :uploading="avatarUploading"
+                    @upload="onAvatarUpload"
+                    @remove="onAvatarRemove"
+                />
+                <p v-if="avatarError" class="text-xs text-converse-danger">
+                    {{ avatarError }}
+                </p>
+                <div>
+                    <p
+                        class="font-display text-[21px] font-normal text-converse-text"
                     >
-                </label>
+                        {{ displayName }}
+                    </p>
+                    <p
+                        v-if="subLabel"
+                        class="mt-1 text-[12.5px] text-converse-textMuted"
+                    >
+                        {{ subLabel }}
+                    </p>
+                    <p
+                        v-if="conversation.description"
+                        class="mt-1 px-4 text-center text-sm text-converse-textMuted"
+                    >
+                        {{ conversation.description }}
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <template v-if="isGroup">
-            <div class="border-b border-converse-border px-[10px] py-5">
-                <div
-                    class="mb-2.5 mx-3 flex items-baseline justify-between gap-2.5"
-                >
+            <div class="border-b border-converse-border px-[22px] py-5">
+                <div class="mb-3 flex items-baseline justify-between gap-2.5">
                     <h3
                         class="text-[11.5px] font-bold uppercase tracking-[.08em] text-converse-textDim"
                     >
-                        {{ conversation.participants?.length ?? 0 }}
-                        participants
+                        Shared media
                     </h3>
                     <button
-                        v-if="isAdmin"
                         type="button"
                         class="text-[12.5px] font-semibold text-converse-accentText hover:underline"
-                        @click="showAddMember = true"
+                        @click="showMedia = true"
                     >
-                        Add
+                        See all
                     </button>
                 </div>
-
-                <div class="flex flex-col gap-0.5">
-                    <div
-                        v-for="participant in conversation.participants"
-                        :key="chatableKeyOf(participant)"
-                        class="group flex items-center gap-[11px] rounded-2xl pl-3 pr-5 py-2 hover:bg-converse-surfaceHover"
+                <div
+                    v-if="previewMedia.length"
+                    class="grid grid-cols-3 gap-[7px]"
+                >
+                    <button
+                        v-for="(item, i) in previewMedia"
+                        :key="item.id"
+                        type="button"
+                        :title="item.original_filename"
+                        class="group relative aspect-square overflow-hidden rounded-[14px] bg-converse-surfaceHover"
+                        @click="openMediaTile(i)"
                     >
-                        <Avatar
-                            :name="
-                                get({
-                                    type: participant.chatable_type,
-                                    id: participant.chatable_id,
-                                }).name
-                            "
-                            :avatar-url="
-                                get({
-                                    type: participant.chatable_type,
-                                    id: participant.chatable_id,
-                                }).avatar_url
-                            "
-                            :size="34"
+                        <video
+                            v-if="item.kind === 'video'"
+                            :src="item.url"
+                            class="h-full w-full object-cover"
+                            muted
                         />
-                        <div class="min-w-0 flex-1">
-                            <p
-                                class="truncate text-[13.5px] font-medium text-converse-text"
-                            >
-                                {{
+                        <img
+                            v-else
+                            :src="item.thumbnail_url || item.url"
+                            :alt="item.original_filename"
+                            class="h-full w-full object-cover"
+                        />
+                        <span
+                            v-if="item.original_filename"
+                            class="absolute bottom-1 right-1 max-w-[calc(100%-8px)] truncate rounded-md bg-converse-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-converse-textMuted group-hover:max-w-none"
+                            >{{ item.original_filename }}</span
+                        >
+                    </button>
+                </div>
+                <p v-else class="text-xs text-converse-textMuted">
+                    No media yet.
+                </p>
+            </div>
+
+            <div class="border-b border-converse-border px-[22px] py-5">
+                <h3
+                    class="mb-3 text-[11.5px] font-bold uppercase tracking-[.08em] text-converse-textDim"
+                >
+                    Chat wallpaper
+                </h3>
+                <div class="flex flex-wrap gap-[9px]">
+                    <button
+                        v-for="preset in WALLPAPER_PRESETS"
+                        :key="preset.key"
+                        type="button"
+                        :title="preset.label"
+                        class="relative h-8 w-8 rounded-full border border-converse-border"
+                        :style="{
+                            backgroundColor: preset.css ?? 'transparent',
+                        }"
+                        @click="onPickWallpaper(preset.key)"
+                    >
+                        <span
+                            v-if="
+                                (conversation.me?.wallpaper ?? 'default') ===
+                                preset.key
+                            "
+                            class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
+                        />
+                    </button>
+                    <label
+                        class="relative h-8 w-8 cursor-pointer rounded-full border border-converse-border"
+                        title="Custom color"
+                    >
+                        <input
+                            type="color"
+                            class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                            @input="onPickCustomColor"
+                        />
+                        <span
+                            class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs"
+                            >🎨</span
+                        >
+                    </label>
+                </div>
+            </div>
+
+            <template v-if="isGroup">
+                <div class="border-b border-converse-border px-[10px] py-5">
+                    <div
+                        class="mb-2.5 mx-3 flex items-baseline justify-between gap-2.5"
+                    >
+                        <h3
+                            class="text-[11.5px] font-bold uppercase tracking-[.08em] text-converse-textDim"
+                        >
+                            {{ conversation.participants?.length ?? 0 }}
+                            participants
+                        </h3>
+                        <button
+                            v-if="isAdmin"
+                            type="button"
+                            class="text-[12.5px] font-semibold text-converse-accentText hover:underline"
+                            @click="showAddMember = true"
+                        >
+                            Add
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col gap-0.5">
+                        <div
+                            v-for="participant in conversation.participants"
+                            :key="chatableKeyOf(participant)"
+                            class="group flex items-center gap-[11px] rounded-2xl pl-3 pr-5 py-2 hover:bg-converse-surfaceHover"
+                        >
+                            <Avatar
+                                :name="
                                     get({
                                         type: participant.chatable_type,
                                         id: participant.chatable_id,
                                     }).name
-                                }}
-                            </p>
-                            <p
-                                v-if="participant.role === 'admin'"
-                                class="text-[11px] text-converse-textDim"
+                                "
+                                :avatar-url="
+                                    get({
+                                        type: participant.chatable_type,
+                                        id: participant.chatable_id,
+                                    }).avatar_url
+                                "
+                                :size="34"
+                            />
+                            <div class="min-w-0 flex-1">
+                                <p
+                                    class="truncate text-[13.5px] font-medium text-converse-text"
+                                >
+                                    {{
+                                        get({
+                                            type: participant.chatable_type,
+                                            id: participant.chatable_id,
+                                        }).name
+                                    }}
+                                </p>
+                                <p
+                                    v-if="participant.role === 'admin'"
+                                    class="text-[11px] text-converse-textDim"
+                                >
+                                    Admin
+                                </p>
+                            </div>
+                            <div
+                                v-if="isAdmin && !isMe(participant)"
+                                class="flex shrink-0 items-center gap-2.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
                             >
-                                Admin
-                            </p>
-                        </div>
-                        <div
-                            v-if="isAdmin && !isMe(participant)"
-                            class="flex shrink-0 items-center gap-2.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
-                        >
-                            <button
-                                type="button"
-                                class="text-[11.5px] font-semibold text-converse-sage hover:underline"
-                                @click="toggleAdmin(participant)"
-                            >
-                                {{
-                                    participant.role === "admin"
-                                        ? "Demote"
-                                        : "Promote"
-                                }}
-                            </button>
-                            <button
-                                type="button"
-                                class="text-[11.5px] font-semibold text-converse-accentText hover:underline"
-                                @click="removeMember(participant)"
-                            >
-                                Remove
-                            </button>
+                                <button
+                                    type="button"
+                                    class="text-[11.5px] font-semibold text-converse-sage hover:underline"
+                                    @click="toggleAdmin(participant)"
+                                >
+                                    {{
+                                        participant.role === "admin"
+                                            ? "Demote"
+                                            : "Promote"
+                                    }}
+                                </button>
+                                <button
+                                    type="button"
+                                    class="text-[11.5px] font-semibold text-converse-accentText hover:underline"
+                                    @click="removeMember(participant)"
+                                >
+                                    Remove
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </template>
+            </template>
 
-        <p
-            v-if="error"
-            class="cv-group-info-panel__error mx-[10px] mt-3 rounded bg-converse-danger/10 p-2 text-xs text-converse-danger"
-        >
-            {{ error }}
-        </p>
-
-        <div class="flex flex-col gap-0.5 px-[10px] py-5">
-            <button
-                type="button"
-                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
-                @click="toggleFavourite"
+            <p
+                v-if="error"
+                class="cv-group-info-panel__error mx-[10px] mt-3 rounded bg-converse-danger/10 p-2 text-xs text-converse-danger"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    class="shrink-0 text-converse-textMuted"
-                >
-                    <path
-                        d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.02 6.02 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z"
-                    />
-                </svg>
-                <span>{{
-                    isFavourite ? "Remove from favourites" : "Add to favourites"
-                }}</span>
-            </button>
+                {{ error }}
+            </p>
 
-            <button
-                type="button"
-                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
-                @click="setView('starred')"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    class="shrink-0 text-converse-textMuted"
-                >
-                    <path
-                        d="M12 2 15 9l7 .6-5.3 4.6L18.2 21 12 17.3 5.8 21l1.5-6.8L2 9.6 9 9Z"
-                    />
-                </svg>
-                <span>Starred messages</span>
-            </button>
-
-            <button
-                type="button"
-                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover disabled:opacity-50"
-                :disabled="clearing"
-                @click="onClearChat"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    class="shrink-0 text-converse-accentText"
-                >
-                    <path d="M15 4V3H9v1H4v2h16V4h-5ZM6 8l1 12h10l1-12H6Z" />
-                </svg>
-                <span>{{ cleared ? "Chat cleared" : "Clear chat" }}</span>
-            </button>
-
-            <button
-                v-if="!isGroup"
-                type="button"
-                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
-                @click="toggleBlockOther"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    class="shrink-0 text-converse-accentText"
-                >
-                    <path
-                        d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.94 7.94 0 0 1 4 12a8 8 0 0 1 8-8Zm0 16c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.94 7.94 0 0 1 20 12a8 8 0 0 1-8 8Z"
-                    />
-                </svg>
-                <span
-                    >{{ isOtherBlocked ? "Unblock" : "Block" }}
-                    {{ otherParticipant?.name }}</span
-                >
-            </button>
-            <button
-                v-else
-                type="button"
-                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
-                @click="leaveGroup"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    class="shrink-0 text-converse-accentText"
-                >
-                    <path
-                        d="M10 3v2H5v14h5v2H3V3h7Zm5.29 3.71L18.59 10H8v2h10.59l-3.3 3.29 1.42 1.42L22 11.41l-5.29-5.3-1.42 1.6Z"
-                    />
-                </svg>
-                <span>Leave group</span>
-            </button>
-
-            <button
-                type="button"
-                class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
-                @click="onDeleteChat"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    class="shrink-0 text-converse-accentText"
-                >
-                    <path d="M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z" />
-                </svg>
-                <span>Delete chat</span>
-            </button>
-        </div>
-
-        <div
-            ref="muteMenuRoot"
-            class="relative mx-[10px] flex flex-col gap-0.5 border-t border-converse-border py-3.5"
-        >
-            <div class="flex items-center gap-3.5 rounded-2xl px-3.5 py-3">
-                <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    class="shrink-0"
-                    :class="
-                        isMuted
-                            ? 'text-converse-sage'
-                            : 'text-converse-textMuted'
-                    "
-                >
-                    <path
-                        d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z"
-                    />
-                    <path
-                        v-if="isMuted"
-                        d="M3.5 3.5l17 17"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        fill="none"
-                    />
-                </svg>
+            <div class="flex flex-col gap-0.5 px-[10px] py-5">
                 <button
                     type="button"
-                    class="flex-1 text-left"
-                    @click="toggleMuteMenu"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
+                    @click="toggleFavourite"
                 >
-                    <span
-                        class="block text-[13.5px] font-medium text-converse-text"
-                        >Mute notifications</span
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        class="shrink-0 text-converse-textMuted"
                     >
+                        <path
+                            d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.02 6.02 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z"
+                        />
+                    </svg>
+                    <span>{{
+                        isFavourite
+                            ? "Remove from favourites"
+                            : "Add to favourites"
+                    }}</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
+                    @click="showStarred = true"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        class="shrink-0 text-converse-textMuted"
+                    >
+                        <path
+                            d="M12 2 15 9l7 .6-5.3 4.6L18.2 21 12 17.3 5.8 21l1.5-6.8L2 9.6 9 9Z"
+                        />
+                    </svg>
+                    <span>Starred messages</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover disabled:opacity-50"
+                    :disabled="clearing"
+                    @click="onClearChat"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        class="shrink-0 text-converse-accentText"
+                    >
+                        <path
+                            d="M15 4V3H9v1H4v2h16V4h-5ZM6 8l1 12h10l1-12H6Z"
+                        />
+                    </svg>
+                    <span>{{ cleared ? "Chat cleared" : "Clear chat" }}</span>
+                </button>
+
+                <button
+                    v-if="!isGroup"
+                    type="button"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
+                    @click="toggleBlockOther"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        class="shrink-0 text-converse-accentText"
+                    >
+                        <path
+                            d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.94 7.94 0 0 1 4 12a8 8 0 0 1 8-8Zm0 16c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.94 7.94 0 0 1 20 12a8 8 0 0 1-8 8Z"
+                        />
+                    </svg>
                     <span
-                        v-if="muteHint"
-                        class="mt-0.5 block text-xs text-converse-textMuted"
-                        >{{ muteHint }}</span
+                        >{{ isOtherBlocked ? "Unblock" : "Block" }}
+                        {{ otherParticipant?.name }}</span
                     >
                 </button>
                 <button
+                    v-else
                     type="button"
-                    class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
-                    :class="isMuted ? 'bg-converse-sage' : 'bg-converse-border'"
-                    role="switch"
-                    :aria-checked="isMuted"
-                    @click="toggleMuteMenu"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
+                    @click="leaveGroup"
                 >
-                    <span
-                        class="absolute top-[3px] h-[21px] w-[21px] rounded-full bg-white shadow transition-[left] duration-150 ease-out"
-                        :class="isMuted ? 'left-[22px]' : 'left-[3px]'"
-                    />
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        class="shrink-0 text-converse-accentText"
+                    >
+                        <path
+                            d="M10 3v2H5v14h5v2H3V3h7Zm5.29 3.71L18.59 10H8v2h10.59l-3.3 3.29 1.42 1.42L22 11.41l-5.29-5.3-1.42 1.6Z"
+                        />
+                    </svg>
+                    <span>Leave group</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
+                    @click="onDeleteChat"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        class="shrink-0 text-converse-accentText"
+                    >
+                        <path
+                            d="M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z"
+                        />
+                    </svg>
+                    <span>Delete chat</span>
                 </button>
             </div>
 
             <div
-                v-if="showMuteMenu"
-                class="cv-animate-pop-in absolute right-4 z-20"
-                :class="muteMenuUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+                ref="muteMenuRoot"
+                class="relative mx-[10px] flex flex-col gap-0.5 border-t border-converse-border py-3.5"
             >
-                <div
-                    class="w-48 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
-                    :style="{ maxHeight: muteMenuMaxHeight + 'px' }"
-                >
-                    <p
-                        class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-converse-textMuted"
+                <div class="flex items-center gap-3.5 rounded-2xl px-3.5 py-3">
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        class="shrink-0"
+                        :class="
+                            isMuted
+                                ? 'text-converse-sage'
+                                : 'text-converse-textMuted'
+                        "
                     >
-                        Mute for
-                    </p>
+                        <path
+                            d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z"
+                        />
+                        <path
+                            v-if="isMuted"
+                            d="M3.5 3.5l17 17"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            fill="none"
+                        />
+                    </svg>
                     <button
-                        v-for="option in MUTE_DURATIONS"
-                        :key="option.key"
                         type="button"
-                        class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
-                        @click="onPickMuteDuration(option.key)"
+                        class="flex-1 text-left"
+                        @click="toggleMuteMenu"
                     >
-                        {{ option.label }}
+                        <span
+                            class="block text-[13.5px] font-medium text-converse-text"
+                            >Mute notifications</span
+                        >
+                        <span
+                            v-if="muteHint"
+                            class="mt-0.5 block text-xs text-converse-textMuted"
+                            >{{ muteHint }}</span
+                        >
+                    </button>
+                    <button
+                        type="button"
+                        class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
+                        :class="
+                            isMuted ? 'bg-converse-sage' : 'bg-converse-border'
+                        "
+                        role="switch"
+                        :aria-checked="isMuted"
+                        @click="toggleMuteMenu"
+                    >
+                        <span
+                            class="absolute top-[3px] h-[21px] w-[21px] rounded-full bg-white shadow transition-[left] duration-150 ease-out"
+                            :class="isMuted ? 'left-[22px]' : 'left-[3px]'"
+                        />
                     </button>
                 </div>
-            </div>
 
-            <DisappearingToggle :conversation="conversation" />
+                <div
+                    v-if="showMuteMenu"
+                    class="cv-animate-pop-in absolute right-4 z-20"
+                    :class="muteMenuUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+                >
+                    <div
+                        class="w-48 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
+                        :style="{ maxHeight: muteMenuMaxHeight + 'px' }"
+                    >
+                        <p
+                            class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-converse-textMuted"
+                        >
+                            Mute for
+                        </p>
+                        <button
+                            v-for="option in MUTE_DURATIONS"
+                            :key="option.key"
+                            type="button"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
+                            @click="onPickMuteDuration(option.key)"
+                        >
+                            {{ option.label }}
+                        </button>
+                    </div>
+                </div>
+
+                <DisappearingToggle :conversation="conversation" />
+            </div>
         </div>
 
         <div
@@ -804,9 +846,7 @@ async function onDeleteChat() {
             <SidebarScreenHeader
                 title="Add participants"
                 @back="closeAddMember"
-            >
-                <GlobalMenu />
-            </SidebarScreenHeader>
+            />
             <div class="flex min-h-0 flex-1 flex-col">
                 <UserPicker
                     v-model="picked"
@@ -840,12 +880,20 @@ async function onDeleteChat() {
             <SidebarScreenHeader
                 title="Media, links and docs"
                 @back="showMedia = false"
-            >
-                <GlobalMenu />
-            </SidebarScreenHeader>
+            />
             <MediaDocsLinksGrid
                 :conversation-id="conversation.id"
                 class="flex-1"
+            />
+        </div>
+
+        <div
+            v-if="showStarred"
+            class="absolute inset-0 z-10 flex flex-col bg-converse-surface"
+        >
+            <StarredMessagesPanel
+                :conversation-id="conversation.id"
+                @back="showStarred = false"
             />
         </div>
 

@@ -86,6 +86,7 @@ class MessageRepository implements MessageRepositoryInterface
 
             $builder->where(function ($outer) use ($search, $matches) {
                 $outer->whereHas('attachments', fn ($q) => $q->where('original_filename', 'like', '%'.$search.'%'))
+                    ->orWhere('body', 'like', '%'.$search.'%')
                     ->orWhereHas('conversation', fn ($q) => $q->where('name', 'like', '%'.$search.'%'));
 
                 if (! empty($matches)) {

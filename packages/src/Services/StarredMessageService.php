@@ -28,11 +28,16 @@ class StarredMessageService implements StarredMessageServiceInterface
         )->delete();
     }
 
-    public function listForUser(Model $chatable, int $perPage): LengthAwarePaginator
+    public function listForUser(Model $chatable, int $perPage, ?int $conversationId = null): LengthAwarePaginator
     {
-        return Chat::whereChatable(StarredMessage::query(), $chatable)
+        $query = Chat::whereChatable(StarredMessage::query(), $chatable)
             ->with('message.attachments', 'message.reactions', 'message.conversation.participants')
-            ->latest('id')
-            ->paginate($perPage);
+            ->latest('id');
+
+        if ($conversationId !== null) {
+            $query->whereHas('message', fn ($q) => $q->where('conversation_id', $conversationId));
+        }
+
+        return $query->paginate($perPage);
     }
 }

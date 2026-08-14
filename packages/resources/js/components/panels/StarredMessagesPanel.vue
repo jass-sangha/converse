@@ -10,6 +10,12 @@ import { useUsers } from "../../composables/useUsers";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 import { chatableKey } from "../../chatable";
 
+const props = defineProps({
+    conversationId: { type: Number, default: null },
+});
+
+const emit = defineEmits(["back"]);
+
 const { setView } = useSidebarUi();
 const api = useApi();
 const { setActive } = useConversations();
@@ -23,7 +29,7 @@ const hasMore = ref(false);
 
 async function loadPage(pageNumber) {
     const { data } = await api.get("/starred-messages", {
-        params: { page: pageNumber },
+        params: { page: pageNumber, conversation_id: props.conversationId },
     });
 
     const senders = data.data.map((message) => ({
@@ -117,7 +123,19 @@ function snippet(message) {
 
 function jumpTo(message) {
     setActive(message.conversation_id);
-    setView("chats");
+    if (props.conversationId) {
+        emit("back");
+    } else {
+        setView("chats");
+    }
+}
+
+function onBack() {
+    if (props.conversationId) {
+        emit("back");
+    } else {
+        setView("chats");
+    }
 }
 
 async function onUnstar(message) {
@@ -128,8 +146,8 @@ async function onUnstar(message) {
 
 <template>
     <div class="cv-starred-messages-panel flex h-full flex-col bg-converse-surface">
-        <SidebarScreenHeader title="Starred messages" @back="setView('chats')">
-            <GlobalMenu />
+        <SidebarScreenHeader title="Starred messages" @back="onBack">
+            <GlobalMenu v-if="!conversationId" />
         </SidebarScreenHeader>
 
         <div class="cv-scroll flex-1 overflow-y-auto px-2 pb-5">

@@ -215,7 +215,8 @@ function formatSize(bytes) {
                         v-for="(item, i) in mediaItems"
                         :key="item.id"
                         type="button"
-                        class="relative aspect-square overflow-hidden rounded-xl bg-converse-surfaceHover"
+                        :title="item.original_filename"
+                        class="group relative aspect-square overflow-hidden rounded-xl bg-converse-surfaceHover"
                         @click="viewerIndex = i"
                     >
                         <video
@@ -230,6 +231,11 @@ function formatSize(bytes) {
                             :alt="item.original_filename"
                             class="h-full w-full object-cover"
                         />
+                        <span
+                            v-if="item.original_filename"
+                            class="absolute bottom-1 right-1 max-w-[calc(100%-8px)] truncate rounded-md bg-converse-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-converse-textMuted group-hover:max-w-none"
+                            >{{ item.original_filename }}</span
+                        >
                     </button>
                 </div>
                 <p

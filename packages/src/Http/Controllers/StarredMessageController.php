@@ -17,8 +17,9 @@ class StarredMessageController extends Controller
     public function index(Request $request)
     {
         $perPage = (int) config('chat.pagination.messages_per_page', 50);
+        $conversationId = $request->integer('conversation_id') ?: null;
 
-        $starred = $this->starred->listForUser($request->user(), $perPage);
+        $starred = $this->starred->listForUser($request->user(), $perPage, $conversationId);
 
         return MessageResource::collection($starred->through(fn ($starredMessage) => $starredMessage->message));
     }
