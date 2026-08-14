@@ -4,12 +4,18 @@
 // token — never a hardcoded color — so it flips correctly between light and dark automatically.
 const INK = "rgb(var(--cv-text) / .16)";
 
+// Picker swatches are ~40px, far smaller than several of these patterns' real tile sizes (up to
+// 84px) — at full size a swatch would show at most a sliver of one repeat, making patterns look
+// indistinguishable from each other (or from Plain). Each pattern that needs it carries a
+// `preview` image/size scaled down specifically for the swatch, independent of the size actually
+// used on the chat background.
 export const WALLPAPER_PATTERNS = [
     {
         key: "default",
         label: "Dots",
         image: `radial-gradient(circle at 1px 1px, ${INK} 1px, transparent 0)`,
         size: "50px 50px",
+        preview: { size: "12px 12px" },
     },
     { key: "none", label: "Plain", image: null, size: null },
     {
@@ -17,12 +23,19 @@ export const WALLPAPER_PATTERNS = [
         label: "Dots (tighter gaps)",
         image: `radial-gradient(circle at 1px 1px, ${INK} 1px, transparent 0)`,
         size: "30px 30px",
+        preview: { size: "8px 8px" },
     },
     {
         key: "lines",
         label: "Lines",
         image: `repeating-linear-gradient(45deg, ${INK}, ${INK} 2px, transparent 2px, transparent 64px)`,
         size: "auto",
+        // The 64px repeat period is baked into the gradient itself, not controlled by
+        // background-size, so the preview needs its own smaller-period gradient to show more than
+        // a single sliver of one stripe.
+        preview: {
+            image: `repeating-linear-gradient(45deg, ${INK}, ${INK} 1.5px, transparent 1.5px, transparent 9px)`,
+        },
     },
     {
         key: "checks",
@@ -35,6 +48,7 @@ export const WALLPAPER_PATTERNS = [
         // size and stop repeating).
         image: `linear-gradient(${INK} 1.5px, transparent 1.5px), linear-gradient(90deg, ${INK} 1.5px, transparent 1.5px)`,
         size: "84px 84px, 84px 84px",
+        preview: { size: "14px 14px, 14px 14px" },
     },
 ];
 

@@ -12,17 +12,12 @@ import { useMessagePins } from '../../composables/useMessagePins';
 import { useEcho } from '../../composables/useEcho';
 import { useBlockedUsers } from '../../composables/useBlockedUsers';
 import { chatableKey, chatableKeyOf } from '../../chatable';
-import { resolveWallpaper } from '../../wallpapers';
-import { usePreferences } from '../../composables/usePreferences';
 
 const store = useChatStore();
 const { setActive } = useConversations();
 const { load, markDelivered, markRead, search } = useMessages();
 const { list: listPinned, unpin, pinnedFor } = useMessagePins();
 const { unblock } = useBlockedUsers();
-const { defaultWallpaper } = usePreferences();
-
-const emptyWallpaper = computed(() => resolveWallpaper(defaultWallpaper.value));
 
 const replyTo = ref(null);
 const editing = ref(null);
@@ -141,17 +136,8 @@ function onEdit(message) {
 </script>
 
 <template>
-    <div v-if="!conversation" class="cv-chat-window-empty relative flex h-full items-center justify-center overflow-hidden bg-converse-chatBg text-converse-textMuted">
-        <div
-            class="pointer-events-none absolute inset-0"
-            :style="{
-                backgroundImage: emptyWallpaper.backgroundImage ?? undefined,
-                backgroundSize: emptyWallpaper.backgroundSize ?? undefined,
-                backgroundPosition: emptyWallpaper.backgroundPosition ?? undefined,
-                backgroundRepeat: emptyWallpaper.backgroundRepeat ?? undefined,
-            }"
-        />
-        <p class="relative">Select a conversation to start chatting.</p>
+    <div v-if="!conversation" class="cv-chat-window-empty flex h-full items-center justify-center bg-converse-chatBg text-converse-textMuted">
+        <p>Select a conversation to start chatting.</p>
     </div>
 
     <div v-else class="cv-chat-window relative flex h-full">

@@ -92,8 +92,8 @@ async function onImageChange(event) {
                 :class="isImage ? 'cursor-not-allowed opacity-30 grayscale' : ''"
                 :disabled="isImage"
                 :style="{
-                    backgroundImage: pattern.image ?? 'none',
-                    backgroundSize: pattern.size ?? 'auto',
+                    backgroundImage: pattern.preview?.image ?? pattern.image ?? 'none',
+                    backgroundSize: pattern.preview?.size ?? pattern.size ?? 'auto',
                 }"
                 @click="pickPattern(pattern.key)"
             >

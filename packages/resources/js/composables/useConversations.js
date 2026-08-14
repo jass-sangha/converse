@@ -7,7 +7,14 @@ export function useConversations() {
 
     async function refresh(filters = {}) {
         const { data } = await api.get('/conversations', { params: filters });
+        // A filtered fetch (e.g. Archived) can legitimately exclude the conversation currently
+        // open on the right — keep it in the store regardless, so the chat window can still find
+        // it and stays open while browsing a different sidebar view.
+        const active = store.conversations.find((c) => c.id === store.activeConversationId);
         store.conversations = data.data;
+        if (active && !store.conversations.some((c) => c.id === active.id)) {
+            store.conversations.push(active);
+        }
         return store.conversations;
     }
 

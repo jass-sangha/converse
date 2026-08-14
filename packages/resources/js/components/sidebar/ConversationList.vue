@@ -65,15 +65,22 @@ function isFavourited(conversation) {
 }
 
 const filteredConversations = computed(() => {
+    // `refresh()` keeps the conversation open on the right in the store even when a filtered
+    // fetch excludes it (e.g. Archived), so the chat window doesn't lose it — exclude it here
+    // when it doesn't actually belong in the Archived list, so it doesn't leak into view.
+    const source = showArchived.value
+        ? store.conversations.filter((c) => c.me?.archived_at)
+        : store.conversations;
+
     switch (filter.value) {
         case "unread":
-            return store.conversations.filter((c) => c.unread_count > 0);
+            return source.filter((c) => c.unread_count > 0);
         case "favourites":
-            return store.conversations.filter(isFavourited);
+            return source.filter(isFavourited);
         case "groups":
-            return store.conversations.filter((c) => c.type === "group");
+            return source.filter((c) => c.type === "group");
         default:
-            return store.conversations;
+            return source;
     }
 });
 

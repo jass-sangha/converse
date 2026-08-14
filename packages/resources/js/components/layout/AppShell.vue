@@ -50,7 +50,9 @@ const showMobileTabBar = computed(
                 }"
                 :style="{ '--sidebar-width': sidebarWidth + 'px' }"
             >
-                <ConversationList v-if="view === 'chats' || view === 'archived'" />
+                <ConversationList
+                    v-if="view === 'chats' || view === 'archived'"
+                />
                 <NewChatPanel v-else-if="view === 'new-chat'" />
                 <NewGroupPanel v-else-if="view === 'new-group'" />
                 <MediaPanel v-else-if="view === 'media'" />
@@ -70,7 +72,9 @@ const showMobileTabBar = computed(
                     'sm:block': true,
                 }"
             >
-                <ProfileEmptyState v-if="view === 'profile'" />
+                <ProfileEmptyState
+                    v-if="view === 'profile' && !store.activeConversationId"
+                />
                 <ChatWindow v-else />
             </div>
         </div>
