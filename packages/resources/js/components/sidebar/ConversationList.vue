@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import ConversationListItem from "./ConversationListItem.vue";
 import SearchBar from "./SearchBar.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
@@ -29,14 +29,27 @@ const showArchived = computed(() => view.value === "archived");
 const searchQuery = ref("");
 const messageHits = ref([]);
 const searching = ref(false);
+const listRoot = ref(null);
 
-onMounted(() => {
-    refresh(showArchived.value ? { archived: true } : {});
+async function scrollActiveIntoView() {
+    const conversationId = store.activeConversationId;
+    if (!conversationId) return;
+    await nextTick();
+    listRoot.value
+        ?.querySelector(`[data-conversation-id="${conversationId}"]`)
+        ?.scrollIntoView({ block: "nearest" });
+}
+
+onMounted(async () => {
+    await refresh(showArchived.value ? { archived: true } : {});
+    await scrollActiveIntoView();
 });
 
 watch(showArchived, (archived) => {
     refresh(archived ? { archived: true } : {});
 });
+
+watch(() => store.activeConversationId, scrollActiveIntoView);
 
 function toggleArchived() {
     setView(showArchived.value ? "chats" : "archived");
@@ -268,6 +281,7 @@ function openHit(hit) {
 
         <ul
             v-else
+            ref="listRoot"
             class="cv-conversation-list__items flex-1 overflow-y-auto px-2 py-1"
         >
             <ConversationListItem

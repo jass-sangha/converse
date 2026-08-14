@@ -195,7 +195,7 @@ function formatSize(bytes) {
                     v-for="t in TABS"
                     :key="t.key"
                     type="button"
-                    class="w-1/3 shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold"
+                    class="flex-1 rounded-full px-4 py-1.5 text-sm font-semibold"
                     :class="
                         state.tab === t.key
                             ? 'bg-converse-accent text-converse-accentContrast'

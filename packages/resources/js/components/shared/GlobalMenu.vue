@@ -50,14 +50,6 @@ function go(view) {
             class="cv-animate-pop-in absolute right-0 top-full z-20 w-56 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
         >
             <button
-                v-if="view !== 'new-chat'"
-                type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
-                @click="go('new-chat')"
-            >
-                New chat
-            </button>
-            <button
                 v-if="view !== 'new-group'"
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"

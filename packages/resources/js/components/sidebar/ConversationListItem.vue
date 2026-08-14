@@ -128,6 +128,7 @@ const lastActivityLabel = computed(() => {
 
 <template>
     <li
+        :data-conversation-id="conversation.id"
         class="cv-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3 hover:bg-converse-surfaceHover"
         @click="$emit('select', conversation.id)"
     >
