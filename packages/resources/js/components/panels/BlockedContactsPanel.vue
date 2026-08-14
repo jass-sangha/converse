@@ -41,7 +41,7 @@ async function onUnblock(row) {
 
 <template>
     <div class="cv-blocked-contacts-panel flex h-full flex-col bg-converse-surface">
-        <SidebarScreenHeader title="Blocked contacts" @back="setView('profile')">
+        <SidebarScreenHeader title="Blocked contacts" @back="setView('chats')">
             <GlobalMenu />
         </SidebarScreenHeader>
 
