@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 import Avatar from "../shared/Avatar.vue";
+import AvatarPhotoControl from "../shared/AvatarPhotoControl.vue";
 import UserPicker from "../shared/UserPicker.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
@@ -38,6 +39,7 @@ const {
     mute,
     setHidden,
     updateAvatar,
+    removeAvatar,
 } = useConversations();
 const { clear: clearMessages } = useMessages();
 const { setView } = useSidebarUi();
@@ -174,10 +176,7 @@ function closeAddMember() {
     error.value = "";
 }
 
-async function onAvatarFileChange(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+async function onAvatarUpload(file) {
     avatarError.value = "";
     avatarUploading.value = true;
 
@@ -188,7 +187,20 @@ async function onAvatarFileChange(event) {
             e.response?.data?.message ?? "Could not update photo.";
     } finally {
         avatarUploading.value = false;
-        event.target.value = "";
+    }
+}
+
+async function onAvatarRemove() {
+    avatarError.value = "";
+    avatarUploading.value = true;
+
+    try {
+        await removeAvatar(props.conversation.id);
+    } catch (e) {
+        avatarError.value =
+            e.response?.data?.message ?? "Could not remove photo.";
+    } finally {
+        avatarUploading.value = false;
     }
 }
 
@@ -324,30 +336,7 @@ async function onDeleteChat() {
         <div
             class="cv-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-converse-border px-5 py-6 text-center"
         >
-            <label
-                v-if="isGroup && isAdmin"
-                class="group relative cursor-pointer rounded-full"
-            >
-                <Avatar
-                    :name="displayName ?? ''"
-                    :avatar-url="conversation.avatar_url"
-                    :size="96"
-                />
-                <span
-                    class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-xs font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
-                >
-                    {{ avatarUploading ? "Uploading…" : "Change photo" }}
-                </span>
-                <input
-                    type="file"
-                    accept="image/*"
-                    class="hidden"
-                    :disabled="avatarUploading"
-                    @change="onAvatarFileChange"
-                />
-            </label>
-            <Avatar
-                v-else
+            <AvatarPhotoControl
                 :name="displayName ?? ''"
                 :avatar-url="
                     isGroup
@@ -355,6 +344,10 @@ async function onDeleteChat() {
                         : otherParticipant?.avatar_url
                 "
                 :size="96"
+                :editable="isGroup && isAdmin"
+                :uploading="avatarUploading"
+                @upload="onAvatarUpload"
+                @remove="onAvatarRemove"
             />
             <p v-if="avatarError" class="text-xs text-converse-danger">
                 {{ avatarError }}

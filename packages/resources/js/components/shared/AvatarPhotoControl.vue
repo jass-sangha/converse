@@ -1,0 +1,146 @@
+<script setup>
+import { onBeforeUnmount, ref, watch } from "vue";
+import Avatar from "./Avatar.vue";
+import MediaViewerModal from "./MediaViewerModal.vue";
+import CameraCapture from "../composer/CameraCapture.vue";
+
+const props = defineProps({
+    name: { type: String, default: "" },
+    avatarUrl: { type: String, default: null },
+    size: { type: Number, default: 40 },
+    // When true, shows a "..." trigger with a Take photo / Upload photo / Remove photo
+    // menu. When false, the avatar is view-only — clicking it just opens the photo.
+    editable: { type: Boolean, default: false },
+    uploading: { type: Boolean, default: false },
+    // Which side the dropdown grows toward, so it stays on screen: 'left' for an avatar
+    // near the left edge of the layout (it grows rightward), 'right' for one near the
+    // right edge (it grows leftward, e.g. GroupInfoPanel which sits at the far right).
+    menuAlign: { type: String, default: "right" },
+});
+
+const emit = defineEmits(["upload", "remove"]);
+
+const viewerOpen = ref(false);
+const menuOpen = ref(false);
+const showCamera = ref(false);
+const inputEl = ref(null);
+const root = ref(null);
+
+function openViewer() {
+    if (props.avatarUrl) viewerOpen.value = true;
+}
+
+function onDocumentClick(event) {
+    if (root.value && !root.value.contains(event.target)) {
+        menuOpen.value = false;
+    }
+}
+
+watch(menuOpen, (open) => {
+    if (open) {
+        document.addEventListener("click", onDocumentClick);
+    } else {
+        document.removeEventListener("click", onDocumentClick);
+    }
+});
+
+onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
+
+function pickUpload() {
+    menuOpen.value = false;
+    inputEl.value?.click();
+}
+
+function onFileChange(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (file) emit("upload", file);
+}
+
+function pickCamera() {
+    menuOpen.value = false;
+    showCamera.value = true;
+}
+
+function onCameraCaptured(file) {
+    emit("upload", file);
+}
+
+function pickRemove() {
+    menuOpen.value = false;
+    emit("remove");
+}
+</script>
+
+<template>
+    <span ref="root" class="cv-avatar-photo-control group relative inline-flex shrink-0">
+        <button
+            type="button"
+            class="relative block shrink-0 overflow-hidden rounded-full disabled:cursor-default"
+            :class="avatarUrl ? 'cursor-pointer' : 'cursor-default'"
+            :disabled="!editable && !avatarUrl"
+            :title="avatarUrl ? 'View photo' : name"
+            @click="openViewer"
+        >
+            <Avatar :name="name" :avatar-url="avatarUrl" :size="size" />
+
+            <span
+                v-if="editable"
+                class="absolute inset-0 flex items-center justify-center gap-1.5 rounded-full bg-converse-overlay/0 text-[10px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
+                :class="{ 'pointer-events-none': uploading }"
+            >
+                <span v-if="avatarUrl" class="hover:underline" @click.stop="openViewer">View</span>
+                <span v-if="avatarUrl" class="opacity-60">&middot;</span>
+                <span class="hover:underline" @click.stop="menuOpen = !menuOpen">{{ uploading ? "…" : "Edit" }}</span>
+            </span>
+        </button>
+
+        <div
+            v-if="menuOpen"
+            class="cv-animate-pop-in absolute top-full z-20 mt-2 w-52 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            :class="menuAlign === 'left' ? 'left-0' : 'right-0'"
+        >
+            <button
+                type="button"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="pickCamera"
+            >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0 text-converse-textMuted"><path d="M9 4 7.5 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.5L15 4Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" /></svg>
+                <span>Take a photo</span>
+            </button>
+            <button
+                type="button"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="pickUpload"
+            >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-converse-textMuted"><path d="M12 20V9" /><path d="M7.5 13.5 12 9l4.5 4.5" /><path d="M5 4h14" /></svg>
+                <span>Upload photo</span>
+            </button>
+            <button
+                v-if="avatarUrl"
+                type="button"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-danger hover:bg-converse-surfaceHover"
+                @click="pickRemove"
+            >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0"><path d="M15 4V3H9v1H4v2h16V4h-5ZM6 8l1 12h10l1-12H6Z" /></svg>
+                <span>Remove photo</span>
+            </button>
+        </div>
+
+        <input ref="inputEl" type="file" accept="image/*" class="hidden" @change="onFileChange" />
+
+        <CameraCapture
+            v-if="showCamera"
+            :upload-as-attachment="false"
+            @captured="onCameraCaptured"
+            @close="showCamera = false"
+        />
+
+        <MediaViewerModal
+            v-if="viewerOpen"
+            :items="[{ url: avatarUrl, kind: 'image', original_filename: name }]"
+            :index="0"
+            @close="viewerOpen = false"
+        />
+    </span>
+</template>

@@ -96,6 +96,15 @@ class ConversationController extends Controller
         return new ConversationResource($updated->load(['participants', 'lastMessage']));
     }
 
+    public function destroyAvatar(Request $request, Conversation $conversation)
+    {
+        Gate::authorize('updateAvatar', $conversation);
+
+        $updated = $this->conversations->removeAvatar($conversation);
+
+        return new ConversationResource($updated->load(['participants', 'lastMessage']));
+    }
+
     public function mute(MuteConversationRequest $request, Conversation $conversation)
     {
         Gate::authorize('view', $conversation);

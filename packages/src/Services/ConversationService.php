@@ -88,6 +88,17 @@ class ConversationService implements ConversationServiceInterface
         return $this->conversations->update($conversation, ['avatar_path' => $path]);
     }
 
+    public function removeAvatar(Conversation $conversation): Conversation
+    {
+        $disk = config('chat.media.disk', 'chat');
+
+        if ($conversation->avatar_path) {
+            Storage::disk($disk)->delete($conversation->avatar_path);
+        }
+
+        return $this->conversations->update($conversation, ['avatar_path' => null]);
+    }
+
     public function mute(Conversation $conversation, Model $chatable, ?string $mutedUntil): void
     {
         $participant = $this->participants->findFor($conversation->id, $chatable);

@@ -30,6 +30,7 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::get('conversations/{conversation}', [ConversationController::class, 'show']);
         Route::patch('conversations/{conversation}', [ConversationController::class, 'update']);
         Route::post('conversations/{conversation}/avatar', [ConversationController::class, 'updateAvatar']);
+        Route::delete('conversations/{conversation}/avatar', [ConversationController::class, 'destroyAvatar']);
         Route::patch('conversations/{conversation}/mute', [ConversationController::class, 'mute']);
         Route::patch('conversations/{conversation}/archive', [ConversationController::class, 'archive']);
         Route::patch('conversations/{conversation}/pin', [ConversationController::class, 'pin']);

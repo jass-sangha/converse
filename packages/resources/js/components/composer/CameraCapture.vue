@@ -3,7 +3,14 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 import Modal from '../shared/Modal.vue';
 import { useMessages } from '../../composables/useMessages';
 
-const emit = defineEmits(['close', 'uploaded']);
+const props = defineProps({
+    // When true (the default), the captured photo is uploaded as a chat attachment and
+    // 'uploaded' is emitted. When false, the raw File is emitted via 'captured' instead,
+    // for callers (e.g. avatar editing) that need to send it to a different endpoint.
+    uploadAsAttachment: { type: Boolean, default: true },
+});
+
+const emit = defineEmits(['close', 'uploaded', 'captured']);
 
 const { uploadAttachment } = useMessages();
 const videoEl = ref(null);
@@ -32,10 +39,17 @@ async function capture() {
     canvas.height = videoEl.value.videoHeight;
     canvas.getContext('2d').drawImage(videoEl.value, 0, 0);
 
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+    if (!props.uploadAsAttachment) {
+        emit('captured', file);
+        emit('close');
+        return;
+    }
+
     uploading.value = true;
     try {
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
-        const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
         const attachment = await uploadAttachment(file);
         emit('uploaded', { attachment, type: 'image' });
         emit('close');

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import Avatar from "../shared/Avatar.vue";
+import AvatarPhotoControl from "../shared/AvatarPhotoControl.vue";
 import SettingRow from "../shared/SettingRow.vue";
 import UserPicker from "../shared/UserPicker.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
@@ -106,10 +107,7 @@ onMounted(async () => {
     await refreshBlocked();
 });
 
-async function onFileChange(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+async function onAvatarUpload(file) {
     uploadError.value = "";
     uploading.value = true;
 
@@ -120,7 +118,6 @@ async function onFileChange(event) {
             e.response?.data?.message ?? "Could not update photo.";
     } finally {
         uploading.value = false;
-        event.target.value = "";
     }
 }
 
@@ -215,27 +212,16 @@ async function addBlock() {
             <div
                 class="flex items-start gap-3.5 rounded-[24px] bg-converse-railBg p-4"
             >
-                <label
-                    class="group relative shrink-0 cursor-pointer rounded-full"
-                >
-                    <Avatar
-                        :name="me?.name ?? ''"
-                        :avatar-url="me?.avatar_url"
-                        :size="52"
-                    />
-                    <span
-                        class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-[10px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
-                    >
-                        {{ uploading ? "…" : "Edit" }}
-                    </span>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        class="hidden"
-                        :disabled="uploading"
-                        @change="onFileChange"
-                    />
-                </label>
+                <AvatarPhotoControl
+                    :name="me?.name ?? ''"
+                    :avatar-url="me?.avatar_url"
+                    :size="52"
+                    :editable="true"
+                    menu-align="left"
+                    :uploading="uploading || removingAvatar"
+                    @upload="onAvatarUpload"
+                    @remove="onRemoveAvatar"
+                />
                 <div class="min-w-0 flex-1">
                     <div class="text-[15.5px] font-semibold text-converse-text">
                         {{ me?.name ?? "—" }}
@@ -266,15 +252,6 @@ async function addBlock() {
                             <path d="M4 20h4L20 8l-4-4L4 16v4Z" />
                         </svg>
                     </div>
-                    <button
-                        v-if="me?.avatar_url"
-                        type="button"
-                        class="mt-1 text-xs text-converse-danger disabled:opacity-50"
-                        :disabled="removingAvatar"
-                        @click="onRemoveAvatar"
-                    >
-                        {{ removingAvatar ? "Removing…" : "Remove photo" }}
-                    </button>
                     <p
                         v-if="uploadError"
                         class="mt-1 text-xs text-converse-danger"

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, watch } from 'vue';
-import Avatar from '../shared/Avatar.vue';
+import AvatarPhotoControl from '../shared/AvatarPhotoControl.vue';
 import { useChatStore } from '../../store';
 import { chatableKey, chatableKeyOf } from '../../chatable';
 import { useUsers } from '../../composables/useUsers';
@@ -76,7 +76,7 @@ const subtitle = computed(() => {
         </button>
 
         <div class="cv-chat-header__info flex flex-1 cursor-pointer items-center gap-3 overflow-hidden" @click="emit('open-info')">
-            <Avatar :name="displayName" :avatar-url="avatarUrl" :size="44" />
+            <AvatarPhotoControl :name="displayName" :avatar-url="avatarUrl" :size="44" @click.stop />
             <div class="cv-chat-header__meta min-w-0">
                 <p class="truncate font-medium leading-tight">{{ displayName }}</p>
                 <p v-if="typingUsers.length" class="truncate text-xs text-converse-accent">{{ typingUsers.join(', ') }} typing&hellip;</p>

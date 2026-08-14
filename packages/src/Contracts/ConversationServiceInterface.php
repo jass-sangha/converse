@@ -24,6 +24,8 @@ interface ConversationServiceInterface
 
     public function updateAvatar(Conversation $conversation, UploadedFile $avatar): Conversation;
 
+    public function removeAvatar(Conversation $conversation): Conversation;
+
     public function mute(Conversation $conversation, Model $chatable, ?string $mutedUntil): void;
 
     /**

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useConversations } from "../../composables/useConversations";
 
 const props = defineProps({
@@ -20,8 +20,28 @@ const isFavourited = computed(
 );
 const isMuted = computed(() => !!props.conversation.me?.muted_until);
 
+const menuOpen = ref(false);
+const root = ref(null);
+
+function onDocumentClick(event) {
+    if (root.value && !root.value.contains(event.target)) {
+        menuOpen.value = false;
+    }
+}
+
+watch(menuOpen, (open) => {
+    if (open) {
+        document.addEventListener("click", onDocumentClick);
+    } else {
+        document.removeEventListener("click", onDocumentClick);
+    }
+});
+
+onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
+
 function toggleMute(event) {
     event.stopPropagation();
+    menuOpen.value = false;
     mute(
         props.conversation.id,
         isMuted.value
@@ -32,125 +52,60 @@ function toggleMute(event) {
 
 function toggleFavourite(event) {
     event.stopPropagation();
+    menuOpen.value = false;
     setFavourited(props.conversation.id, !isFavourited.value);
 }
 
 function togglePin(event) {
     event.stopPropagation();
+    menuOpen.value = false;
     setPinned(props.conversation.id, !isPinned.value);
 }
 </script>
 
 <template>
-    <span class="cv-conversation-row-actions flex items-center gap-0.5">
+    <span ref="root" class="cv-conversation-row-actions relative flex shrink-0 items-center">
         <button
             type="button"
-            :title="isMuted ? 'Unmute' : 'Mute'"
-            class="flex items-center justify-center rounded-full transition-opacity"
-            :class="
-                isMuted
-                    ? 'opacity-100'
-                    : 'text-converse-textMuted opacity-0 hover:bg-converse-surfaceHover group-hover:opacity-100 group-focus-within:opacity-100'
-            "
-            @click="toggleMute"
+            title="Chat options"
+            class="flex h-6 w-6 items-center justify-center rounded-full text-converse-textMuted opacity-0 transition-opacity hover:bg-converse-surfaceHover group-hover:opacity-100 group-focus-within:opacity-100"
+            :class="{ 'opacity-100': menuOpen }"
+            @click.stop="menuOpen = !menuOpen"
         >
-            <svg
-                v-if="isMuted"
-                viewBox="0 0 24 24"
-                width="13"
-                height="13"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.6"
-                stroke-linecap="round"
-            >
-                <path d="M18 16v-5a6 6 0 0 0-4.6-5.8M6 11v5l-2 2h13" />
-                <path d="M3 3l18 18" />
-            </svg>
-            <svg
-                v-else
-                viewBox="0 0 24 24"
-                width="13"
-                height="13"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.6"
-                stroke-linecap="round"
-            >
-                <path d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2h16Z" />
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
             </svg>
         </button>
-        <button
-            type="button"
-            :title="isFavourited ? 'Remove from favourites' : 'Favourite'"
-            class="flex items-center justify-center rounded-full transition-opacity"
-            :class="
-                isFavourited
-                    ? 'opacity-100'
-                    : 'text-converse-textMuted opacity-0 hover:bg-converse-surfaceHover group-hover:opacity-100 group-focus-within:opacity-100'
-            "
-            @click="toggleFavourite"
+
+        <div
+            v-if="menuOpen"
+            class="cv-animate-pop-in absolute right-0 top-full z-20 mt-1 w-52 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            @click.stop
         >
-            <svg
-                v-if="isFavourited"
-                viewBox="0 0 24 24"
-                width="13"
-                height="13"
-                fill="currentColor"
+            <button
+                type="button"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="toggleMute"
             >
-                <path
-                    d="M12 20s-7-4.4-7-9a3.9 3.9 0 0 1 7-2.4A3.9 3.9 0 0 1 19 11c0 4.6-7 9-7 9Z"
-                />
-            </svg>
-            <svg
-                v-else
-                viewBox="0 0 24 24"
-                width="13"
-                height="13"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" class="shrink-0 text-converse-textMuted"><path d="M18 16v-5a6 6 0 0 0-4.6-5.8M6 11v5l-2 2h13" /><path d="M3 3l18 18" /></svg>
+                <span>{{ isMuted ? "Unmute" : "Mute" }}</span>
+            </button>
+            <button
+                type="button"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="toggleFavourite"
             >
-                <path
-                    d="M12 20s-7-4.4-7-9a3.9 3.9 0 0 1 7-2.4A3.9 3.9 0 0 1 19 11c0 4.6-7 9-7 9Z"
-                />
-            </svg>
-        </button>
-        <button
-            type="button"
-            :title="isPinned ? 'Unpin' : 'Pin'"
-            class="flex items-center justify-center rounded-full transition-opacity"
-            :class="
-                isPinned
-                    ? 'opacity-100'
-                    : 'text-converse-textMuted opacity-0 hover:bg-converse-surfaceHover group-hover:opacity-100 group-focus-within:opacity-100'
-            "
-            @click="togglePin"
-        >
-            <svg
-                v-if="isPinned"
-                viewBox="0 0 24 24"
-                width="13"
-                height="13"
-                fill="currentColor"
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-converse-textMuted"><path d="M12 20s-7-4.4-7-9a3.9 3.9 0 0 1 7-2.4A3.9 3.9 0 0 1 19 11c0 4.6-7 9-7 9Z" /></svg>
+                <span>{{ isFavourited ? "Remove from favourites" : "Add to favourites" }}</span>
+            </button>
+            <button
+                type="button"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="togglePin"
             >
-                <path d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM8.6 13h6.8L12 21Z" />
-            </svg>
-            <svg
-                v-else
-                viewBox="0 0 24 24"
-                width="13"
-                height="13"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <path d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM12 13v8" />
-            </svg>
-        </button>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-converse-textMuted"><path d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM12 13v8" /></svg>
+                <span>{{ isPinned ? "Unpin" : "Pin" }}</span>
+            </button>
+        </div>
     </span>
 </template>

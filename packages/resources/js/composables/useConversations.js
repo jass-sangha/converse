@@ -77,6 +77,12 @@ export function useConversations() {
         return data.data;
     }
 
+    async function removeAvatar(conversationId) {
+        const { data } = await api.delete(`/conversations/${conversationId}/avatar`);
+        upsertConversation(data.data);
+        return data.data;
+    }
+
     async function setWallpaper(conversationId, wallpaper) {
         const { data } = await api.patch(`/conversations/${conversationId}/wallpaper`, { wallpaper });
         upsertConversation(data.data);
@@ -107,6 +113,7 @@ export function useConversations() {
         setFavourited,
         setHidden,
         updateAvatar,
+        removeAvatar,
         setWallpaper,
         leave,
         setDisappearing,
