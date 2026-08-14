@@ -12,7 +12,7 @@ const { list: listBlocked, unblock } = useBlockedUsers();
 const { resolve: resolveUsers, get: getUser } = useUsers();
 
 const blockedRows = ref([]);
-const loading = ref(true);
+const loading = ref(false);
 const unblockingKey = ref(null);
 const page = ref(0);
 const lastPage = ref(1);

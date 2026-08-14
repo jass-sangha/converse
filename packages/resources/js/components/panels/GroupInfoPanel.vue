@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 import Avatar from "../shared/Avatar.vue";
@@ -56,13 +56,10 @@ const previewMedia = ref([]);
 const viewerIndex = ref(null);
 
 // The full participant roster already arrives with the conversation payload — there's no
-// separate endpoint to page through — so "lazy" here means revealing it progressively as the
-// panel is scrolled rather than rendering a potentially large group's entire member list at once.
-const PARTICIPANTS_PAGE_SIZE = 30;
+// separate endpoint to page through — so "lazy" here means revealing it progressively (a "Show
+// more" button) rather than rendering a potentially large group's entire member list at once.
+const PARTICIPANTS_PAGE_SIZE = 10;
 const visibleParticipantCount = ref(PARTICIPANTS_PAGE_SIZE);
-const scrollBodyEl = ref(null);
-const participantsSentinelEl = ref(null);
-let participantsObserver = null;
 
 const visibleParticipants = computed(() =>
     (props.conversation.participants ?? []).slice(0, visibleParticipantCount.value),
@@ -71,18 +68,8 @@ const hasMoreParticipants = computed(
     () => visibleParticipantCount.value < (props.conversation.participants?.length ?? 0),
 );
 
-function onParticipantsIntersect(entries) {
-    if (entries[0].isIntersecting) visibleParticipantCount.value += PARTICIPANTS_PAGE_SIZE;
-}
-
-function setupParticipantsObserver() {
-    participantsObserver?.disconnect();
-    if (participantsSentinelEl.value) {
-        participantsObserver = new IntersectionObserver(onParticipantsIntersect, {
-            root: scrollBodyEl.value,
-        });
-        participantsObserver.observe(participantsSentinelEl.value);
-    }
+function revealMoreParticipants() {
+    visibleParticipantCount.value += PARTICIPANTS_PAGE_SIZE;
 }
 
 const isGroup = computed(() => props.conversation.type === "group");
@@ -179,8 +166,6 @@ async function loadPreviewMedia() {
 
 async function loadAll() {
     visibleParticipantCount.value = PARTICIPANTS_PAGE_SIZE;
-    await nextTick();
-    setupParticipantsObserver();
 
     const refs = (props.conversation.participants ?? []).map((p) => ({
         type: p.chatable_type,
@@ -193,7 +178,6 @@ async function loadAll() {
 
 onMounted(loadAll);
 watch(() => props.conversation.id, loadAll);
-watch(hasMoreParticipants, () => nextTick(setupParticipantsObserver));
 
 function openMediaTile(index) {
     viewerIndex.value = index;
@@ -341,7 +325,6 @@ watch(showMuteMenu, (open) => {
 onBeforeUnmount(() => {
     muteMenuClosed(closeMuteMenu);
     document.removeEventListener("click", onMuteMenuDocumentClick);
-    participantsObserver?.disconnect();
 });
 
 const muteHint = computed(() => {
@@ -395,7 +378,7 @@ async function onDeleteChat() {
             @back="emit('close')"
         />
 
-        <div ref="scrollBodyEl" class="cv-scroll min-h-0 flex-1 overflow-y-auto pb-8">
+        <div class="cv-scroll min-h-0 flex-1 overflow-y-auto pb-8">
             <div
                 class="cv-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-converse-border px-[22px] py-[26px] text-center"
             >
@@ -583,7 +566,14 @@ async function onDeleteChat() {
                                 </button>
                             </div>
                         </div>
-                        <div v-if="hasMoreParticipants" ref="participantsSentinelEl" class="h-1" />
+                        <button
+                            v-if="hasMoreParticipants"
+                            type="button"
+                            class="mt-1 rounded-2xl px-3 py-2 text-left text-[13px] font-semibold text-converse-accentText hover:bg-converse-surfaceHover"
+                            @click="revealMoreParticipants"
+                        >
+                            Show more
+                        </button>
                     </div>
                 </div>
             </template>
