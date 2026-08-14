@@ -1,10 +1,10 @@
 <script setup>
-import { ref } from 'vue';
-import UserPicker from '../shared/UserPicker.vue';
-import SidebarScreenHeader from '../shared/SidebarScreenHeader.vue';
-import GlobalMenu from '../shared/GlobalMenu.vue';
-import { useConversations } from '../../composables/useConversations';
-import { useSidebarUi } from '../../composables/useSidebarUi';
+import { ref } from "vue";
+import UserPicker from "../shared/UserPicker.vue";
+import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
+import GlobalMenu from "../shared/GlobalMenu.vue";
+import { useConversations } from "../../composables/useConversations";
+import { useSidebarUi } from "../../composables/useSidebarUi";
 
 const { setView } = useSidebarUi();
 const selected = ref([]);
@@ -15,7 +15,7 @@ async function start() {
 
     const conversation = await createPrivate(selected.value[0]);
     setActive(conversation.id);
-    setView('chats');
+    setView("chats");
 }
 </script>
 
@@ -25,7 +25,7 @@ async function start() {
             <GlobalMenu />
         </SidebarScreenHeader>
 
-        <div class="flex-1 overflow-y-auto p-4">
+        <div class="min-h-0 flex-1 p-4">
             <UserPicker v-model="selected" :multiple="false" />
         </div>
 

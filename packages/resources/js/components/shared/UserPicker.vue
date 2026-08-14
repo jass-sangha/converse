@@ -61,9 +61,20 @@ function toggle(user) {
 </script>
 
 <template>
-    <div class="cv-user-picker">
-        <div class="mb-3 flex items-center gap-2.5 rounded-full border border-converse-border bg-converse-surfaceHover px-4 h-11">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" class="shrink-0 text-converse-textDim">
+    <div class="cv-user-picker flex h-full min-h-0 flex-col">
+        <div
+            class="mb-3 flex h-11 shrink-0 items-center gap-2.5 rounded-full border border-converse-border bg-converse-surfaceHover px-4"
+        >
+            <svg
+                viewBox="0 0 24 24"
+                width="17"
+                height="17"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.75"
+                stroke-linecap="round"
+                class="shrink-0 text-converse-textDim"
+            >
                 <circle cx="11" cy="11" r="6.5" />
                 <path d="M16 16l4 4" />
             </svg>
@@ -76,8 +87,8 @@ function toggle(user) {
         </div>
 
         <div
-            v-if="modelValue.length"
-            class="cv-user-picker__selected mb-2 flex flex-wrap gap-2"
+            v-if="modelValue.length && multiple"
+            class="cv-user-picker__selected mb-2 flex shrink-0 flex-wrap gap-2"
         >
             <span
                 v-for="user in modelValue"
@@ -95,7 +106,7 @@ function toggle(user) {
             </span>
         </div>
 
-        <ul class="cv-user-picker__results overflow-y-auto">
+        <ul class="cv-user-picker__results min-h-0 flex-1 space-y-1 overflow-y-auto">
             <li
                 v-for="user in results"
                 :key="user.id"
@@ -112,10 +123,12 @@ function toggle(user) {
                     :avatar-url="user.avatar_url"
                     :size="46"
                 />
-                <span class="min-w-0 flex-1 truncate text-[14.5px] font-semibold text-converse-text">{{
-                    user.name
-                }}</span>
                 <span
+                    class="min-w-0 flex-1 truncate text-[14.5px] font-semibold text-converse-text"
+                    >{{ user.name }}</span
+                >
+                <span
+                    v-if="multiple"
                     class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2"
                     :class="
                         isSelected(user)
