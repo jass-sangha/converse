@@ -181,7 +181,11 @@ function formatSize(bytes) {
                 <input
                     v-model="state.search"
                     type="text"
-                    :placeholder="conversationId ? 'Search by filename' : 'Search by chat, contact, or filename'"
+                    :placeholder="
+                        conversationId
+                            ? 'Search by filename'
+                            : 'Search by chat, contact, or filename'
+                    "
                     class="cv-media-docs-links__search h-11 w-full rounded-full border border-converse-border bg-converse-surfaceHover pl-10 pr-4 text-sm text-converse-text focus:outline-none"
                 />
             </div>
@@ -233,7 +237,7 @@ function formatSize(bytes) {
                         />
                         <span
                             v-if="item.original_filename"
-                            class="absolute bottom-1 right-1 max-w-[calc(100%-8px)] truncate rounded-md bg-converse-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-converse-textMuted group-hover:max-w-none"
+                            class="absolute bottom-1 right-1 max-w-[calc(100%-20px)] truncate rounded-md bg-converse-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-converse-textMuted"
                             >{{ item.original_filename }}</span
                         >
                     </button>

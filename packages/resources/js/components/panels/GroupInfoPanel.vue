@@ -172,6 +172,7 @@ onMounted(loadAll);
 watch(() => props.conversation.id, loadAll);
 
 function onPanelDocumentClick(event) {
+    if (showAddMember.value || showMedia.value || showStarred.value) return;
     if (panelRoot.value && !panelRoot.value.contains(event.target)) {
         emit("close");
     }
@@ -386,14 +387,14 @@ async function onDeleteChat() {
 <template>
     <div
         ref="panelRoot"
-        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex flex-col bg-converse-surface sm:relative sm:z-auto sm:w-[330px] sm:shrink-0 sm:border-l sm:border-converse-border pb-12"
+        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex flex-col bg-converse-surface sm:relative sm:z-auto sm:w-[330px] sm:shrink-0 sm:border-l sm:border-converse-border"
     >
         <SidebarScreenHeader
             :title="isGroup ? 'Group info' : 'Contact info'"
             @back="emit('close')"
         />
 
-        <div class="cv-scroll min-h-0 flex-1 overflow-y-auto">
+        <div class="cv-scroll min-h-0 flex-1 overflow-y-auto pb-12">
             <div
                 class="cv-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-converse-border px-[22px] py-[26px] text-center"
             >
@@ -475,7 +476,7 @@ async function onDeleteChat() {
                         />
                         <span
                             v-if="item.original_filename"
-                            class="absolute bottom-1 right-1 max-w-[calc(100%-8px)] truncate rounded-md bg-converse-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-converse-textMuted group-hover:max-w-none"
+                            class="absolute bottom-1 right-1 max-w-[calc(100%-20px)] truncate rounded-md bg-converse-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-converse-textMuted"
                             >{{ item.original_filename }}</span
                         >
                     </button>
