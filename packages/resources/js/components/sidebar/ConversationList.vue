@@ -31,25 +31,26 @@ const messageHits = ref([]);
 const searching = ref(false);
 const listRoot = ref(null);
 
-async function scrollActiveIntoView() {
+async function scrollActiveIntoView({ block = "nearest" } = {}) {
     const conversationId = store.activeConversationId;
     if (!conversationId) return;
     await nextTick();
     listRoot.value
         ?.querySelector(`[data-conversation-id="${conversationId}"]`)
-        ?.scrollIntoView({ block: "nearest" });
+        ?.scrollIntoView({ block, behavior: "smooth" });
 }
 
 onMounted(async () => {
     await refresh(showArchived.value ? { archived: true } : {});
-    await scrollActiveIntoView();
+    // A freshly created chat/group sorts first — land the list at the top to show it.
+    await scrollActiveIntoView({ block: "start" });
 });
 
 watch(showArchived, (archived) => {
     refresh(archived ? { archived: true } : {});
 });
 
-watch(() => store.activeConversationId, scrollActiveIntoView);
+watch(() => store.activeConversationId, () => scrollActiveIntoView());
 
 function toggleArchived() {
     setView(showArchived.value ? "chats" : "archived");
