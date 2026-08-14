@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import {
     WALLPAPER_PATTERNS,
     WALLPAPER_COLORS,
@@ -14,44 +14,23 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue"]);
 
-const OPACITY_OPTIONS = [8, 12, 16, 20, 28, 36, 48, 60];
+// Native `<input type="color">` has no alpha channel in any shipping browser, so custom colors
+// can't offer a user-facing opacity control there — instead every custom pick gets this same
+// fixed low opacity, matching how the preset tints look (they're ~12-16% too).
+const CUSTOM_COLOR_OPACITY = 20;
 
 const { uploadAttachment } = useMessages();
 const imageInput = ref(null);
 const uploadingImage = ref(false);
-const opacityRoot = ref(null);
-const showOpacityMenu = ref(false);
-
-function onDocumentClick(event) {
-    if (opacityRoot.value && !opacityRoot.value.contains(event.target)) {
-        showOpacityMenu.value = false;
-    }
-}
-
-watch(showOpacityMenu, (open) => {
-    if (open) {
-        document.addEventListener("click", onDocumentClick);
-    } else {
-        document.removeEventListener("click", onDocumentClick);
-    }
-});
-
-onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 
 const current = computed(() => decodeWallpaper(props.modelValue));
 const isImage = computed(() => current.value.colorKeyOrHex?.startsWith("image:"));
-// A custom color is stored as an 8-digit "#rrggbbaa" hex so the chosen opacity travels with it —
-// legacy 6-digit "#rrggbb" values (picked before opacity existed) are treated as fully opaque.
+// Custom colors are stored as an 8-digit "#rrggbbaa" hex so the fixed tint opacity travels with
+// them; legacy 6-digit "#rrggbb" values (picked before this existed) are treated as fully opaque.
 const isCustomHex = computed(() => /^#[0-9a-fA-F]{6,8}$/.test(current.value.colorKeyOrHex ?? ""));
 const customBaseHex = computed(() =>
     isCustomHex.value ? current.value.colorKeyOrHex.slice(0, 7) : "#c67139",
 );
-const customOpacityPercent = computed(() => {
-    if (isCustomHex.value && current.value.colorKeyOrHex.length === 9) {
-        return Math.round((parseInt(current.value.colorKeyOrHex.slice(7, 9), 16) / 255) * 100);
-    }
-    return 20;
-});
 
 function hexWithAlpha(hex, opacityPercent) {
     const alphaHex = Math.round((opacityPercent / 100) * 255)
@@ -69,13 +48,7 @@ function pickColor(colorKey) {
 }
 
 function pickCustomColor(event) {
-    const hex = hexWithAlpha(event.target.value, customOpacityPercent.value);
-    emit("update:modelValue", encodeWallpaper(current.value.patternKey, hex));
-}
-
-function pickCustomOpacity(percent) {
-    showOpacityMenu.value = false;
-    const hex = hexWithAlpha(customBaseHex.value, percent);
+    const hex = hexWithAlpha(event.target.value, CUSTOM_COLOR_OPACITY);
     emit("update:modelValue", encodeWallpaper(current.value.patternKey, hex));
 }
 
@@ -200,34 +173,6 @@ async function onImageChange(event) {
                 class="hidden"
                 @change="onImageChange"
             />
-        </div>
-
-        <div v-if="isCustomHex && !isImage" ref="opacityRoot" class="relative mt-3 inline-block">
-            <button
-                type="button"
-                class="flex h-8 items-center gap-1.5 rounded-full border border-converse-border px-3 text-[12px] font-medium text-converse-textMuted hover:bg-converse-surfaceHover"
-                @click="showOpacityMenu = !showOpacityMenu"
-            >
-                Opacity: {{ customOpacityPercent }}%
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 9l6 6 6-6" />
-                </svg>
-            </button>
-            <div
-                v-if="showOpacityMenu"
-                class="cv-animate-pop-in absolute left-0 top-full z-20 mt-1 w-24 rounded-2xl border border-converse-border bg-converse-surface p-1.5 shadow-lg"
-            >
-                <button
-                    v-for="pct in OPACITY_OPTIONS"
-                    :key="pct"
-                    type="button"
-                    class="block w-full rounded-full px-3 py-1.5 text-left text-[12.5px] text-converse-text hover:bg-converse-surfaceHover"
-                    :class="{ 'font-semibold text-converse-accent': pct === customOpacityPercent }"
-                    @click="pickCustomOpacity(pct)"
-                >
-                    {{ pct }}%
-                </button>
-            </div>
         </div>
     </div>
 </template>
