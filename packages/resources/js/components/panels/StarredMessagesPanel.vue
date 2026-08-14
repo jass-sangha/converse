@@ -72,9 +72,47 @@ function conversationLabel(message) {
         : sender(message).name;
 }
 
+const THUMBNAIL_TYPES = new Set(["image", "video", "gif", "sticker"]);
+
+function thumbnail(message) {
+    if (!THUMBNAIL_TYPES.has(message.type)) return null;
+    const attachment = message.attachments?.[0];
+    return attachment?.thumbnail_url || attachment?.url || null;
+}
+
+const TYPE_LABELS = {
+    image: "📷 Photo",
+    video: "🎥 Video",
+    gif: "GIF",
+    sticker: "Sticker",
+    audio: "🎵 Audio",
+    voice: "🎤 Voice message",
+    poll: "📊 Poll",
+    event: "📅 Event",
+};
+
 function snippet(message) {
     if (message.deleted_for_everyone) return "This message was deleted";
-    return message.type === "text" ? message.body : `[${message.type}]`;
+    switch (message.type) {
+        case "text":
+            return message.body || "";
+        case "document":
+            return `📄 ${message.attachments?.[0]?.original_filename ?? "Document"}`;
+        case "location":
+            return `📍 ${message.metadata?.name || "Location"}`;
+        case "contact":
+            return `👤 ${message.metadata?.name || "Contact"}`;
+        case "poll":
+            return message.metadata?.question
+                ? `📊 ${message.metadata.question}`
+                : TYPE_LABELS.poll;
+        case "event":
+            return message.metadata?.title
+                ? `📅 ${message.metadata.title}`
+                : TYPE_LABELS.event;
+        default:
+            return TYPE_LABELS[message.type] ?? `[${message.type}]`;
+    }
 }
 
 function jumpTo(message) {
@@ -112,7 +150,14 @@ async function onUnstar(message) {
                     class="flex cursor-pointer items-center gap-3 rounded-[20px] px-3 py-2.5 hover:bg-converse-surfaceHover"
                     @click="jumpTo(message)"
                 >
+                    <img
+                        v-if="thumbnail(message)"
+                        :src="thumbnail(message)"
+                        alt=""
+                        class="h-11 w-11 shrink-0 rounded-xl object-cover"
+                    >
                     <Avatar
+                        v-else
                         :name="sender(message).name"
                         :avatar-url="sender(message).avatar_url"
                         :size="44"
