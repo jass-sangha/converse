@@ -118,17 +118,11 @@ function onScroll() {
         <div
             class="pointer-events-none absolute inset-0 bg-converse-chatBg"
             :style="{
-                backgroundColor: wallpaper.backgroundColor ?? undefined,
                 backgroundImage: wallpaper.backgroundImage ?? undefined,
                 backgroundSize: wallpaper.backgroundSize ?? undefined,
                 backgroundPosition: wallpaper.backgroundPosition ?? undefined,
             }"
-        >
-            <template v-if="wallpaper.isDefault">
-                <div class="absolute h-[320px] w-[320px] rounded-full bg-converse-bubbleOut opacity-55" style="top: -90px; right: -60px" />
-                <div class="absolute h-[380px] w-[380px] rounded-full bg-converse-sageTint opacity-50" style="bottom: -120px; left: 40px" />
-            </template>
-        </div>
+        />
 
         <div
             ref="scrollEl"

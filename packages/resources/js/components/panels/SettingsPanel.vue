@@ -5,6 +5,7 @@ import AvatarPhotoControl from "../shared/AvatarPhotoControl.vue";
 import SettingRow from "../shared/SettingRow.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
+import WallpaperPicker from "../shared/WallpaperPicker.vue";
 import { useChatStore } from "../../store";
 import { useProfile } from "../../composables/useProfile";
 import { usePreferences } from "../../composables/usePreferences";
@@ -16,7 +17,7 @@ import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
 const store = useChatStore();
 const { muteAll } = useNotifications();
 const { updateAvatar, removeAvatar } = useProfile();
-const { theme, setTheme } = usePreferences();
+const { theme, setTheme, defaultWallpaper, setDefaultWallpaper } = usePreferences();
 const { setView } = useSidebarUi();
 const { get: getPrivacySettings, update: updatePrivacySettings } =
     usePrivacySettings();
@@ -328,6 +329,21 @@ async function onMuteAll(scope, durationKey) {
                         {{ option.label }}
                     </span>
                 </button>
+            </div>
+
+            <div
+                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+            >
+                Default chat wallpaper
+            </div>
+            <p class="mx-3 mb-3 text-xs text-converse-textMuted">
+                Used for chats that don't have their own wallpaper set.
+            </p>
+            <div class="mx-3">
+                <WallpaperPicker
+                    :model-value="defaultWallpaper"
+                    @update:model-value="setDefaultWallpaper"
+                />
             </div>
         </div>
     </div>

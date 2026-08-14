@@ -162,7 +162,7 @@ function formatSize(bytes) {
 </script>
 
 <template>
-    <div class="cv-media-docs-links flex h-full flex-col">
+    <div class="cv-media-docs-links flex min-h-0 flex-1 flex-col">
         <div class="px-4 pt-3">
             <div class="relative">
                 <svg
@@ -212,7 +212,7 @@ function formatSize(bytes) {
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-3">
+        <div class="flex-1 overflow-y-auto p-3 pb-12">
             <template v-if="state.tab === 'media'">
                 <div v-if="mediaItems.length" class="grid grid-cols-3 gap-1">
                     <button
@@ -257,7 +257,7 @@ function formatSize(bytes) {
                             :href="item.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="flex items-center gap-2 rounded p-2 hover:bg-converse-surfaceHover"
+                            class="flex items-center gap-2 rounded-2xl p-2 hover:bg-converse-surfaceHover"
                         >
                             <span
                                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white"
@@ -305,7 +305,7 @@ function formatSize(bytes) {
                             :href="link.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="flex items-center gap-2 rounded p-2 hover:bg-converse-surfaceHover"
+                            class="flex items-center gap-2 rounded-2xl p-2 hover:bg-converse-surfaceHover"
                         >
                             <img
                                 v-if="link.image"

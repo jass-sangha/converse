@@ -63,7 +63,7 @@ async function onImageChange(event) {
                 :key="pattern.key"
                 type="button"
                 :title="pattern.label"
-                class="relative h-8 w-8 rounded-[10px] border border-converse-border bg-converse-surfaceHover"
+                class="relative h-10 w-10 rounded-[10px] border border-converse-border bg-converse-surfaceHover"
                 :class="{ 'opacity-50': isImage }"
                 :disabled="isImage"
                 :style="{
