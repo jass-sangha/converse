@@ -120,14 +120,6 @@ const subtitle = computed(() => {
             >
                 Details
             </button>
-            <button
-                type="button"
-                title="Chat info"
-                class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover sm:hidden"
-                @click="emit('open-info')"
-            >
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
-            </button>
         </div>
     </div>
 </template>

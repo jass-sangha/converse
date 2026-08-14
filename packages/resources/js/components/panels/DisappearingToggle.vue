@@ -77,15 +77,15 @@ function turnOff() {
         </button>
         <button
             type="button"
-            class="relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
+            class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
             :class="isOn ? 'bg-converse-sage' : 'bg-converse-border'"
             role="switch"
             :aria-checked="isOn"
             @click="toggleMenu"
         >
             <span
-                class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
-                :class="isOn ? 'translate-x-5' : 'translate-x-0.5'"
+                class="absolute top-[3px] h-[21px] w-[21px] rounded-full bg-white shadow transition-[left] duration-150 ease-out"
+                :class="isOn ? 'left-[22px]' : 'left-[3px]'"
             />
         </button>
 

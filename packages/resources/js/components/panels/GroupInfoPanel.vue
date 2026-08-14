@@ -9,8 +9,7 @@ import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
 import DisappearingToggle from "./DisappearingToggle.vue";
 import MediaDocsLinksGrid from "./MediaDocsLinksGrid.vue";
-import MuteDurationMenu from "../shared/MuteDurationMenu.vue";
-import { mutedUntilFor } from "../../muteDurations";
+import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
 import { useChatStore } from "../../store";
 import { chatableKey, chatableKeyOf } from "../../chatable";
 import { useUsers } from "../../composables/useUsers";
@@ -273,8 +272,8 @@ async function toggleBlockOther() {
     }
 }
 
-const showMuteMenu = ref(false);
 const muteMenuRoot = ref(null);
+const showMuteMenu = ref(false);
 const { opened: muteMenuOpened, closed: muteMenuClosed } =
     useExclusiveDropdown();
 const {
@@ -283,14 +282,14 @@ const {
     place: placeMuteMenu,
 } = useDropdownPlacement();
 
-function closeMuteMenu() {
-    showMuteMenu.value = false;
-}
-
 function toggleMuteMenu() {
     if (!showMuteMenu.value)
-        placeMuteMenu(muteMenuRoot.value, { preferredHeight: 300 });
+        placeMuteMenu(muteMenuRoot.value, { preferredHeight: 230 });
     showMuteMenu.value = !showMuteMenu.value;
+}
+
+function closeMuteMenu() {
+    showMuteMenu.value = false;
 }
 
 function onMuteMenuDocumentClick(event) {
@@ -312,6 +311,14 @@ watch(showMuteMenu, (open) => {
 onBeforeUnmount(() => {
     muteMenuClosed(closeMuteMenu);
     document.removeEventListener("click", onMuteMenuDocumentClick);
+});
+
+const muteHint = computed(() => {
+    if (!isMuted.value || !props.conversation.me?.muted_until) return null;
+    return `Muted until ${new Date(props.conversation.me.muted_until).toLocaleString([], {
+        dateStyle: "medium",
+        timeStyle: "short",
+    })}`;
 });
 
 async function onPickMuteDuration(durationKey) {
@@ -486,17 +493,9 @@ async function onDeleteChat() {
                         >Mute notifications</span
                     >
                     <span
-                        v-if="isMuted"
+                        v-if="muteHint"
                         class="block text-xs text-converse-textMuted"
-                        >Muted until
-                        {{
-                            new Date(
-                                conversation.me.muted_until,
-                            ).toLocaleString([], {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                            })
-                        }}</span
+                        >{{ muteHint }}</span
                     >
                 </button>
                 <button
@@ -515,15 +514,38 @@ async function onDeleteChat() {
 
                 <div
                     v-if="showMuteMenu"
-                    class="cv-animate-pop-in absolute right-4 z-20 overflow-y-auto rounded-[22px]"
+                    class="cv-animate-pop-in absolute right-4 z-20"
                     :class="muteMenuUp ? 'bottom-full mb-1' : 'top-full mt-1'"
-                    :style="{ maxHeight: muteMenuMaxHeight + 'px' }"
                 >
-                    <MuteDurationMenu
-                        :show-unmute="isMuted"
-                        @pick="onPickMuteDuration"
-                        @unmute="onUnmute"
-                    />
+                    <div
+                        class="w-48 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
+                        :style="{ maxHeight: muteMenuMaxHeight + 'px' }"
+                    >
+                        <p
+                            class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-converse-textMuted"
+                        >
+                            Mute for
+                        </p>
+                        <button
+                            v-for="option in MUTE_DURATIONS"
+                            :key="option.key"
+                            type="button"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
+                            @click="onPickMuteDuration(option.key)"
+                        >
+                            {{ option.label }}
+                        </button>
+                        <template v-if="isMuted">
+                            <div class="my-1 border-t border-converse-border" />
+                            <button
+                                type="button"
+                                class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-accent hover:bg-converse-surfaceHover"
+                                @click="onUnmute"
+                            >
+                                Unmute
+                            </button>
+                        </template>
+                    </div>
                 </div>
             </div>
 
