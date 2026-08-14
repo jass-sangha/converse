@@ -387,7 +387,7 @@ async function onDeleteChat() {
 <template>
     <div
         ref="panelRoot"
-        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex flex-col bg-converse-surface sm:relative sm:z-auto sm:w-[330px] sm:shrink-0 sm:border-l sm:border-converse-border"
+        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex w-full flex-col bg-converse-surface lg:relative lg:z-auto lg:w-[330px] lg:shrink-0 lg:border-l lg:border-converse-border"
     >
         <SidebarScreenHeader
             :title="isGroup ? 'Group info' : 'Contact info'"
