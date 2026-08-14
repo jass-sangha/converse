@@ -99,7 +99,7 @@ function togglePin(event) {
 
         <div
             v-if="menuOpen"
-            class="cv-animate-pop-in absolute right-0 z-20 w-52 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            class="cv-animate-pop-in absolute right-0 z-20 w-56 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
             :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
             :style="{ maxHeight: maxHeight + 'px' }"
             @click.stop
