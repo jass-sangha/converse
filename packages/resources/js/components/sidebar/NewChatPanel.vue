@@ -25,9 +25,7 @@ async function start() {
             <GlobalMenu />
         </SidebarScreenHeader>
 
-        <div class="min-h-0 flex-1 p-4">
-            <UserPicker v-model="selected" :multiple="false" />
-        </div>
+        <UserPicker v-model="selected" :multiple="false" class="min-h-0 flex-1" />
 
         <div class="border-t border-converse-border p-3">
             <button

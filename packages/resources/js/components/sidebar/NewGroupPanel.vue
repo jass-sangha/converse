@@ -55,16 +55,18 @@ async function create() {
             <GlobalMenu />
         </SidebarScreenHeader>
 
-        <div class="flex min-h-0 flex-1 flex-col p-4">
-            <div class="mb-3 flex shrink-0 justify-center">
-                <label class="group relative cursor-pointer rounded-full">
+        <UserPicker v-model="selected" :multiple="true" class="min-h-0 flex-1" />
+
+        <div class="cv-new-group-panel__details shrink-0 border-t border-converse-border p-3">
+            <div class="mb-3 flex items-center gap-3">
+                <label class="group relative shrink-0 cursor-pointer rounded-full">
                     <Avatar
                         :name="name || 'Group'"
                         :avatar-url="avatarPreview"
-                        :size="72"
+                        :size="48"
                     />
                     <span
-                        class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-xs font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
+                        class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-[9px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
                     >
                         Add photo
                     </span>
@@ -75,26 +77,23 @@ async function create() {
                         @change="onAvatarChange"
                     />
                 </label>
+
+                <div class="flex min-w-0 flex-1 flex-col gap-2">
+                    <input
+                        v-model="name"
+                        type="text"
+                        placeholder="Group name"
+                        class="cv-new-group-panel__name-input h-9 w-full rounded-full border border-converse-border bg-converse-surfaceHover px-4 text-[13.5px] text-converse-text outline-none focus:border-converse-accent"
+                    />
+                    <input
+                        v-model="description"
+                        type="text"
+                        placeholder="Description (optional)"
+                        class="cv-new-group-panel__description-input h-9 w-full rounded-full border border-converse-border bg-converse-surfaceHover px-4 text-[13.5px] text-converse-text outline-none focus:border-converse-accent"
+                    />
+                </div>
             </div>
 
-            <input
-                v-model="name"
-                type="text"
-                placeholder="Group name"
-                class="cv-new-group-panel__name-input mb-2 h-11 w-full shrink-0 rounded-full border border-converse-border bg-converse-surfaceHover px-4 text-[13.5px] text-converse-text outline-none focus:border-converse-accent"
-            />
-            <input
-                v-model="description"
-                type="text"
-                placeholder="Description (optional)"
-                class="cv-new-group-panel__description-input mb-2 h-11 w-full shrink-0 rounded-full border border-converse-border bg-converse-surfaceHover px-4 text-[13.5px] text-converse-text outline-none focus:border-converse-accent"
-            />
-            <div class="min-h-0 flex-1">
-                <UserPicker v-model="selected" :multiple="true" />
-            </div>
-        </div>
-
-        <div class="border-t border-converse-border p-3">
             <button
                 type="button"
                 class="cv-new-group-panel__submit w-full rounded-full bg-converse-accent py-2 text-sm font-semibold text-converse-accentContrast disabled:opacity-50"

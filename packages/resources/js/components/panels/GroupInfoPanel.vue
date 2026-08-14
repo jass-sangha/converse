@@ -778,13 +778,14 @@ async function onDeleteChat() {
             <SidebarScreenHeader title="Add participants" @back="closeAddMember">
                 <GlobalMenu />
             </SidebarScreenHeader>
-            <div class="flex-1 overflow-y-auto p-4">
+            <div class="flex min-h-0 flex-1 flex-col">
                 <UserPicker
                     v-model="picked"
                     :multiple="true"
                     :exclude="currentParticipantRefs"
+                    class="min-h-0 flex-1"
                 />
-                <p v-if="error" class="mt-2 text-xs text-converse-danger">
+                <p v-if="error" class="shrink-0 px-4 pb-2 text-xs text-converse-danger">
                     {{ error }}
                 </p>
             </div>

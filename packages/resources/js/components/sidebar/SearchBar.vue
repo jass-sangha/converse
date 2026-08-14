@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 
 const props = defineProps({
     autofocus: { type: Boolean, default: true },
+    placeholder: { type: String, default: 'Search chats and messages' },
 });
 
 const emit = defineEmits(['query']);
@@ -24,7 +25,7 @@ watch(query, (value) => {
                 v-model="query"
                 type="text"
                 :autofocus="autofocus"
-                placeholder="Search chats and messages"
+                :placeholder="placeholder"
                 class="cv-search-bar__input h-11 w-full rounded-full border border-converse-border bg-converse-surfaceHover pl-10 pr-4 text-sm text-converse-text focus:outline-none"
             >
         </div>

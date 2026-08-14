@@ -1,7 +1,8 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useUsers } from "../../composables/useUsers";
 import Avatar from "./Avatar.vue";
+import SearchBar from "../sidebar/SearchBar.vue";
 
 const props = defineProps({
     multiple: { type: Boolean, default: false },
@@ -13,9 +14,7 @@ const emit = defineEmits(["update:modelValue"]);
 
 const { search } = useUsers();
 
-const query = ref("");
 const rawResults = ref([]);
-let debounceTimer = null;
 
 const results = computed(() =>
     rawResults.value.filter(
@@ -26,12 +25,9 @@ const results = computed(() =>
     ),
 );
 
-watch(query, (value) => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-        rawResults.value = await search(value);
-    }, 250);
-});
+async function onQuery(value) {
+    rawResults.value = await search(value);
+}
 
 search("").then((users) => (rawResults.value = users));
 
@@ -62,33 +58,15 @@ function toggle(user) {
 
 <template>
     <div class="cv-user-picker flex h-full min-h-0 flex-col">
-        <div
-            class="mb-3 flex h-11 shrink-0 items-center gap-2.5 rounded-full border border-converse-border bg-converse-surfaceHover px-4"
-        >
-            <svg
-                viewBox="0 0 24 24"
-                width="17"
-                height="17"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.75"
-                stroke-linecap="round"
-                class="shrink-0 text-converse-textDim"
-            >
-                <circle cx="11" cy="11" r="6.5" />
-                <path d="M16 16l4 4" />
-            </svg>
-            <input
-                v-model="query"
-                type="text"
-                placeholder="Search people…"
-                class="cv-user-picker__search-input min-w-0 flex-1 border-none bg-transparent text-[13.5px] text-converse-text outline-none"
-            />
-        </div>
+        <SearchBar
+            :autofocus="false"
+            placeholder="Search people…"
+            @query="onQuery"
+        />
 
         <div
             v-if="modelValue.length && multiple"
-            class="cv-user-picker__selected mb-2 flex shrink-0 flex-wrap gap-2"
+            class="cv-user-picker__selected mb-2 flex shrink-0 flex-wrap gap-2 px-4"
         >
             <span
                 v-for="user in modelValue"
@@ -106,30 +84,31 @@ function toggle(user) {
             </span>
         </div>
 
-        <ul class="cv-user-picker__results min-h-0 flex-1 space-y-1 overflow-y-auto">
+        <ul class="cv-user-picker__results min-h-0 flex-1 overflow-y-auto px-2 py-1">
             <li
                 v-for="user in results"
                 :key="user.id"
-                class="cv-user-picker__result-row flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3"
-                :class="
-                    isSelected(user)
-                        ? 'bg-converse-accentTint'
-                        : 'hover:bg-converse-surfaceHover'
-                "
+                class="cv-user-picker__result-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3 hover:bg-converse-surfaceHover"
                 @click="toggle(user)"
             >
+                <div
+                    v-if="isSelected(user)"
+                    class="pointer-events-none absolute inset-0 rounded-[20px] bg-converse-accentTint"
+                />
+
                 <Avatar
+                    class="relative shrink-0"
                     :name="user.name"
                     :avatar-url="user.avatar_url"
                     :size="46"
                 />
                 <span
-                    class="min-w-0 flex-1 truncate text-[14.5px] font-semibold text-converse-text"
+                    class="relative min-w-0 flex-1 truncate text-[14.5px] font-semibold text-converse-text"
                     >{{ user.name }}</span
                 >
                 <span
                     v-if="multiple"
-                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2"
+                    class="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2"
                     :class="
                         isSelected(user)
                             ? 'border-converse-accent bg-converse-accent text-white'
@@ -151,7 +130,7 @@ function toggle(user) {
             </li>
             <li
                 v-if="!results.length"
-                class="px-3 py-2 text-[13px] text-converse-textDim"
+                class="cv-user-picker__empty p-4 text-center text-sm text-converse-textMuted"
             >
                 No people found.
             </li>
