@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import {
     WALLPAPER_PATTERNS,
     WALLPAPER_COLORS,
@@ -7,6 +7,8 @@ import {
     encodeWallpaper,
 } from "../../wallpapers";
 import { useMessages } from "../../composables/useMessages";
+import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
+import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 
 const props = defineProps({
     modelValue: { type: String, default: null },
@@ -22,6 +24,17 @@ const CUSTOM_COLOR_OPACITY = 20;
 const { uploadAttachment } = useMessages();
 const imageInput = ref(null);
 const uploadingImage = ref(false);
+
+// Custom color opens as a plain in-DOM dropdown — the same placement mechanism every other menu
+// in the app uses (SettingRow's option lists, the mute-duration menu, etc.) — rather than the
+// browser's own native color-picker dialog, whose on-screen position we have no control over and
+// which clips against a viewport edge this panel is docked flush against.
+const colorMenuRoot = ref(null);
+const showColorMenu = ref(false);
+const { opened: colorMenuOpened, closed: colorMenuClosed } = useExclusiveDropdown();
+const { openUp: colorMenuOpenUp, maxHeight: colorMenuMaxHeight, place: placeColorMenu } =
+    useDropdownPlacement();
+const hexDraft = ref("");
 
 const current = computed(() => decodeWallpaper(props.modelValue));
 const isImage = computed(() => current.value.colorKeyOrHex?.startsWith("image:"));
@@ -47,9 +60,50 @@ function pickColor(colorKey) {
     emit("update:modelValue", encodeWallpaper(current.value.patternKey, colorKey));
 }
 
+function applyCustomColor(hex) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+    const withAlpha = hexWithAlpha(hex, CUSTOM_COLOR_OPACITY);
+    emit("update:modelValue", encodeWallpaper(current.value.patternKey, withAlpha));
+}
+
 function pickCustomColor(event) {
-    const hex = hexWithAlpha(event.target.value, CUSTOM_COLOR_OPACITY);
-    emit("update:modelValue", encodeWallpaper(current.value.patternKey, hex));
+    hexDraft.value = event.target.value;
+    applyCustomColor(event.target.value);
+}
+
+function onHexDraftInput() {
+    let value = hexDraft.value.trim();
+    if (value && !value.startsWith("#")) value = `#${value}`;
+    applyCustomColor(value);
+}
+
+function closeColorMenu() {
+    showColorMenu.value = false;
+}
+
+function onColorMenuDocumentClick(event) {
+    if (colorMenuRoot.value && !colorMenuRoot.value.contains(event.target)) closeColorMenu();
+}
+
+watch(showColorMenu, (open) => {
+    if (open) {
+        hexDraft.value = customBaseHex.value;
+        colorMenuOpened(closeColorMenu);
+        document.addEventListener("click", onColorMenuDocumentClick);
+    } else {
+        colorMenuClosed(closeColorMenu);
+        document.removeEventListener("click", onColorMenuDocumentClick);
+    }
+});
+
+onBeforeUnmount(() => {
+    colorMenuClosed(closeColorMenu);
+    document.removeEventListener("click", onColorMenuDocumentClick);
+});
+
+function toggleColorMenu() {
+    if (!showColorMenu.value) placeColorMenu(colorMenuRoot.value, { preferredHeight: 220 });
+    showColorMenu.value = !showColorMenu.value;
 }
 
 function pickImage() {
@@ -135,36 +189,56 @@ async function onImageChange(event) {
                     class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
                 />
             </button>
-            <label
-                class="relative h-8 w-8 cursor-pointer rounded-full border border-converse-border"
-                title="Custom color"
-                :style="{ backgroundColor: isCustomHex ? current.colorKeyOrHex : 'transparent' }"
-            >
-                <input
-                    type="color"
-                    :value="customBaseHex"
-                    class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                    @input="pickCustomColor"
-                />
-                <svg
-                    v-if="!isCustomHex"
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="pointer-events-none absolute inset-0 m-auto text-converse-textMuted"
+            <div ref="colorMenuRoot" data-menu-root="1" class="relative">
+                <button
+                    type="button"
+                    class="relative h-8 w-8 rounded-full border border-converse-border"
+                    title="Custom color"
+                    :style="{ backgroundColor: isCustomHex ? current.colorKeyOrHex : 'transparent' }"
+                    @click="toggleColorMenu"
                 >
-                    <path d="M12 3c-3.5 4-6.5 8-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 11 15.5 7 12 3Z" />
-                </svg>
-                <span
-                    v-if="!isImage && isCustomHex"
-                    class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
-                />
-            </label>
+                    <svg
+                        v-if="!isCustomHex"
+                        viewBox="0 0 24 24"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.25"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="pointer-events-none absolute inset-0 m-auto text-converse-textMuted"
+                    >
+                        <path d="M12 3c-3.5 4-6.5 8-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 11 15.5 7 12 3Z" />
+                    </svg>
+                    <span
+                        v-if="!isImage && isCustomHex"
+                        class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
+                    />
+                </button>
+
+                <div
+                    v-if="showColorMenu"
+                    class="cv-animate-pop-in absolute right-0 z-20 w-[190px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-3 shadow-lg"
+                    :class="colorMenuOpenUp ? 'bottom-full mb-1' : 'top-full mt-1'"
+                    :style="{ maxHeight: colorMenuMaxHeight + 'px' }"
+                >
+                    <input
+                        type="color"
+                        :value="customBaseHex"
+                        class="h-9 w-full cursor-pointer rounded-lg border border-converse-border bg-transparent"
+                        @input="pickCustomColor"
+                    />
+                    <input
+                        v-model="hexDraft"
+                        type="text"
+                        maxlength="7"
+                        placeholder="#rrggbb"
+                        class="mt-2 h-8 w-full rounded-lg border border-converse-border bg-converse-surfaceHover px-2 text-center text-xs uppercase tracking-wide text-converse-text outline-none focus:border-converse-accent"
+                        @input="onHexDraftInput"
+                    />
+                </div>
+            </div>
             <button
                 type="button"
                 title="Upload photo"
