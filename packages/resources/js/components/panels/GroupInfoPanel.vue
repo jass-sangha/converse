@@ -326,7 +326,9 @@ onBeforeUnmount(() => {
 
 const muteHint = computed(() => {
     if (!isMuted.value || !props.conversation.me?.muted_until) return null;
-    return `Muted until ${new Date(props.conversation.me.muted_until).toLocaleString([], {
+    return `Muted until ${new Date(
+        props.conversation.me.muted_until,
+    ).toLocaleString([], {
         dateStyle: "medium",
         timeStyle: "short",
     })}`;
@@ -388,7 +390,9 @@ async function onDeleteChat() {
                 {{ avatarError }}
             </p>
             <div>
-                <p class="font-display text-[21px] font-normal text-converse-text">
+                <p
+                    class="font-display text-[21px] font-normal text-converse-text"
+                >
                     {{ displayName }}
                 </p>
                 <p
@@ -403,29 +407,6 @@ async function onDeleteChat() {
                 >
                     {{ conversation.description }}
                 </p>
-            </div>
-            <div class="mt-1 flex gap-2">
-                <button
-                    type="button"
-                    class="h-9 rounded-full bg-converse-sageTint px-[15px] text-xs font-semibold text-converse-sageText hover:bg-converse-sage"
-                    @click="startCall(conversation, { video: false })"
-                >
-                    Call
-                </button>
-                <button
-                    type="button"
-                    class="h-9 rounded-full border border-converse-border px-[15px] text-xs font-semibold text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click="toggleQuickMute"
-                >
-                    {{ isMuted ? "Unmute" : "Mute" }}
-                </button>
-                <button
-                    type="button"
-                    class="h-9 rounded-full border border-converse-border px-[15px] text-xs font-semibold text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click="emit('close')"
-                >
-                    Close
-                </button>
             </div>
         </div>
 
@@ -493,7 +474,10 @@ async function onDeleteChat() {
                     @click="onPickWallpaper(preset.key)"
                 >
                     <span
-                        v-if="(conversation.me?.wallpaper ?? 'default') === preset.key"
+                        v-if="
+                            (conversation.me?.wallpaper ?? 'default') ===
+                            preset.key
+                        "
                         class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
                     />
                 </button>
@@ -555,7 +539,9 @@ async function onDeleteChat() {
                             :size="34"
                         />
                         <div class="min-w-0 flex-1">
-                            <p class="truncate text-[13.5px] font-medium text-converse-text">
+                            <p
+                                class="truncate text-[13.5px] font-medium text-converse-text"
+                            >
                                 {{
                                     get({
                                         type: participant.chatable_type,
@@ -598,7 +584,7 @@ async function onDeleteChat() {
             </div>
         </template>
 
-        <div class="flex flex-col gap-0.5 px-[22px] py-5">
+        <div class="flex flex-col gap-0.5 px-[10px] py-5">
             <button
                 type="button"
                 class="flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
@@ -632,7 +618,10 @@ async function onDeleteChat() {
                 class="flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
                 @click="toggleBlockOther"
             >
-                <span>{{ isOtherBlocked ? "Unblock" : "Block" }} {{ otherParticipant?.name }}</span>
+                <span
+                    >{{ isOtherBlocked ? "Unblock" : "Block" }}
+                    {{ otherParticipant?.name }}</span
+                >
             </button>
             <button
                 v-else
@@ -654,7 +643,7 @@ async function onDeleteChat() {
 
         <div
             ref="muteMenuRoot"
-            class="relative mx-[22px] flex flex-col gap-0.5 border-t border-converse-border py-3.5"
+            class="relative mx-[10px] flex flex-col gap-0.5 border-t border-converse-border py-3.5"
         >
             <div class="flex items-center gap-3.5 rounded-2xl px-3.5 py-3">
                 <svg
@@ -668,8 +657,13 @@ async function onDeleteChat() {
                         d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z"
                     />
                 </svg>
-                <button type="button" class="flex-1 text-left" @click="toggleMuteMenu">
-                    <span class="block text-[13.5px] font-medium text-converse-text"
+                <button
+                    type="button"
+                    class="flex-1 text-left"
+                    @click="toggleMuteMenu"
+                >
+                    <span
+                        class="block text-[13.5px] font-medium text-converse-text"
                         >Notifications</span
                     >
                     <span
