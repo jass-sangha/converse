@@ -146,11 +146,20 @@ async function onImageChange(event) {
                     class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                     @input="pickCustomColor"
                 />
-                <span
+                <svg
                     v-if="!isCustomHex"
-                    class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs"
-                    >🎨</span
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.25"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="pointer-events-none absolute inset-0 m-auto text-converse-textMuted"
                 >
+                    <path d="M12 3c-3.5 4-6.5 8-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 11 15.5 7 12 3Z" />
+                </svg>
                 <span
                     v-if="!isImage && isCustomHex"
                     class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
@@ -164,7 +173,21 @@ async function onImageChange(event) {
                 :disabled="uploadingImage"
                 @click="pickImage"
             >
-                <span class="text-xs">🖼️</span>
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.25"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-converse-textMuted"
+                >
+                    <rect x="3" y="4" width="18" height="16" rx="4" />
+                    <circle cx="8.5" cy="9.5" r="1.4" />
+                    <path d="M4 17l4.5-5 4 4 2.5-2.5L20 17" />
+                </svg>
             </button>
             <input
                 ref="imageInput"
