@@ -124,7 +124,7 @@ function onScroll() {
 
         <div
             ref="scrollEl"
-            class="cv-message-list relative h-full overflow-y-auto px-3 pb-2 pt-10 sm:px-12"
+            class="cv-message-list relative h-full overflow-y-auto px-3 pb-24 pt-10 sm:px-12"
             @scroll="onScroll"
         >
             <div ref="sentinelEl" class="cv-message-list__sentinel h-1" />

@@ -203,7 +203,8 @@ async function submit() {
 </script>
 
 <template>
-    <div class="cv-composer bg-converse-chatBg p-3">
+    <div class="cv-composer bg-transparent px-3 pb-3 pt-2 sm:px-12">
+      <div class="mx-auto max-w-7xl">
         <ReplyPreview
             v-if="replyTo"
             :reply-to="replyTo"
@@ -262,7 +263,7 @@ async function submit() {
                     </div>
                 </div>
 
-                <div class="flex min-w-0 flex-1 items-center rounded-full bg-converse-surface px-[22px] py-2 shadow-sm">
+                <div class="flex h-[52px] min-w-0 flex-1 items-center rounded-full bg-converse-surface px-[22px] shadow-sm">
                     <input
                         ref="inputEl"
                         v-model="body"
@@ -284,6 +285,7 @@ async function submit() {
                 <span v-else>Save</span>
             </button>
         </form>
+      </div>
 
         <PollComposerModal v-if="showPollModal" @close="showPollModal = false" @create="onCreatePoll" />
         <EventComposerModal v-if="showEventModal" @close="showEventModal = false" @create="onCreateEvent" />

@@ -537,7 +537,7 @@ async function onDeleteChat() {
                     <div
                         v-for="participant in conversation.participants"
                         :key="chatableKeyOf(participant)"
-                        class="flex items-center gap-[11px] rounded-2xl px-1.5 py-2 hover:bg-converse-surfaceHover"
+                        class="group flex items-center gap-[11px] rounded-2xl px-1.5 py-2 hover:bg-converse-surfaceHover"
                     >
                         <Avatar
                             :name="
@@ -572,7 +572,7 @@ async function onDeleteChat() {
                         </div>
                         <div
                             v-if="isAdmin && !isMe(participant)"
-                            class="flex shrink-0 items-center gap-2.5"
+                            class="flex shrink-0 items-center gap-2.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
                         >
                             <button
                                 type="button"
@@ -656,8 +656,19 @@ async function onDeleteChat() {
             ref="muteMenuRoot"
             class="relative mx-[22px] flex flex-col gap-0.5 border-t border-converse-border py-3.5"
         >
-            <div class="flex items-center justify-between gap-2.5 rounded-2xl px-3.5 py-3">
-                <button type="button" class="text-left" @click="toggleMuteMenu">
+            <div class="flex items-center gap-3.5 rounded-2xl px-3.5 py-3">
+                <svg
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    class="shrink-0 text-converse-textMuted"
+                >
+                    <path
+                        d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z"
+                    />
+                </svg>
+                <button type="button" class="flex-1 text-left" @click="toggleMuteMenu">
                     <span class="block text-[13.5px] font-medium text-converse-text"
                         >Notifications</span
                     >
