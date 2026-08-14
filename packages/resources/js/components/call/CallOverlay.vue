@@ -75,7 +75,7 @@ watch(remoteStream, (stream) => {
         <div class="flex flex-1 min-h-0 w-full flex-col items-center justify-center gap-6 px-6">
             <div v-if="video" class="relative aspect-[16/10] w-full max-w-[760px] overflow-hidden rounded-[32px] bg-converse-railBg shadow-lg">
                 <video ref="remoteVideoEl" autoplay playsinline class="h-full w-full object-cover" />
-                <div class="absolute bottom-4 right-4 aspect-[4/3] w-36 overflow-hidden rounded-2xl border-2 border-converse-surface bg-converse-railBg">
+                <div class="absolute bottom-4 right-4 aspect-[4/3] w-[150px] overflow-hidden rounded-2xl border-2 border-converse-surface bg-converse-railBg">
                     <video ref="localVideoEl" autoplay playsinline muted class="h-full w-full object-cover" />
                 </div>
             </div>

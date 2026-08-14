@@ -40,6 +40,8 @@ export default {
                     sageTint: withOpacity('--cv-sage-tint'),
                     sageLine: withOpacity('--cv-sage-line'),
                     sageText: withOpacity('--cv-sage-text'),
+                    dangerContrast: withOpacity('--cv-danger-contrast'),
+                    tick: withOpacity('--cv-tick'),
                 },
             },
             borderRadius: {

@@ -32,6 +32,9 @@
     --cv-sage-tint: 225 238 204;
     --cv-sage-line: 174 191 146;
     --cv-sage-text: 61 71 43;
+    --cv-danger-contrast: 255 255 255;
+    --cv-tick: 161 151 134;
+    --cv-dots: rgba(32, 30, 29, 0.07);
 }
 
 :root[data-theme='dark'] {
@@ -58,4 +61,7 @@
     --cv-sage-tint: 61 71 43;
     --cv-sage-line: 114 129 87;
     --cv-sage-text: 240 250 225;
+    --cv-danger-contrast: 32 30 29;
+    --cv-tick: 161 151 134;
+    --cv-dots: rgba(249, 244, 237, 0.07);
 }

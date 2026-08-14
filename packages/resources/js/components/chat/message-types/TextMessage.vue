@@ -4,6 +4,7 @@ import LinkPreviewCard from '../LinkPreviewCard.vue';
 
 const props = defineProps({
     message: { type: Object, required: true },
+    isOwn: { type: Boolean, default: false },
 });
 
 const URL_PATTERN = /(https?:\/\/\S+)/g;
@@ -35,6 +36,6 @@ const segments = computed(() => {
                 <template v-else>{{ segment.text }}</template>
             </template>
         </p>
-        <LinkPreviewCard v-if="message.metadata?.link_preview" :preview="message.metadata.link_preview" />
+        <LinkPreviewCard v-if="message.metadata?.link_preview" :preview="message.metadata.link_preview" :is-own="isOwn" />
     </div>
 </template>

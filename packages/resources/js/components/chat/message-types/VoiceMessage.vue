@@ -3,21 +3,26 @@ import { ref, computed } from 'vue';
 
 const props = defineProps({
     message: { type: Object, required: true },
+    isOwn: { type: Boolean, default: false },
 });
 
 const audioEl = ref(null);
 const playing = ref(false);
+const currentTime = ref(0);
+const duration = ref(Number(props.message.metadata?.duration) || 0);
+const rate = ref(1);
 
 const attachment = computed(() => props.message.attachments?.[0] ?? null);
 
-const bars = computed(() => {
-    const waveform = props.message.metadata?.waveform;
-    if (Array.isArray(waveform) && waveform.length) {
-        return waveform;
-    }
-    // Deterministic filler pattern when no real waveform data is available.
-    return Array.from({ length: 24 }, (_, i) => 4 + ((i * 7) % 16));
+const progressPct = computed(() => {
+    if (!duration.value) return 0;
+    return Math.min(100, Math.max(0, (currentTime.value / duration.value) * 100));
 });
+
+function fmt(seconds) {
+    const s = Math.max(0, Math.round(seconds || 0));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
 
 function toggle() {
     if (!audioEl.value) return;
@@ -28,26 +33,73 @@ function toggle() {
         audioEl.value.play();
     }
 }
+
+function onLoadedMetadata() {
+    if (audioEl.value && Number.isFinite(audioEl.value.duration)) {
+        duration.value = audioEl.value.duration;
+    }
+}
+
+function onTimeUpdate() {
+    if (audioEl.value) currentTime.value = audioEl.value.currentTime;
+}
+
+function seek(event) {
+    if (!audioEl.value || !duration.value) return;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const frac = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+    audioEl.value.currentTime = frac * duration.value;
+    currentTime.value = audioEl.value.currentTime;
+}
+
+function cycleRate() {
+    rate.value = rate.value === 1 ? 1.5 : rate.value === 1.5 ? 2 : 1;
+    if (audioEl.value) audioEl.value.playbackRate = rate.value;
+}
 </script>
 
 <template>
-    <div class="cv-voice-message flex items-center gap-2">
+    <div class="cv-voice-message flex w-full items-center gap-3 py-0.5 pb-1">
         <button
             type="button"
-            class="cv-voice-message__toggle flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-converse-accent text-white"
+            :title="playing ? 'Pause' : 'Play'"
+            class="cv-voice-message__toggle flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full"
+            :class="isOwn ? 'bg-converse-accent text-converse-accentContrast hover:opacity-90' : 'bg-converse-sage text-converse-sageContrast hover:opacity-90'"
             @click="toggle"
         >
-            {{ playing ? '❚❚' : '▶' }}
+            <svg v-if="playing" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.4" /><rect x="13.5" y="5" width="4" height="14" rx="1.4" /></svg>
+            <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5.5l11 6.5-11 6.5Z" /></svg>
         </button>
 
-        <div class="cv-voice-message__waveform flex h-6 flex-1 items-end gap-0.5">
-            <span
-                v-for="(height, i) in bars"
-                :key="i"
-                class="cv-voice-message__bar w-0.5 rounded bg-converse-accent/60"
-                :style="{ height: height + 'px' }"
-            />
+        <div class="min-w-0 flex-1">
+            <div class="relative flex h-[22px] cursor-pointer items-center" @pointerdown="seek">
+                <div class="absolute inset-x-0 h-1 rounded-full bg-converse-border" />
+                <div
+                    class="absolute h-1 rounded-full"
+                    :class="isOwn ? 'bg-converse-accent' : 'bg-converse-sage'"
+                    :style="{ width: progressPct + '%' }"
+                />
+                <div
+                    class="absolute h-[13px] w-[13px] -ml-1.5 rounded-full shadow"
+                    :class="isOwn ? 'bg-converse-accent' : 'bg-converse-sage'"
+                    :style="{ left: progressPct + '%' }"
+                />
+            </div>
+            <div class="mt-px flex items-center justify-between gap-2">
+                <span class="text-[11px] tabular-nums text-converse-textDim">{{ fmt(currentTime) }}</span>
+                <span class="text-[11px] tabular-nums text-converse-textDim">{{ fmt(duration) }}</span>
+            </div>
         </div>
+
+        <button
+            type="button"
+            title="Playback speed"
+            class="flex h-[26px] min-w-[38px] shrink-0 items-center justify-center rounded-full bg-converse-surfaceHover px-[9px] text-[11.5px] font-bold text-converse-textMuted hover:text-converse-accentText"
+            @click="cycleRate"
+        >
+            {{ rate }}&times;
+        </button>
 
         <audio
             v-if="attachment"
@@ -57,6 +109,8 @@ function toggle() {
             @play="playing = true"
             @pause="playing = false"
             @ended="playing = false"
+            @loadedmetadata="onLoadedMetadata"
+            @timeupdate="onTimeUpdate"
         />
     </div>
 </template>

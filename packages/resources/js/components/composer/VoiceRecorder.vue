@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
         v-if="!recording"
         type="button"
         title="Record a voice message"
-        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-converse-accent text-converse-accentContrast shadow-sm"
+        class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-converse-accent text-converse-accentContrast shadow-sm"
         @click="start"
     >
         <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>

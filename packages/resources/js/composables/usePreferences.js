@@ -23,7 +23,7 @@ const darkMediaQuery = typeof window !== 'undefined' ? window.matchMedia?.('(pre
 const systemPrefersDark = ref(darkMediaQuery?.matches ?? false);
 
 const theme = ref(read('theme', 'system'));
-const sidebarWidth = ref(read('sidebarWidth', 320));
+const sidebarWidth = ref(read('sidebarWidth', 352));
 const settingsPanelWidth = ref(read('settingsPanelWidth', 320));
 
 const effectiveTheme = computed(() => (theme.value === 'system' ? (systemPrefersDark.value ? 'dark' : 'light') : theme.value));

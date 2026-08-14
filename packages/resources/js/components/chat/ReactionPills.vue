@@ -13,7 +13,7 @@ const emit = defineEmits(['open']);
             v-for="reaction in reactions"
             :key="reaction.emoji"
             type="button"
-            class="cv-reaction-pills__pill flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-xs shadow-sm"
+            class="cv-reaction-pills__pill flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs shadow-sm"
             :class="reaction.self ? 'border-converse-accent bg-converse-bubbleOut' : 'border-converse-border bg-converse-surface'"
             @click.stop="emit('open')"
         >

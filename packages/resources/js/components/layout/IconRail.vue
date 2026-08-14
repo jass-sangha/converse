@@ -54,10 +54,10 @@ function cycleTheme() {
             type="button"
             title="Chats"
             class="cv-icon-rail__button relative flex h-[46px] w-[46px] items-center justify-center rounded-2xl"
-            :class="isChats ? 'text-converse-accentContrast' : 'text-converse-textMuted hover:bg-converse-sage/15 hover:text-converse-sage'"
+            :class="isChats ? 'text-converse-sageContrast' : 'text-converse-textMuted hover:bg-converse-sage/15 hover:text-converse-sage'"
             @click="openChats"
         >
-            <div v-if="isChats" class="absolute inset-0 rounded-2xl bg-converse-accent" />
+            <div v-if="isChats" class="absolute inset-0 rounded-2xl bg-converse-sage" />
             <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" class="relative">
                 <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.5 9.5 0 0 1-2.8-.4L4 21l1.6-4.2A8.3 8.3 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z" />
             </svg>
@@ -70,10 +70,11 @@ function cycleTheme() {
         <button
             type="button"
             title="Media"
-            class="cv-icon-rail__button relative flex h-[46px] w-[46px] items-center justify-center rounded-2xl text-converse-textMuted hover:bg-converse-sage/15 hover:text-converse-sage"
+            class="cv-icon-rail__button relative flex h-[46px] w-[46px] items-center justify-center rounded-2xl"
+            :class="isMedia ? 'text-converse-sageContrast' : 'text-converse-textMuted hover:bg-converse-sage/15 hover:text-converse-sage'"
             @click="openMedia"
         >
-            <div v-if="isMedia" class="absolute inset-0 rounded-2xl bg-converse-bubbleOut" />
+            <div v-if="isMedia" class="absolute inset-0 rounded-2xl bg-converse-sage" />
             <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" class="relative">
                 <rect x="3" y="4" width="18" height="16" rx="4" />
                 <circle cx="8.5" cy="9.5" r="1.6" />

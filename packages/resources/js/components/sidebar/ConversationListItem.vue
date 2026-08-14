@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import ReadReceiptTicks from "../chat/ReadReceiptTicks.vue";
+import ConversationRowActions from "./ConversationRowActions.vue";
 import { useUsers } from "../../composables/useUsers";
 import { useChatStore } from "../../store";
 import { chatableKey, chatableKeyOf } from "../../chatable";
@@ -17,18 +18,6 @@ const store = useChatStore();
 const { resolve, get } = useUsers();
 
 const isGroup = computed(() => props.conversation.type === "group");
-
-const isPinned = computed(
-    () => !!(props.conversation.pinned_at || props.conversation.me?.pinned_at),
-);
-const isFavourited = computed(
-    () =>
-        !!(
-            props.conversation.favourited_at ||
-            props.conversation.me?.favourited_at
-        ),
-);
-const isMuted = computed(() => !!props.conversation.me?.muted_until);
 
 const isBlocked = computed(
     () =>
@@ -187,45 +176,9 @@ const lastActivityLabel = computed(() => {
                     <span class="truncate">{{ lastMessagePreview }}</span>
                 </span>
                 <span class="flex shrink-0 items-center gap-1">
-                    <div class="flex gap-1">
-                        <svg
-                            v-if="isMuted"
-                            viewBox="0 0 24 24"
-                            width="13"
-                            height="13"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2.6"
-                            stroke-linecap="round"
-                        >
-                            <path
-                                d="M18 16v-5a6 6 0 0 0-4.6-5.8M6 11v5l-2 2h13"
-                            />
-                            <path d="M3 3l18 18" />
-                        </svg>
-                        <svg
-                            v-if="isFavourited"
-                            viewBox="0 0 24 24"
-                            width="13"
-                            height="13"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M12 20s-7-4.4-7-9a3.9 3.9 0 0 1 7-2.4A3.9 3.9 0 0 1 19 11c0 4.6-7 9-7 9Z"
-                            />
-                        </svg>
-                        <svg
-                            v-if="isPinned"
-                            viewBox="0 0 24 24"
-                            width="13"
-                            height="13"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM8.6 13h6.8L12 21Z"
-                            />
-                        </svg>
-                    </div>
+                    <span class="flex w-[78px] shrink-0 items-center justify-end">
+                        <ConversationRowActions :conversation="conversation" />
+                    </span>
 
                     <span
                         v-if="conversation.unread_count > 0"

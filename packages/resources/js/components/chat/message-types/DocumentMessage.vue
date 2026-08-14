@@ -1,6 +1,7 @@
 <script setup>
 defineProps({
     message: { type: Object, required: true },
+    isOwn: { type: Boolean, default: false },
 });
 
 function formatSize(bytes) {
@@ -18,12 +19,25 @@ function formatSize(bytes) {
         :href="attachment.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="cv-document-message flex items-center gap-2 rounded border border-converse-border bg-converse-surface p-2 hover:bg-converse-surfaceHover"
+        class="cv-document-message flex items-center gap-[11px] rounded-2xl py-[9px] px-[11px]"
+        :class="isOwn ? 'bg-[rgba(140,73,26,.09)]' : 'bg-converse-surfaceHover'"
     >
-        <span class="text-2xl">📄</span>
-        <span class="cv-document-message__meta min-w-0">
-            <span class="block truncate text-sm font-medium">{{ attachment.original_filename }}</span>
-            <span class="block text-xs text-converse-textMuted">{{ formatSize(attachment.size_bytes) }}</span>
+        <span
+            class="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-converse-surface"
+            :class="isOwn ? 'text-converse-accent' : 'text-converse-sage'"
+        >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /></svg>
+        </span>
+        <span class="cv-document-message__meta min-w-0 flex-1">
+            <span class="block truncate text-[13.5px] font-semibold">{{ attachment.original_filename }}</span>
+            <span class="mt-px block text-[11.5px] text-converse-textDim">{{ formatSize(attachment.size_bytes) }}</span>
+        </span>
+        <span
+            title="Download"
+            class="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surface"
+            :class="isOwn ? 'hover:text-converse-accent' : 'hover:text-converse-sage'"
+        >
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 20h14" /></svg>
         </span>
     </a>
 </template>

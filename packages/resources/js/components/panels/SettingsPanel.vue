@@ -321,13 +321,6 @@ async function addBlock() {
             >
                 Notifications
             </div>
-            <p
-                class="mb-1.5 px-1.5 text-[12.5px] leading-relaxed text-converse-textMuted"
-            >
-                Turn notifications on or off in bulk across every chat of a
-                kind. This doesn't change any chat you've already muted
-                individually.
-            </p>
             <SettingRow
                 label="Individual chats"
                 :hint="
@@ -354,72 +347,6 @@ async function addBlock() {
                 @toggle="onUnmuteAll('group')"
                 @pick="(option) => onMuteAll('group', option.key)"
             />
-
-            <div
-                class="flex items-center justify-between px-1.5 pb-1 pt-[18px]"
-            >
-                <span
-                    class="text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
-                    >Blocked contacts</span
-                >
-                <button
-                    type="button"
-                    class="text-xs font-semibold text-converse-accentText"
-                    @click="showAddBlock = !showAddBlock"
-                >
-                    {{ showAddBlock ? "Cancel" : "Add" }}
-                </button>
-            </div>
-            <div v-if="showAddBlock" class="mb-2 px-1.5">
-                <UserPicker v-model="picked" :multiple="true" />
-                <button
-                    type="button"
-                    class="mt-2 w-full rounded-full bg-converse-danger py-2 text-sm font-semibold text-white disabled:opacity-50"
-                    :disabled="!picked.length"
-                    @click="addBlock"
-                >
-                    Block
-                    {{ picked.length > 1 ? `${picked.length} people` : "" }}
-                </button>
-            </div>
-            <p
-                v-if="!loadingBlocked && !blockedRows.length"
-                class="mb-1.5 px-1.5 text-[13px] text-converse-textDim"
-            >
-                No blocked contacts
-            </p>
-            <div
-                v-for="row in blockedRows"
-                :key="row.id"
-                class="flex items-center gap-3 rounded-[18px] p-2.5 hover:bg-converse-surfaceHover"
-            >
-                <Avatar
-                    :name="
-                        getUser({ type: row.blocked_type, id: row.blocked_id })
-                            .name
-                    "
-                    :avatar-url="
-                        getUser({ type: row.blocked_type, id: row.blocked_id })
-                            .avatar_url
-                    "
-                    :size="38"
-                />
-                <div
-                    class="min-w-0 flex-1 text-[13.5px] font-medium text-converse-text"
-                >
-                    {{
-                        getUser({ type: row.blocked_type, id: row.blocked_id })
-                            .name
-                    }}
-                </div>
-                <button
-                    type="button"
-                    class="shrink-0 rounded-full border border-converse-border px-3.5 py-2 text-xs font-semibold text-converse-accentText hover:bg-converse-accentTint"
-                    @click="onUnblock(row)"
-                >
-                    Unblock
-                </button>
-            </div>
 
             <div
                 class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"

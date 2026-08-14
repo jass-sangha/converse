@@ -103,7 +103,7 @@ async function onChange(event) {
         <button
             type="button"
             title="Attach"
-            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent disabled:opacity-50"
+            class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent disabled:opacity-50"
             :disabled="uploading"
             @click="toggleMenu"
         >

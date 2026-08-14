@@ -254,7 +254,7 @@ async function submit() {
                 />
 
                 <div class="cv-composer__emoji-wrap relative shrink-0">
-                    <button type="button" title="Emoji" class="flex h-12 w-12 items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent" @click="showEmoji = !showEmoji">
+                    <button type="button" title="Emoji" class="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent" @click="showEmoji = !showEmoji">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
                     </button>
                     <div v-if="showEmoji" class="cv-animate-pop-in absolute bottom-14 left-0 z-10">
@@ -262,7 +262,7 @@ async function submit() {
                     </div>
                 </div>
 
-                <div class="flex min-w-0 flex-1 items-center rounded-full bg-converse-surface px-5 py-2 shadow-sm">
+                <div class="flex min-w-0 flex-1 items-center rounded-full bg-converse-surface px-[22px] py-2 shadow-sm">
                     <input
                         ref="inputEl"
                         v-model="body"
@@ -279,7 +279,7 @@ async function submit() {
                 @recorded="onVoiceRecorded"
                 @recording-change="recording = $event"
             />
-            <button v-else type="submit" class="cv-composer__send flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-converse-accent text-sm font-medium text-converse-accentContrast shadow-sm">
+            <button v-else type="submit" class="cv-composer__send flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-converse-accent text-sm font-medium text-converse-accentContrast shadow-sm">
                 <svg v-if="!editing" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
                 <span v-else>Save</span>
             </button>

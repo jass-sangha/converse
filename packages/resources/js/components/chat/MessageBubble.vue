@@ -281,11 +281,11 @@ function onMenuAction(key) {
         @dblclick="!message.deleted_for_everyone && emit('reply', message)"
     >
         <div
-            class="cv-message-bubble__content group relative max-w-[70%] rounded-cv px-4 py-2 shadow-sm"
+            class="cv-message-bubble__content group relative max-w-[70%] rounded-[22px] px-[15px] pt-2.5 pb-2 shadow-sm"
             :class="[
                 isOwn
-                    ? 'rounded-br-md bg-converse-bubbleOut'
-                    : 'rounded-bl-md bg-converse-bubbleIn',
+                    ? 'rounded-br-[8px] bg-converse-bubbleOut'
+                    : 'rounded-bl-[8px] bg-converse-bubbleIn',
                 message.reactions?.length ? 'mb-3' : '',
             ]"
         >
@@ -299,6 +299,7 @@ function onMenuAction(key) {
             <ReplyPreview
                 v-if="message.reply_to"
                 :reply-to="message.reply_to"
+                :is-own="isOwn"
                 class="mb-1"
             />
 
@@ -308,7 +309,7 @@ function onMenuAction(key) {
             >
                 This message was deleted
             </p>
-            <component :is="bodyComponent" v-else :message="message" />
+            <component :is="bodyComponent" v-else :message="message" :is-own="isOwn" />
 
             <div
                 class="cv-message-bubble__meta mt-0.5 flex items-center justify-end gap-1 text-[10px] text-converse-textMuted"

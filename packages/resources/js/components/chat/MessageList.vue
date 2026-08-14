@@ -110,35 +110,46 @@ function onScroll() {
 </script>
 
 <template>
-    <div
-        ref="scrollEl"
-        class="cv-message-list h-full overflow-y-auto px-3 pb-2 pt-10 sm:px-12"
-        :class="{ 'cv-message-list--pattern bg-converse-chatBg': !wallpaperCss }"
-        :style="wallpaperCss ? { backgroundColor: wallpaperCss } : {}"
-        @scroll="onScroll"
-    >
-        <div ref="sentinelEl" class="cv-message-list__sentinel h-1" />
-
-        <div class="cv-message-list__messages mx-auto flex max-w-7xl flex-col gap-2">
-            <template v-for="item in timeline" :key="item.key">
-                <div v-if="item.kind === 'date'" class="flex justify-center py-1">
-                    <span class="rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-xs font-medium text-converse-textMuted shadow-sm">{{ item.label }}</span>
-                </div>
-                <MessageBubble
-                    v-else
-                    :id="`cv-message-${item.message.id}`"
-                    :message="item.message"
-                    @reply="(m) => emit('reply', m)"
-                    @edit="(m) => emit('edit', m)"
-                />
+    <div class="cv-message-list-wrap relative h-full overflow-hidden">
+        <div
+            class="pointer-events-none absolute inset-0"
+            :class="{ 'cv-message-list--pattern bg-converse-chatBg': !wallpaperCss }"
+            :style="wallpaperCss ? { backgroundColor: wallpaperCss } : {}"
+        >
+            <template v-if="!wallpaperCss">
+                <div class="absolute h-[320px] w-[320px] rounded-full bg-converse-bubbleOut opacity-55" style="top: -90px; right: -60px" />
+                <div class="absolute h-[380px] w-[380px] rounded-full bg-converse-sageTint opacity-50" style="bottom: -120px; left: 40px" />
             </template>
+        </div>
+
+        <div
+            ref="scrollEl"
+            class="cv-message-list relative h-full overflow-y-auto px-3 pb-2 pt-10 sm:px-12"
+            @scroll="onScroll"
+        >
+            <div ref="sentinelEl" class="cv-message-list__sentinel h-1" />
+
+            <div class="cv-message-list__messages mx-auto flex max-w-7xl flex-col gap-2">
+                <template v-for="item in timeline" :key="item.key">
+                    <div v-if="item.kind === 'date'" class="flex justify-center py-1">
+                        <span class="rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-xs font-medium text-converse-textMuted shadow-sm">{{ item.label }}</span>
+                    </div>
+                    <MessageBubble
+                        v-else
+                        :id="`cv-message-${item.message.id}`"
+                        :message="item.message"
+                        @reply="(m) => emit('reply', m)"
+                        @edit="(m) => emit('edit', m)"
+                    />
+                </template>
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
 .cv-message-list--pattern {
-    background-image: radial-gradient(rgb(var(--cv-border)) 0.5px, transparent 0.5px);
-    background-size: 16px 16px;
+    background-image: radial-gradient(circle at 1px 1px, var(--cv-dots) 1px, transparent 0);
+    background-size: 22px 22px;
 }
 </style>

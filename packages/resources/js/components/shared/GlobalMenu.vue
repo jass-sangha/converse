@@ -53,13 +53,6 @@ function go(view) {
             <button
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
-                @click="go('new-chat')"
-            >
-                New chat
-            </button>
-            <button
-                type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="go('new-group')"
             >
                 New group
@@ -74,9 +67,26 @@ function go(view) {
             <button
                 type="button"
                 class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="go('profile')"
+            >
+                Blocked contacts
+            </button>
+            <button
+                type="button"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="go('archived')"
             >
                 Archived chats
+            </button>
+            <button
+                type="button"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="
+                    toggleTheme();
+                    showMenu = false;
+                "
+            >
+                {{ effectiveTheme === "dark" ? "Light mode" : "Dark mode" }}
             </button>
             <button
                 type="button"
@@ -91,16 +101,6 @@ function go(view) {
                 @click="go('profile')"
             >
                 Settings
-            </button>
-            <button
-                type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
-                @click="
-                    toggleTheme();
-                    showMenu = false;
-                "
-            >
-                {{ effectiveTheme === "dark" ? "Light mode" : "Dark mode" }}
             </button>
         </div>
     </div>
