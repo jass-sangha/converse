@@ -110,7 +110,9 @@ const displayName = computed(() =>
 const otherPresence = computed(() => {
     const row = otherParticipantRow.value;
     if (!row) return null;
-    return store.presenceByUser[chatableKey(row.chatable_type, row.chatable_id)];
+    return store.presenceByUser[
+        chatableKey(row.chatable_type, row.chatable_id)
+    ];
 });
 
 const subLabel = computed(() => {
@@ -120,7 +122,8 @@ const subLabel = computed(() => {
     }
     if (otherPresence.value?.is_online) return "online";
     if (otherPresence.value?.last_seen_at) {
-        const diffMs = Date.now() - new Date(otherPresence.value.last_seen_at).getTime();
+        const diffMs =
+            Date.now() - new Date(otherPresence.value.last_seen_at).getTime();
         const minutes = Math.round(diffMs / 60000);
         if (minutes < 1) return "last seen just now";
         if (minutes < 60) return `last seen ${minutes}m ago`;
@@ -132,7 +135,10 @@ const subLabel = computed(() => {
 });
 
 async function toggleQuickMute() {
-    await mute(props.conversation.id, isMuted.value ? null : mutedUntilFor("always"));
+    await mute(
+        props.conversation.id,
+        isMuted.value ? null : mutedUntilFor("always"),
+    );
 }
 
 async function loadAll() {
@@ -271,15 +277,19 @@ const showMuteMenu = ref(false);
 const muteMenuRoot = ref(null);
 const { opened: muteMenuOpened, closed: muteMenuClosed } =
     useExclusiveDropdown();
-const { openUp: muteMenuUp, maxHeight: muteMenuMaxHeight, place: placeMuteMenu } =
-    useDropdownPlacement();
+const {
+    openUp: muteMenuUp,
+    maxHeight: muteMenuMaxHeight,
+    place: placeMuteMenu,
+} = useDropdownPlacement();
 
 function closeMuteMenu() {
     showMuteMenu.value = false;
 }
 
 function toggleMuteMenu() {
-    if (!showMuteMenu.value) placeMuteMenu(muteMenuRoot.value, { preferredHeight: 300 });
+    if (!showMuteMenu.value)
+        placeMuteMenu(muteMenuRoot.value, { preferredHeight: 300 });
     showMuteMenu.value = !showMuteMenu.value;
 }
 
@@ -659,7 +669,7 @@ async function onDeleteChat() {
                         d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.02 6.02 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z"
                     />
                 </svg>
-                <span class="text-[15px] text-converse-text">{{
+                <span class="text-[15px] text-nowrap text-converse-text">{{
                     isFavourite ? "Remove from favourites" : "Add to favourites"
                 }}</span>
             </button>
@@ -775,7 +785,10 @@ async function onDeleteChat() {
             v-if="showAddMember"
             class="absolute inset-0 z-10 flex flex-col bg-converse-surface"
         >
-            <SidebarScreenHeader title="Add participants" @back="closeAddMember">
+            <SidebarScreenHeader
+                title="Add participants"
+                @back="closeAddMember"
+            >
                 <GlobalMenu />
             </SidebarScreenHeader>
             <div class="flex min-h-0 flex-1 flex-col">
@@ -785,7 +798,10 @@ async function onDeleteChat() {
                     :exclude="currentParticipantRefs"
                     class="min-h-0 flex-1"
                 />
-                <p v-if="error" class="shrink-0 px-4 pb-2 text-xs text-converse-danger">
+                <p
+                    v-if="error"
+                    class="shrink-0 px-4 pb-2 text-xs text-converse-danger"
+                >
                     {{ error }}
                 </p>
             </div>

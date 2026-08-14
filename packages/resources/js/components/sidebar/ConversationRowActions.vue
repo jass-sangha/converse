@@ -72,7 +72,10 @@ function togglePin(event) {
 </script>
 
 <template>
-    <span ref="root" class="cv-conversation-row-actions relative flex shrink-0 items-center">
+    <span
+        ref="root"
+        class="cv-conversation-row-actions relative flex shrink-0 items-center"
+    >
         <button
             ref="triggerEl"
             type="button"
@@ -81,8 +84,16 @@ function togglePin(event) {
             :class="{ 'w-6 opacity-100': menuOpen }"
             @click.stop="toggleMenu"
         >
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="shrink-0">
-                <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
+            <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="currentColor"
+                class="shrink-0"
+            >
+                <circle cx="12" cy="5" r="1.8" />
+                <circle cx="12" cy="12" r="1.8" />
+                <circle cx="12" cy="19" r="1.8" />
             </svg>
         </button>
 
@@ -98,23 +109,65 @@ function togglePin(event) {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="toggleMute"
             >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" class="shrink-0 text-converse-textMuted"><path d="M18 16v-5a6 6 0 0 0-4.6-5.8M6 11v5l-2 2h13" /><path d="M3 3l18 18" /></svg>
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    class="shrink-0 text-converse-textMuted"
+                >
+                    <path d="M18 16v-5a6 6 0 0 0-4.6-5.8M6 11v5l-2 2h13" />
+                    <path d="M3 3l18 18" />
+                </svg>
                 <span>{{ isMuted ? "Unmute" : "Mute" }}</span>
             </button>
             <button
                 type="button"
-                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-nowrap text-converse-text hover:bg-converse-surfaceHover"
                 @click="toggleFavourite"
             >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-converse-textMuted"><path d="M12 20s-7-4.4-7-9a3.9 3.9 0 0 1 7-2.4A3.9 3.9 0 0 1 19 11c0 4.6-7 9-7 9Z" /></svg>
-                <span>{{ isFavourited ? "Remove from favourites" : "Add to favourites" }}</span>
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="shrink-0 text-converse-textMuted"
+                >
+                    <path
+                        d="M12 20s-7-4.4-7-9a3.9 3.9 0 0 1 7-2.4A3.9 3.9 0 0 1 19 11c0 4.6-7 9-7 9Z"
+                    />
+                </svg>
+                <span>{{
+                    isFavourited
+                        ? "Remove from favourites"
+                        : "Add to favourites"
+                }}</span>
             </button>
             <button
                 type="button"
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
                 @click="togglePin"
             >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-converse-textMuted"><path d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM12 13v8" /></svg>
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="shrink-0 text-converse-textMuted"
+                >
+                    <path d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM12 13v8" />
+                </svg>
                 <span>{{ isPinned ? "Unpin" : "Pin" }}</span>
             </button>
         </div>
