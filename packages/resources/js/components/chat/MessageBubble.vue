@@ -140,7 +140,11 @@ function onDragMove(event) {
     const dy = event.clientY - dragStartY;
 
     if (dragAxis === null) {
-        if (Math.abs(dx) < DIRECTION_LOCK_PX && Math.abs(dy) < DIRECTION_LOCK_PX) return;
+        if (
+            Math.abs(dx) < DIRECTION_LOCK_PX &&
+            Math.abs(dy) < DIRECTION_LOCK_PX
+        )
+            return;
         dragAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
         if (dragAxis === "x") dragging.value = true;
     }
@@ -176,7 +180,12 @@ function stopDragListeners() {
 
 function onBubblePointerDown(event) {
     if (props.message.deleted_for_everyone) return;
-    if (event.target.closest("button, input, a, .cv-message-bubble__reaction-picker, .cv-message-bubble__menu")) return;
+    if (
+        event.target.closest(
+            "button, input, a, .cv-message-bubble__reaction-picker, .cv-message-bubble__menu",
+        )
+    )
+        return;
     // A mouse drag only ever starts from the primary button; touch/pen contacts don't carry a
     // meaningful button value the same way.
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -196,7 +205,8 @@ function onBubbleDoubleClick() {
     if (props.message.deleted_for_everyone) return;
     showMenu.value = false;
     showFullEmojiPicker.value = false;
-    if (!showReactionPicker.value) placePop(actionsEl.value, { preferredHeight: 60 });
+    if (!showReactionPicker.value)
+        placePop(actionsEl.value, { preferredHeight: 60 });
     showReactionPicker.value = true;
 }
 
@@ -221,7 +231,11 @@ const showInfo = ref(false);
 const showReactionDetails = ref(false);
 const copied = ref(false);
 const actionsEl = ref(null);
-const { openUp: popUp, maxHeight: popMax, place: placePop } = useDropdownPlacement();
+const {
+    openUp: popUp,
+    maxHeight: popMax,
+    place: placePop,
+} = useDropdownPlacement();
 
 const visibleMenuItems = computed(() =>
     MENU_ITEMS.filter((item) => {
@@ -352,7 +366,8 @@ function onMenuAction(key) {
         case "react":
             showMenu.value = false;
             showFullEmojiPicker.value = false;
-            if (!showReactionPicker.value) placePop(actionsEl.value, { preferredHeight: 60 });
+            if (!showReactionPicker.value)
+                placePop(actionsEl.value, { preferredHeight: 60 });
             showReactionPicker.value = true;
             return;
         case "forward":
@@ -390,7 +405,9 @@ function onMenuAction(key) {
             dragX !== 0 || dragging
                 ? {
                       transform: `translateX(${dragX}px)`,
-                      transition: dragging ? 'none' : 'transform .18s cubic-bezier(.22,1,.36,1)',
+                      transition: dragging
+                          ? 'none'
+                          : 'transform .18s cubic-bezier(.22,1,.36,1)',
                   }
                 : null
         "
@@ -410,7 +427,20 @@ function onMenuAction(key) {
                 class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
                 @click.stop="toggleReactionPicker"
             >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" /><path d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01" /></svg>
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                >
+                    <circle cx="12" cy="12" r="8.5" />
+                    <path
+                        d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01"
+                    />
+                </svg>
             </button>
             <button
                 type="button"
@@ -418,7 +448,16 @@ function onMenuAction(key) {
                 class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
                 @click.stop="toggleMenu"
             >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="currentColor"
+                >
+                    <circle cx="12" cy="5" r="1.8" />
+                    <circle cx="12" cy="12" r="1.8" />
+                    <circle cx="12" cy="19" r="1.8" />
+                </svg>
             </button>
 
             <div
@@ -441,7 +480,14 @@ function onMenuAction(key) {
                     class="flex h-8 w-8 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
                     @click.stop="showFullEmojiPicker = true"
                 >
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" /></svg>
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="15"
+                        height="15"
+                        fill="currentColor"
+                    >
+                        <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" />
+                    </svg>
                 </button>
             </div>
 
@@ -487,7 +533,7 @@ function onMenuAction(key) {
         </div>
 
         <div
-            class="cv-message-bubble__content relative max-w-[70%] rounded-[22px] px-[15px] pt-2.5 pb-2 shadow-cv"
+            class="cv-message-bubble__content relative max-w-[min(55%,380px)] rounded-[20px] p-1 shadow-cv"
             :class="[
                 isOwn
                     ? 'rounded-br-[8px] bg-converse-bubbleOut'
@@ -515,10 +561,15 @@ function onMenuAction(key) {
             >
                 This message was deleted
             </p>
-            <component :is="bodyComponent" v-else :message="message" :is-own="isOwn" />
+            <component
+                :is="bodyComponent"
+                v-else
+                :message="message"
+                :is-own="isOwn"
+            />
 
             <div
-                class="cv-message-bubble__meta mt-0.5 flex items-center justify-end gap-1 text-[10px] text-converse-textMuted"
+                class="cv-message-bubble__meta mt-0.5 flex items-center justify-end gap-1 text-[10px] text-converse-textMuted px-2"
             >
                 <span>{{
                     new Date(message.created_at).toLocaleTimeString([], {
@@ -564,7 +615,20 @@ function onMenuAction(key) {
                 class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
                 @click.stop="toggleReactionPicker"
             >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" /><path d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01" /></svg>
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                >
+                    <circle cx="12" cy="12" r="8.5" />
+                    <path
+                        d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01"
+                    />
+                </svg>
             </button>
             <button
                 type="button"
@@ -572,7 +636,16 @@ function onMenuAction(key) {
                 class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
                 @click.stop="toggleMenu"
             >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="currentColor"
+                >
+                    <circle cx="12" cy="5" r="1.8" />
+                    <circle cx="12" cy="12" r="1.8" />
+                    <circle cx="12" cy="19" r="1.8" />
+                </svg>
             </button>
 
             <div
@@ -595,7 +668,14 @@ function onMenuAction(key) {
                     class="flex h-8 w-8 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
                     @click.stop="showFullEmojiPicker = true"
                 >
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" /></svg>
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="15"
+                        height="15"
+                        fill="currentColor"
+                    >
+                        <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" />
+                    </svg>
                 </button>
             </div>
 
