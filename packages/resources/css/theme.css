@@ -35,6 +35,8 @@
     --cv-danger-contrast: 255 255 255;
     --cv-tick: 161 151 134;
     --cv-dots: rgba(32, 30, 29, 0.07);
+    --cv-shadow: rgba(46, 43, 37, 0.14);
+    --cv-shadow-lg: rgba(46, 43, 37, 0.2);
 }
 
 :root[data-theme="dark"] {
@@ -64,4 +66,6 @@
     --cv-danger-contrast: 32 30 29;
     --cv-tick: 161 151 134;
     --cv-dots: rgba(249, 244, 237, 0.07);
+    --cv-shadow: rgba(0, 0, 0, 0.32);
+    --cv-shadow-lg: rgba(0, 0, 0, 0.45);
 }

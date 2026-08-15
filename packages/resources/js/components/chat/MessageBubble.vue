@@ -423,7 +423,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showReactionPicker && !showFullEmojiPicker"
-                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute right-0 z-20 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-lg"
+                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute right-0 z-20 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-cv-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
             >
                 <button
@@ -456,7 +456,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="cv-message-bubble__menu cv-animate-pop-in absolute right-0 z-20 w-[184px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+                class="cv-message-bubble__menu cv-animate-pop-in absolute right-0 z-20 w-[184px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-cv-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 :style="{ maxHeight: popMax + 'px' }"
             >
@@ -487,7 +487,7 @@ function onMenuAction(key) {
         </div>
 
         <div
-            class="cv-message-bubble__content relative max-w-[70%] rounded-[22px] px-[15px] pt-2.5 pb-2 shadow-sm"
+            class="cv-message-bubble__content relative max-w-[70%] rounded-[22px] px-[15px] pt-2.5 pb-2 shadow-cv"
             :class="[
                 isOwn
                     ? 'rounded-br-[8px] bg-converse-bubbleOut'
@@ -577,7 +577,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showReactionPicker && !showFullEmojiPicker"
-                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute left-0 z-20 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-lg"
+                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute left-0 z-20 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-cv-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
             >
                 <button
@@ -610,7 +610,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="cv-message-bubble__menu cv-animate-pop-in absolute left-0 z-20 w-[184px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+                class="cv-message-bubble__menu cv-animate-pop-in absolute left-0 z-20 w-[184px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-cv-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 :style="{ maxHeight: popMax + 'px' }"
             >

@@ -47,6 +47,10 @@ export default {
             borderRadius: {
                 cv: 'var(--cv-radius)',
             },
+            boxShadow: {
+                cv: '0 1px 2px var(--cv-shadow)',
+                'cv-lg': '0 12px 32px var(--cv-shadow-lg)',
+            },
             fontFamily: {
                 sans: ['Figtree', 'system-ui', 'ui-sans-serif', 'sans-serif'],
                 display: ['Caprasimo', 'serif'],
