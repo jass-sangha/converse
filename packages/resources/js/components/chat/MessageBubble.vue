@@ -637,12 +637,14 @@ function onMenuAction(key) {
             />
 
             <div
-                class="cv-message-bubble__meta mt-0.5 flex items-center gap-1 text-[10px] text-converse-textMuted"
+                class="cv-message-bubble__meta mt-1 flex items-center gap-2 text-[10px] text-converse-textMuted"
                 :class="showSenderInfo ? 'justify-between' : 'justify-end'"
             >
-                <span v-if="showSenderInfo" class="truncate font-bold text-converse-sageText">{{
-                    sender.name
-                }}</span>
+                <span
+                    v-if="showSenderInfo"
+                    class="truncate font-bold text-converse-sageText"
+                    >{{ sender.name }}</span
+                >
                 <span class="flex shrink-0 items-center gap-1">
                     <span>{{
                         new Date(message.created_at).toLocaleTimeString([], {
