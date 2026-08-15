@@ -6,7 +6,6 @@ import { chatableKey } from '../../../chatable';
 
 const props = defineProps({
     message: { type: Object, required: true },
-    isOwn: { type: Boolean, default: false },
 });
 
 const { respondToEvent } = useMessages();
@@ -60,10 +59,7 @@ async function onRespond(status) {
 </script>
 
 <template>
-    <div
-        class="cv-event-message min-w-[240px] max-w-sm rounded-2xl p-3"
-        :class="isOwn ? 'bg-[rgba(140,73,26,.09)]' : 'bg-converse-surfaceHover'"
-    >
+    <div class="cv-event-message min-w-[240px] max-w-sm rounded-2xl bg-converse-surface p-3">
         <div class="mb-2 flex items-center gap-2">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="shrink-0 text-converse-textMuted"><path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z"/></svg>
             <p class="text-sm font-medium text-converse-text">{{ title }}</p>
