@@ -24,6 +24,7 @@ import ReactionDetailsModal from "./ReactionDetailsModal.vue";
 import MessageInfoModal from "./MessageInfoModal.vue";
 import ReadReceiptTicks from "./ReadReceiptTicks.vue";
 import ForwardModal from "./ForwardModal.vue";
+import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 
 const TYPE_COMPONENTS = {
     text: TextMessage,
@@ -117,6 +118,88 @@ const { pin, unpin } = useMessagePins();
 const pinError = ref("");
 const root = ref(null);
 
+const DRAG_LIMIT = 72;
+const DRAG_THRESHOLD = 40;
+// A touch that turns out to be a vertical scroll still fires a few pixels of horizontal
+// pointermove noise before its direction is clear — without this dead zone, that noise gets
+// read as the start of a slide and the bubble twitches sideways on every scroll attempt.
+const DIRECTION_LOCK_PX = 6;
+
+const dragX = ref(0);
+const dragging = ref(false);
+let dragStartX = 0;
+let dragStartY = 0;
+// null while direction is still undecided, 'x' once it's a confirmed horizontal slide, 'y' once
+// it's a confirmed vertical scroll (and this gesture is no longer ours to handle).
+let dragAxis = null;
+let dragPointerId = null;
+
+function onDragMove(event) {
+    if (event.pointerId !== dragPointerId) return;
+    const dx = event.clientX - dragStartX;
+    const dy = event.clientY - dragStartY;
+
+    if (dragAxis === null) {
+        if (Math.abs(dx) < DIRECTION_LOCK_PX && Math.abs(dy) < DIRECTION_LOCK_PX) return;
+        dragAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+        if (dragAxis === "x") dragging.value = true;
+    }
+
+    if (dragAxis !== "x") return;
+    event.preventDefault();
+    dragX.value = Math.max(-DRAG_LIMIT, Math.min(DRAG_LIMIT, dx));
+}
+
+function onDragEnd(event) {
+    if (event.pointerId !== dragPointerId) return;
+    stopDragListeners();
+
+    const wasSliding = dragAxis === "x";
+    dragAxis = null;
+    dragPointerId = null;
+    dragging.value = false;
+
+    if (wasSliding && Math.abs(dragX.value) > DRAG_THRESHOLD) {
+        emit("reply", props.message);
+    }
+    dragX.value = 0;
+}
+
+function stopDragListeners() {
+    window.removeEventListener("pointermove", onDragMove);
+    window.removeEventListener("pointerup", onDragEnd);
+    window.removeEventListener("pointercancel", onDragEnd);
+    if (dragPointerId !== null) {
+        root.value?.releasePointerCapture?.(dragPointerId);
+    }
+}
+
+function onBubblePointerDown(event) {
+    if (props.message.deleted_for_everyone) return;
+    if (event.target.closest("button, input, a, .cv-message-bubble__reaction-picker, .cv-message-bubble__menu")) return;
+    // A mouse drag only ever starts from the primary button; touch/pen contacts don't carry a
+    // meaningful button value the same way.
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
+    dragAxis = null;
+    dragPointerId = event.pointerId;
+    root.value?.setPointerCapture?.(dragPointerId);
+
+    window.addEventListener("pointermove", onDragMove);
+    window.addEventListener("pointerup", onDragEnd);
+    window.addEventListener("pointercancel", onDragEnd);
+}
+
+function onBubbleDoubleClick() {
+    if (props.message.deleted_for_everyone) return;
+    showMenu.value = false;
+    showFullEmojiPicker.value = false;
+    if (!showReactionPicker.value) placePop(actionsEl.value, { preferredHeight: 60 });
+    showReactionPicker.value = true;
+}
+
 const isOwn = computed(() => chatableKeyOf(props.message) === store.currentKey);
 const isSystem = computed(
     () => props.message.type === "system" || props.message.chatable_id === null,
@@ -137,6 +220,8 @@ const showForward = ref(false);
 const showInfo = ref(false);
 const showReactionDetails = ref(false);
 const copied = ref(false);
+const actionsEl = ref(null);
+const { openUp: popUp, maxHeight: popMax, place: placePop } = useDropdownPlacement();
 
 const visibleMenuItems = computed(() =>
     MENU_ITEMS.filter((item) => {
@@ -154,7 +239,26 @@ function itemLabel(item) {
 }
 
 function toggleMenu() {
-    showMenu.value = !showMenu.value;
+    if (showMenu.value) {
+        showMenu.value = false;
+        return;
+    }
+    placePop(actionsEl.value, { preferredHeight: 440 });
+    showMenu.value = true;
+    showReactionPicker.value = false;
+    showFullEmojiPicker.value = false;
+}
+
+function toggleReactionPicker() {
+    if (showReactionPicker.value) {
+        showReactionPicker.value = false;
+        showFullEmojiPicker.value = false;
+        return;
+    }
+    placePop(actionsEl.value, { preferredHeight: 60 });
+    showReactionPicker.value = true;
+    showFullEmojiPicker.value = false;
+    showMenu.value = false;
 }
 
 function onDocumentClick(event) {
@@ -173,7 +277,10 @@ watch([showMenu, showReactionPicker], ([menu, reaction]) => {
     }
 });
 
-onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
+onBeforeUnmount(() => {
+    document.removeEventListener("click", onDocumentClick);
+    stopDragListeners();
+});
 
 async function onPickReaction(emoji) {
     showReactionPicker.value = false;
@@ -244,8 +351,9 @@ function onMenuAction(key) {
             return onCopy();
         case "react":
             showMenu.value = false;
-            showReactionPicker.value = true;
             showFullEmojiPicker.value = false;
+            if (!showReactionPicker.value) placePop(actionsEl.value, { preferredHeight: 60 });
+            showReactionPicker.value = true;
             return;
         case "forward":
             showMenu.value = false;
@@ -275,13 +383,111 @@ function onMenuAction(key) {
     <div
         v-else
         ref="root"
-        class="cv-message-bubble flex"
+        class="cv-message-bubble group flex items-center gap-1.5"
         :class="isOwn ? 'justify-end' : 'justify-start'"
-        title="Double-click to reply"
-        @dblclick="!message.deleted_for_everyone && emit('reply', message)"
+        style="touch-action: pan-y"
+        :style="
+            dragX !== 0 || dragging
+                ? {
+                      transform: `translateX(${dragX}px)`,
+                      transition: dragging ? 'none' : 'transform .18s cubic-bezier(.22,1,.36,1)',
+                  }
+                : null
+        "
+        title="Slide to reply · double-click to react"
+        @pointerdown="onBubblePointerDown"
+        @dblclick="onBubbleDoubleClick"
     >
         <div
-            class="cv-message-bubble__content group relative max-w-[70%] rounded-[22px] px-[15px] pt-2.5 pb-2 shadow-sm"
+            v-if="!message.deleted_for_everyone && isOwn"
+            ref="actionsEl"
+            class="cv-message-bubble__actions relative flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            :class="{ 'opacity-100': showMenu || showReactionPicker }"
+        >
+            <button
+                type="button"
+                title="React"
+                class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
+                @click.stop="toggleReactionPicker"
+            >
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" /><path d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01" /></svg>
+            </button>
+            <button
+                type="button"
+                title="More"
+                class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
+                @click.stop="toggleMenu"
+            >
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
+            </button>
+
+            <div
+                v-if="showReactionPicker && !showFullEmojiPicker"
+                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute right-0 z-20 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-lg"
+                :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
+            >
+                <button
+                    v-for="emoji in QUICK_REACTIONS"
+                    :key="emoji"
+                    type="button"
+                    class="flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-converse-surfaceHover"
+                    @click.stop="onPickReaction(emoji)"
+                >
+                    {{ emoji }}
+                </button>
+                <button
+                    type="button"
+                    title="More reactions"
+                    class="flex h-8 w-8 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    @click.stop="showFullEmojiPicker = true"
+                >
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" /></svg>
+                </button>
+            </div>
+
+            <div
+                v-if="showReactionPicker && showFullEmojiPicker"
+                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute right-0 z-20"
+                :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
+                @click.stop
+            >
+                <EmojiPicker @pick="onPickReaction" />
+            </div>
+
+            <div
+                v-if="showMenu"
+                class="cv-message-bubble__menu cv-animate-pop-in absolute right-0 z-20 w-[184px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+                :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
+                :style="{ maxHeight: popMax + 'px' }"
+            >
+                <button
+                    v-for="item in visibleMenuItems"
+                    :key="item.key"
+                    type="button"
+                    class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left hover:bg-converse-surfaceHover"
+                    :class="
+                        item.danger
+                            ? 'text-converse-danger'
+                            : 'text-converse-text'
+                    "
+                    @click="onMenuAction(item.key)"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="shrink-0"
+                    >
+                        <path :d="item.path" />
+                    </svg>
+                    <span>{{ itemLabel(item) }}</span>
+                </button>
+            </div>
+        </div>
+
+        <div
+            class="cv-message-bubble__content relative max-w-[70%] rounded-[22px] px-[15px] pt-2.5 pb-2 shadow-sm"
             :class="[
                 isOwn
                     ? 'rounded-br-[8px] bg-converse-bubbleOut'
@@ -332,33 +538,47 @@ function onMenuAction(key) {
                 @open="showReactionDetails = true"
             />
 
-            <div
-                v-if="!message.deleted_for_everyone"
-                class="cv-message-bubble__actions absolute -top-9 z-10 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface px-1 py-1 opacity-0 shadow-lg transition-opacity duration-150 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
-                :class="isOwn ? 'right-1' : 'left-1'"
+            <p
+                v-if="copied"
+                class="absolute -bottom-8 right-1 rounded bg-converse-overlay/70 px-2 py-0.5 text-[10px] text-white"
             >
-                <button
-                    type="button"
-                    title="React"
-                    class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click.stop="showReactionPicker = !showReactionPicker; showFullEmojiPicker = false"
-                >
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" /><path d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01" /></svg>
-                </button>
-                <button
-                    type="button"
-                    title="More"
-                    class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click.stop="toggleMenu"
-                >
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
-                </button>
-            </div>
+                Copied
+            </p>
+            <p
+                v-if="pinError"
+                class="cv-message-bubble__pin-error mt-1 text-xs text-converse-danger"
+            >
+                {{ pinError }}
+            </p>
+        </div>
+
+        <div
+            v-if="!message.deleted_for_everyone && !isOwn"
+            ref="actionsEl"
+            class="cv-message-bubble__actions relative flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            :class="{ 'opacity-100': showMenu || showReactionPicker }"
+        >
+            <button
+                type="button"
+                title="React"
+                class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
+                @click.stop="toggleReactionPicker"
+            >
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5" /><path d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01" /></svg>
+            </button>
+            <button
+                type="button"
+                title="More"
+                class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
+                @click.stop="toggleMenu"
+            >
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
+            </button>
 
             <div
                 v-if="showReactionPicker && !showFullEmojiPicker"
-                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute bottom-full z-20 mb-1 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-lg"
-                :class="isOwn ? 'right-1' : 'left-1'"
+                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute left-0 z-20 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-lg"
+                :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
             >
                 <button
                     v-for="emoji in QUICK_REACTIONS"
@@ -381,8 +601,8 @@ function onMenuAction(key) {
 
             <div
                 v-if="showReactionPicker && showFullEmojiPicker"
-                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute bottom-full z-20 mb-1"
-                :class="isOwn ? 'right-1' : 'left-1'"
+                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute left-0 z-20"
+                :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 @click.stop
             >
                 <EmojiPicker @pick="onPickReaction" />
@@ -390,8 +610,9 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="cv-message-bubble__menu cv-animate-pop-in absolute top-6 z-20 w-48 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
-                :class="isOwn ? 'right-1' : 'left-1'"
+                class="cv-message-bubble__menu cv-animate-pop-in absolute left-0 z-20 w-[184px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+                :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
+                :style="{ maxHeight: popMax + 'px' }"
             >
                 <button
                     v-for="item in visibleMenuItems"
@@ -417,19 +638,6 @@ function onMenuAction(key) {
                     <span>{{ itemLabel(item) }}</span>
                 </button>
             </div>
-
-            <p
-                v-if="copied"
-                class="absolute -bottom-8 right-1 rounded bg-converse-overlay/70 px-2 py-0.5 text-[10px] text-white"
-            >
-                Copied
-            </p>
-            <p
-                v-if="pinError"
-                class="cv-message-bubble__pin-error mt-1 text-xs text-converse-danger"
-            >
-                {{ pinError }}
-            </p>
         </div>
 
         <ForwardModal

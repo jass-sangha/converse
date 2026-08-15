@@ -9,6 +9,7 @@ import EventComposerModal from './EventComposerModal.vue';
 import { useMessages } from '../../composables/useMessages';
 import { useTyping } from '../../composables/useTyping';
 import { useApi } from '../../composables/useApi';
+import { useToast } from '../../composables/useToast';
 
 const props = defineProps({
     conversationId: { type: Number, required: true },
@@ -21,6 +22,7 @@ const emit = defineEmits(['sent', 'dismiss-reply', 'dismiss-edit']);
 const { send, update } = useMessages();
 const { notifyTyping, stopTyping } = useTyping();
 const api = useApi();
+const { show: showToast } = useToast();
 
 const body = ref('');
 const showEmoji = ref(false);
@@ -81,8 +83,20 @@ function onEmojiPick(emoji) {
     focusInput();
 }
 
+function isDuplicate(item) {
+    return stagedAttachments.value.some(
+        (staged) =>
+            staged.attachment.original_filename === item.attachment.original_filename &&
+            staged.attachment.size_bytes === item.attachment.size_bytes,
+    );
+}
+
 function onAttachmentUploaded(uploaded) {
-    stagedAttachments.value = [...stagedAttachments.value, ...uploaded];
+    const fresh = uploaded.filter((item) => !isDuplicate(item));
+    if (fresh.length < uploaded.length) {
+        showToast("Skipped a file already added to this message.");
+    }
+    stagedAttachments.value = [...stagedAttachments.value, ...fresh];
     focusInput();
 }
 

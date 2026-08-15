@@ -20,8 +20,6 @@ class AttachmentService implements AttachmentServiceInterface
         $mimeType = $file->getMimeType();
         $category = $this->resolveCategory($mimeType);
 
-        abort_if($category === null, 422, 'Unsupported file type.');
-
         $maxKilobytes = config("chat.media.max_sizes.{$category}");
         abort_if($maxKilobytes && $file->getSize() > $maxKilobytes * 1024, 422, 'File is too large.');
 
@@ -62,7 +60,9 @@ class AttachmentService implements AttachmentServiceInterface
             ->update(['message_id' => $message->id]);
     }
 
-    protected function resolveCategory(string $mimeType): ?string
+    // Every mime type not explicitly categorized falls back to 'document' — the generic
+    // file-card renderer — so any file type can be shared rather than being rejected.
+    protected function resolveCategory(string $mimeType): string
     {
         foreach (config('chat.media.mime_types', []) as $category => $mimeTypes) {
             if (in_array($mimeType, $mimeTypes, true)) {
@@ -70,6 +70,6 @@ class AttachmentService implements AttachmentServiceInterface
             }
         }
 
-        return null;
+        return 'document';
     }
 }

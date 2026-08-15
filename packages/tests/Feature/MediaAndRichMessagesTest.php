@@ -81,17 +81,25 @@ it('forwards a media message with its attachment intact', function () {
     expect(collect($original)->firstWhere('id', $originalId)['attachments'])->toHaveCount(1);
 });
 
-it('rejects an oversized or wrong-type attachment upload', function () {
+it('rejects an oversized attachment upload but accepts any file type', function () {
     Storage::fake('chat');
 
     $alice = mediaUser('alice-oversize@example.com');
 
+    // Anything not explicitly categorized falls back to the generic 'document' bucket rather
+    // than being rejected — the app shouldn't gatekeep what kind of file people can share.
+    $uncategorized = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->create('archive.rar', 10, 'application/x-rar-compressed'),
+    ])->assertCreated();
+    expect($uncategorized->json('data.mime_type'))->toBe('application/x-rar-compressed');
+
+    // Size limits still apply, keyed off that same fallback category's own configured max.
     $this->actingAs($alice)->postJson('/api/chat/attachments', [
-        'file' => UploadedFile::fake()->create('malware.exe', 10, 'application/x-msdownload'),
+        'file' => UploadedFile::fake()->create('huge.jpg', 20 * 1024, 'image/jpeg'),
     ])->assertStatus(422);
 
     $this->actingAs($alice)->postJson('/api/chat/attachments', [
-        'file' => UploadedFile::fake()->create('huge.jpg', 20 * 1024, 'image/jpeg'),
+        'file' => UploadedFile::fake()->create('huge.rar', 60 * 1024, 'application/x-rar-compressed'),
     ])->assertStatus(422);
 });
 

@@ -2,6 +2,7 @@
 import { onBeforeUnmount, ref, watch } from "vue";
 import CameraCapture from "./CameraCapture.vue";
 import { useMessages } from "../../composables/useMessages";
+import { useToast } from "../../composables/useToast";
 
 const emit = defineEmits(["uploaded", "create-poll", "create-event"]);
 
@@ -10,13 +11,11 @@ const OPTIONS = [
         key: "files",
         label: "Files",
         accept: "",
-        color: "bg-indigo-500",
         path: "M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm11 10.5-2.5-3-3.5 4.5H16Zm-8-6.5A1.5 1.5 0 1 0 7 9.5 1.5 1.5 0 0 0 7 6Z",
     },
     {
         key: "camera",
         label: "Camera",
-        color: "bg-rose-500",
         path: "M9 4 7.5 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.5L15 4Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z",
     },
     {
@@ -24,24 +23,22 @@ const OPTIONS = [
         label: "Sticker",
         accept: "image/png,image/webp,image/gif",
         forcedType: "sticker",
-        color: "bg-teal-500",
         path: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-3.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 17c-2.5 0-4.6-1.5-5.4-3.6h10.8C16.6 15.5 14.5 17 12 17Z",
     },
     {
         key: "poll",
         label: "Poll",
-        color: "bg-amber-500",
         path: "M4 4h2v16H4Zm14 6h2v10h-2Zm-7-3h2v13h-2Z",
     },
     {
         key: "event",
         label: "Event",
-        color: "bg-red-500",
         path: "M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z",
     },
 ];
 
 const { uploadAttachment } = useMessages();
+const { show: showToast } = useToast();
 const inputEl = ref(null);
 const uploading = ref(false);
 const showMenu = ref(false);
@@ -111,15 +108,25 @@ async function onChange(event) {
     try {
         const uploaded = [];
 
+        // One rejected file (too large, e.g.) shouldn't block the rest of a multi-select from
+        // uploading — collect failures and report them together once the batch is done.
+        const failures = [];
         for (const file of files) {
-            const attachment = await uploadAttachment(file);
-            uploaded.push({
-                attachment,
-                type: resolveType(attachment.mime_type),
-            });
+            try {
+                const attachment = await uploadAttachment(file);
+                uploaded.push({
+                    attachment,
+                    type: resolveType(attachment.mime_type),
+                });
+            } catch (e) {
+                failures.push(
+                    e.response?.data?.message ?? `Couldn't upload "${file.name}".`,
+                );
+            }
         }
 
-        emit("uploaded", uploaded);
+        if (uploaded.length) emit("uploaded", uploaded);
+        if (failures.length) showToast([...new Set(failures)].join(" "));
     } finally {
         uploading.value = false;
         forcedType = null;
@@ -154,33 +161,27 @@ async function onChange(event) {
 
         <div
             v-if="showMenu"
-            class="cv-attachment-picker__menu cv-animate-pop-in absolute bottom-14 left-0 z-20 grid w-56 grid-cols-1 gap-1 rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
+            class="cv-attachment-picker__menu cv-animate-pop-in absolute bottom-14 left-0 z-20 w-52 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
         >
             <button
                 v-for="option in OPTIONS"
                 :key="option.key"
                 type="button"
-                class="flex w-full items-center gap-3 rounded-full px-2 py-2 text-left hover:bg-converse-surfaceHover disabled:cursor-not-allowed disabled:opacity-40"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover disabled:cursor-not-allowed disabled:opacity-40"
                 :disabled="option.disabled"
                 :title="option.disabled ? 'Not available yet' : option.label"
                 @click="pick(option)"
             >
-                <span
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
-                    :class="option.color"
+                <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    class="shrink-0 text-converse-textMuted"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="18"
-                        height="18"
-                        fill="currentColor"
-                    >
-                        <path :d="option.path" />
-                    </svg>
-                </span>
-                <span class="text-sm text-converse-text">{{
-                    option.label
-                }}</span>
+                    <path :d="option.path" />
+                </svg>
+                <span>{{ option.label }}</span>
             </button>
         </div>
 
