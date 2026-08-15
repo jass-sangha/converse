@@ -203,7 +203,7 @@ async function submit() {
 </script>
 
 <template>
-    <div class="cv-composer bg-transparent px-3 pb-3 pt-2 sm:px-12">
+    <div class="cv-composer shrink-0 bg-transparent px-3 pb-3 pt-2 sm:px-12">
       <div class="mx-auto max-w-7xl">
         <ReplyPreview
             v-if="replyTo"

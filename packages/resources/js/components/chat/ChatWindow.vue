@@ -182,8 +182,8 @@ function onEdit(message) {
                 </div>
             </div>
 
-            <div class="relative min-h-0 flex-1">
-                <div v-if="activeSearchQuery" class="cv-chat-window__search-results h-full overflow-y-auto bg-converse-chatBg p-3">
+            <div class="flex min-h-0 flex-1 flex-col">
+                <div v-if="activeSearchQuery" class="cv-chat-window__search-results min-h-0 flex-1 overflow-y-auto bg-converse-chatBg p-3">
                     <p class="mb-2 text-xs text-converse-textMuted">Results for "{{ activeSearchQuery }}"</p>
                     <div v-for="message in searchResults" :key="message.id" class="cursor-pointer" @click="jumpToResult(message)">
                         <MessageBubble :message="message" />
@@ -194,12 +194,11 @@ function onEdit(message) {
                 <MessageList
                     v-else
                     :conversation-id="conversation.id"
-                    class="h-full"
                     @reply="onReply"
                     @edit="onEdit"
                 />
 
-                <div v-if="isBlocked" class="cv-chat-window__blocked-bar absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 border-t border-converse-border bg-converse-surface px-4 py-3">
+                <div v-if="isBlocked" class="cv-chat-window__blocked-bar flex shrink-0 items-center justify-between gap-2 border-t border-converse-border bg-converse-surface px-4 py-3">
                     <span class="text-sm text-converse-textMuted">You blocked this contact. New messages won't be sent.</span>
                     <button type="button" class="shrink-0 text-sm font-medium text-converse-accent" @click="onUnblock">Unblock</button>
                 </div>
@@ -209,7 +208,6 @@ function onEdit(message) {
                     :conversation-id="conversation.id"
                     :reply-to="replyTo"
                     :editing="editing"
-                    class="absolute inset-x-0 bottom-0"
                     @dismiss-reply="replyTo = null"
                     @dismiss-edit="editing = null"
                 />
