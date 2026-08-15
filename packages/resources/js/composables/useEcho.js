@@ -165,6 +165,9 @@ function joinConversation(conversationId) {
                 last_seen_at: payload.last_seen_at,
             });
         })
+        .listen('.participant.added', () => {
+            useConversations().refreshOne(conversationId);
+        })
         .listen('.participant.role_changed', () => {
             useConversations().refreshOne(conversationId);
         })

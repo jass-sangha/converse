@@ -3,6 +3,7 @@
 namespace Converse\Chat\Traits;
 
 use Converse\Chat\Enums\MessageType;
+use Converse\Chat\Events\MessageSent;
 use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\Message;
 
@@ -24,6 +25,11 @@ trait SendsSystemMessages
         ]);
 
         $conversation->forceFill(['last_activity_at' => now()])->save();
+
+        // No client optimistically inserts this locally the way a sent message's own author
+        // does — broadcast to everyone, including the actor who triggered it, so it appears
+        // live for them too instead of only after their next reload.
+        broadcast(new MessageSent($message));
 
         return $message;
     }

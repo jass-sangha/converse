@@ -18,7 +18,10 @@ const cols = computed(() => (props.attachments.length === 1 ? "1fr" : "1fr 1fr")
 const tiles = computed(() => {
     const total = props.attachments.length;
     return props.attachments.slice(0, 4).map((attachment, index) => {
-        const isLeadOfThree = total === 3 && index === 0;
+        // The lead-tile treatment only reads naturally for a landscape photo/video thumbnail —
+        // forcing a document's icon+filename into the same wide 2:1 tile just leaves it stranded
+        // in a sea of empty padding, so documents stay in the plain square grid regardless of count.
+        const isLeadOfThree = total === 3 && index === 0 && props.kind !== "document";
         return {
             attachment,
             ratio: total === 1 ? "4 / 3" : isLeadOfThree ? "2 / 1" : "1 / 1",

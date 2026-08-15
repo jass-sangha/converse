@@ -48,6 +48,11 @@ const picked = ref([]);
 const error = ref("");
 const showMedia = ref(false);
 const showStarred = ref(false);
+
+function onJumpToStarred() {
+    showStarred.value = false;
+    emit("close");
+}
 const clearing = ref(false);
 const cleared = ref(false);
 const avatarUploading = ref(false);
@@ -861,6 +866,7 @@ async function onDeleteChat() {
             <StarredMessagesPanel
                 :conversation-id="conversation.id"
                 @back="showStarred = false"
+                @jump="onJumpToStarred"
             />
         </div>
 

@@ -1,12 +1,26 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useUsers } from '../../../composables/useUsers';
 
 const props = defineProps({
     message: { type: Object, required: true },
 });
 
-const { get } = useUsers();
+const { get, resolve } = useUsers();
+
+// Unlike a regular message, a system event's actor/target(s) may never have appeared
+// anywhere else in this conversation before (e.g. someone just added for the first time) —
+// so they aren't guaranteed to already be in the users cache the way a message sender is.
+const refsToResolve = computed(() => {
+    const meta = props.message.metadata ?? {};
+    const refs = [];
+    if (meta.actor_type) refs.push({ type: meta.actor_type, id: meta.actor_id });
+    if (meta.target_type) refs.push({ type: meta.target_type, id: meta.target_id });
+    if (Array.isArray(meta.targets)) refs.push(...meta.targets);
+    return refs;
+});
+
+watch(refsToResolve, (refs) => { if (refs.length) resolve(refs); }, { immediate: true });
 
 const text = computed(() => {
     const meta = props.message.metadata ?? {};

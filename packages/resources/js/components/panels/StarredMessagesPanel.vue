@@ -9,15 +9,17 @@ import { useMessages } from "../../composables/useMessages";
 import { useUsers } from "../../composables/useUsers";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 import { chatableKey } from "../../chatable";
+import { useChatStore } from "../../store";
 
 const props = defineProps({
     conversationId: { type: Number, default: null },
 });
 
-const emit = defineEmits(["back"]);
+const emit = defineEmits(["back", "jump"]);
 
 const { setView } = useSidebarUi();
 const api = useApi();
+const store = useChatStore();
 const { setActive } = useConversations();
 const { unstar } = useMessages();
 const { resolve, get } = useUsers();
@@ -122,9 +124,10 @@ function snippet(message) {
 }
 
 function jumpTo(message) {
+    store.pendingScrollMessageId = message.id;
     setActive(message.conversation_id);
     if (props.conversationId) {
-        emit("back");
+        emit("jump");
     } else {
         setView("chats");
     }
