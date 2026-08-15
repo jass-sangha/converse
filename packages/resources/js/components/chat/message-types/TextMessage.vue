@@ -27,7 +27,7 @@ const segments = computed(() => {
 <template>
     <div class="cv-text-message">
         <p
-            class="cv-text-message__body whitespace-pre-wrap break-words text-sm px-2"
+            class="cv-text-message__body whitespace-pre-wrap break-words text-sm"
         >
             <template v-for="segment in segments" :key="segment.key">
                 <a

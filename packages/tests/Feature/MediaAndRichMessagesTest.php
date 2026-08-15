@@ -277,3 +277,30 @@ it('fetches and caches a link preview', function () {
 
     Http::assertSentCount(1);
 });
+
+it('retries a link preview that failed instead of caching the empty result', function () {
+    $alice = mediaUser('alice-preview-retry@example.com');
+
+    // One fake registration with a sequence — Http::fake() resets its own request log each
+    // time it's called, so this is the correct way to assert a real second network attempt
+    // rather than a replayed cache hit.
+    Http::fake([
+        'dead-site.example/*' => Http::sequence()
+            ->push('', 500)
+            ->push('<html><head><meta property="og:title" content="Back Up"></head></html>', 200),
+    ]);
+
+    $first = $this->actingAs($alice)
+        ->postJson('/api/chat/link-preview', ['url' => 'https://dead-site.example/page'])
+        ->assertOk();
+    expect($first->json('data.title'))->toBeNull();
+
+    // A second attempt should retry over the network rather than replay the cached failure —
+    // a dead site now responding shouldn't stay "no preview" for the rest of the cache TTL.
+    $second = $this->actingAs($alice)
+        ->postJson('/api/chat/link-preview', ['url' => 'https://dead-site.example/page'])
+        ->assertOk();
+    expect($second->json('data.title'))->toBe('Back Up');
+
+    Http::assertSentCount(2);
+});

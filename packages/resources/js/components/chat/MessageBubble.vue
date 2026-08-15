@@ -188,6 +188,19 @@ function stopDragListeners() {
     }
 }
 
+// A fixed-position overlay (the media viewer, any future modal) can render as a DOM
+// descendant of the bubble row even though it visually escapes it entirely — pointer capture
+// from the drag gesture would otherwise hijack clicks inside it, redirecting the browser's
+// synthesized click event's target back to this row no matter where on screen it happened.
+function isInsideFixedOverlay(target) {
+    let node = target;
+    while (node && node !== root.value) {
+        if (getComputedStyle(node).position === "fixed") return true;
+        node = node.parentElement;
+    }
+    return false;
+}
+
 function onBubblePointerDown(event) {
     if (props.message.deleted_for_everyone) return;
     if (
@@ -196,6 +209,7 @@ function onBubblePointerDown(event) {
         )
     )
         return;
+    if (isInsideFixedOverlay(event.target)) return;
     // A mouse drag only ever starts from the primary button; touch/pen contacts don't carry a
     // meaningful button value the same way.
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -271,7 +285,9 @@ const visibleMenuItems = computed(() =>
         if (item.ownOnly && !isOwn.value) return false;
         if (item.textOnly && props.message.type !== "text") return false;
         if (item.windowed) {
-            const ageMinutes = (Date.now() - new Date(props.message.created_at).getTime()) / 60000;
+            const ageMinutes =
+                (Date.now() - new Date(props.message.created_at).getTime()) /
+                60000;
             if (ageMinutes > DELETE_FOR_EVERYONE_WINDOW_MINUTES) return false;
         }
         return true;
@@ -314,7 +330,8 @@ function onDocumentClick(event) {
     }
 }
 
-const { opened: dropdownOpened, closed: dropdownClosed } = useExclusiveDropdown();
+const { opened: dropdownOpened, closed: dropdownClosed } =
+    useExclusiveDropdown();
 
 function closeAllPopups() {
     showMenu.value = false;
@@ -584,7 +601,7 @@ function onMenuAction(key) {
         />
 
         <div
-            class="cv-message-bubble__content relative max-w-[min(55%,380px)] rounded-[20px] p-1 shadow-cv"
+            class="cv-message-bubble__content relative max-w-[min(55%,380px)] rounded-[20px] p-2 shadow-cv"
             :class="[
                 isOwn
                     ? 'rounded-br-[8px] bg-converse-bubbleOut'
@@ -598,13 +615,6 @@ function onMenuAction(key) {
                 title="Pinned"
                 >📌</span
             >
-
-            <p
-                v-if="showSenderInfo"
-                class="mb-0.5 truncate text-[11.5px] font-bold text-converse-sageText"
-            >
-                {{ sender.name }}
-            </p>
 
             <ReplyPreview
                 v-if="message.reply_to"
@@ -627,16 +637,22 @@ function onMenuAction(key) {
             />
 
             <div
-                class="cv-message-bubble__meta mt-0.5 flex items-center justify-end gap-1 text-[10px] text-converse-textMuted px-2"
+                class="cv-message-bubble__meta mt-0.5 flex items-center gap-1 text-[10px] text-converse-textMuted"
+                :class="showSenderInfo ? 'justify-between' : 'justify-end'"
             >
-                <span>{{
-                    new Date(message.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    })
+                <span v-if="showSenderInfo" class="truncate font-bold text-converse-sageText">{{
+                    sender.name
                 }}</span>
-                <span v-if="message.edited_at">(edited)</span>
-                <ReadReceiptTicks v-if="isOwn" :status="message.status" />
+                <span class="flex shrink-0 items-center gap-1">
+                    <span>{{
+                        new Date(message.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                        })
+                    }}</span>
+                    <span v-if="message.edited_at">(edited)</span>
+                    <ReadReceiptTicks v-if="isOwn" :status="message.status" />
+                </span>
             </div>
 
             <ReactionPills

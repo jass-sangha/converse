@@ -8,8 +8,17 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+// Everything else browsers happily render inline via <iframe> — for anything not in this list
+// (docx, xlsx, zip, ...) there's nothing useful to embed, so the modal falls back to a plain
+// "open it yourself" state instead of a blank or broken frame.
+const IFRAME_RENDERABLE_MIME_TYPES = new Set(['application/pdf', 'text/plain', 'text/html']);
+
 const current = ref(props.index);
 const item = computed(() => props.items[current.value]);
+const isDocument = computed(() => item.value?.kind === 'document');
+const isIframeRenderable = computed(
+    () => isDocument.value && IFRAME_RENDERABLE_MIME_TYPES.has(item.value?.mime_type),
+);
 
 function close() {
     emit('close');
@@ -67,6 +76,27 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
             </button>
 
             <video v-if="item?.kind === 'video'" :src="item.url" controls autoplay class="max-h-full max-w-full rounded" />
+            <iframe
+                v-else-if="isIframeRenderable"
+                :src="item.url"
+                :title="item.original_filename"
+                class="h-full w-full rounded bg-white"
+            />
+            <div
+                v-else-if="isDocument"
+                class="flex flex-col items-center gap-4 rounded-2xl bg-white/5 px-10 py-14 text-center text-white/80"
+            >
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor" class="text-white/50"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /></svg>
+                <p class="text-sm">No preview available for this file type.</p>
+                <a
+                    :href="item.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="rounded-full bg-white/10 px-5 py-2 text-sm font-medium hover:bg-white/20"
+                >
+                    Download {{ item.original_filename }}
+                </a>
+            </div>
             <img v-else :src="item?.url" :alt="item?.original_filename" class="max-h-full max-w-full rounded object-contain">
 
             <button
