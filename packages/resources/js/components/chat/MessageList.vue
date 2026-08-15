@@ -63,11 +63,13 @@ function isNearBottom() {
     return el.scrollHeight - el.scrollTop - el.clientHeight < 150;
 }
 
-function scrollToBottom() {
+function scrollToBottom({ smooth = false } = {}) {
     nextTick(() => {
-        if (scrollEl.value) {
-            scrollEl.value.scrollTop = scrollEl.value.scrollHeight;
-        }
+        if (!scrollEl.value) return;
+        scrollEl.value.scrollTo({
+            top: scrollEl.value.scrollHeight,
+            behavior: smooth ? 'smooth' : 'auto',
+        });
     });
 }
 
@@ -149,7 +151,7 @@ function onScroll() {
 
 function onScrollToBottomClick() {
     stickToBottom = true;
-    scrollToBottom();
+    scrollToBottom({ smooth: true });
 }
 
 // Sending your own message should always land you at the bottom to see it, even if you'd
