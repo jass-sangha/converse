@@ -31,11 +31,11 @@ const OPTIONS = [
         label: "Poll",
         path: "M4 4h2v16H4Zm14 6h2v10h-2Zm-7-3h2v13h-2Z",
     },
-    {
-        key: "event",
-        label: "Event",
-        path: "M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z",
-    },
+    // {
+    //     key: "event",
+    //     label: "Event",
+    //     path: "M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z",
+    // },
 ];
 
 const { uploadAttachment } = useMessages();
@@ -47,7 +47,8 @@ const showCamera = ref(false);
 const root = ref(null);
 let forcedType = null;
 
-const { opened: dropdownOpened, closed: dropdownClosed } = useExclusiveDropdown();
+const { opened: dropdownOpened, closed: dropdownClosed } =
+    useExclusiveDropdown();
 
 function closeMenu() {
     showMenu.value = false;
@@ -132,7 +133,8 @@ async function onChange(event) {
                 });
             } catch (e) {
                 failures.push(
-                    e.response?.data?.message ?? `Couldn't upload "${file.name}".`,
+                    e.response?.data?.message ??
+                        `Couldn't upload "${file.name}".`,
                 );
             }
         }
