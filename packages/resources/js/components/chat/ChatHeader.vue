@@ -85,24 +85,22 @@ const subtitle = computed(() => {
         </div>
 
         <div class="cv-chat-header__actions flex items-center gap-1">
-            <template v-if="conversation.type === 'private'">
-                <button
-                    type="button"
-                    title="Voice call"
-                    class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click="startCall(conversation, { video: false })"
-                >
-                    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z"/></svg>
-                </button>
-                <button
-                    type="button"
-                    title="Video call"
-                    class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
-                    @click="startCall(conversation, { video: true })"
-                >
-                    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="M15.5 11l6-3.2v8.4l-6-3.2Z"/></svg>
-                </button>
-            </template>
+            <button
+                type="button"
+                title="Voice call"
+                class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                @click="startCall(conversation, { video: false })"
+            >
+                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z"/></svg>
+            </button>
+            <button
+                type="button"
+                title="Video call"
+                class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                @click="startCall(conversation, { video: true })"
+            >
+                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="M15.5 11l6-3.2v8.4l-6-3.2Z"/></svg>
+            </button>
             <button
                 type="button"
                 title="Search in chat"

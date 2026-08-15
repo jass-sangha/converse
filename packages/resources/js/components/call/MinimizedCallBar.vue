@@ -3,19 +3,29 @@ import { computed, onMounted, watch } from "vue";
 import { useCall } from "../../composables/useCall";
 import { useUsers } from "../../composables/useUsers";
 
-const { phase, peer, minimized, elapsed, restore, endCall } = useCall();
+const { phase, announcer, peers, isGroupCall, minimized, elapsed, restore, endCall } = useCall();
 const { resolve, get } = useUsers();
 
+const soloRef = computed(() => {
+    if (peers.value.length === 1) return peers.value[0];
+    if (peers.value.length === 0 && announcer.value) return announcer.value;
+    return null;
+});
+
 async function ensureResolved() {
-    if (peer.value) {
-        await resolve([peer.value]);
+    if (soloRef.value) {
+        await resolve([soloRef.value]);
     }
 }
 
 onMounted(ensureResolved);
-watch(peer, ensureResolved);
+watch(soloRef, ensureResolved);
 
-const person = computed(() => get(peer.value));
+const label = computed(() => {
+    if (soloRef.value) return get(soloRef.value).name ?? "Call";
+    if (isGroupCall.value) return peers.value.length ? `${peers.value.length + 1} in call` : "Group call";
+    return "Call";
+});
 
 const visible = computed(
     () =>
@@ -43,7 +53,7 @@ const statusLabel = computed(() => {
         <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-converse-accent" />
         <span class="flex min-w-0 items-baseline gap-2">
             <span class="truncate text-sm font-bold text-converse-text">{{
-                person?.name ?? "Call"
+                label
             }}</span>
             <span
                 class="shrink-0 text-xs font-medium tabular-nums text-converse-textMuted"

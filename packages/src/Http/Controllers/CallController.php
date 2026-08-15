@@ -15,14 +15,27 @@ class CallController extends Controller
 
         $data = $request->validate([
             'payload' => ['required', 'array'],
+            'to_type' => ['nullable', 'string'],
+            'to_id' => ['nullable', 'integer'],
         ]);
 
         $chatable = $request->user();
 
-        $recipientChannels = $conversation->activeParticipants()
+        $recipients = $conversation->activeParticipants()
             ->get()
             ->reject(fn ($participant) => $participant->chatable_type === $chatable->getMorphClass()
-                && (string) $participant->chatable_id === (string) $chatable->getKey())
+                && (string) $participant->chatable_id === (string) $chatable->getKey());
+
+        // A group call's peer-to-peer mesh needs offers/answers/ICE candidates routed to one
+        // specific participant, not broadcast to the whole conversation the way a "someone is
+        // joining the call" announcement is — otherwise every member would try to answer an SDP
+        // negotiation that was only ever meant for one of them.
+        if (! empty($data['to_type']) && isset($data['to_id'])) {
+            $recipients = $recipients->filter(fn ($participant) => $participant->chatable_type === $data['to_type']
+                && (string) $participant->chatable_id === (string) $data['to_id']);
+        }
+
+        $recipientChannels = $recipients
             ->map(fn ($participant) => "chatable.{$participant->chatable_type}.{$participant->chatable_id}")
             ->values()
             ->all();

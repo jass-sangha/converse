@@ -5,26 +5,40 @@ import { useCall } from '../../composables/useCall';
 import { useUsers } from '../../composables/useUsers';
 
 const {
-    phase, peer, video, muted, camOn, speakerOn, minimized, elapsed,
-    localStream, remoteStream, acceptCall, declineCall, endCall,
+    phase, announcer, peers, isGroupCall, video, muted, camOn, speakerOn, minimized, elapsed,
+    localStream, acceptCall, declineCall, endCall,
     toggleMute, toggleCam, toggleSpeaker, minimize,
 } = useCall();
 
 const { resolve, get } = useUsers();
 
 const localVideoEl = ref(null);
-const remoteVideoEl = ref(null);
+
+const refsToResolve = computed(() => {
+    const refs = peers.value.map((p) => ({ type: p.type, id: p.id }));
+    if (announcer.value) refs.push(announcer.value);
+    return refs;
+});
 
 async function ensureResolved() {
-    if (peer.value) {
-        await resolve([peer.value]);
+    if (refsToResolve.value.length) {
+        await resolve(refsToResolve.value);
     }
 }
 
 onMounted(ensureResolved);
-watch(peer, ensureResolved);
+watch(refsToResolve, ensureResolved);
 
-const person = computed(() => get(peer.value));
+// The single person to name/avatar in the header area: whoever we're ringing or being rung by
+// before any mesh connection exists yet, or the other participant once exactly one has joined —
+// true for a 1:1 call by definition, and looks/behaves identically for a group call that
+// currently has just one other person in it. Only once a third person joins does this stop being
+// meaningful and the grid/count view (see template) takes over instead.
+const soloPerson = computed(() => {
+    if (peers.value.length === 1) return get(peers.value[0]);
+    if (peers.value.length === 0 && announcer.value) return get(announcer.value);
+    return null;
+});
 
 const visible = computed(
     () => !minimized.value && ['outgoing', 'incoming', 'connecting', 'live'].includes(phase.value),
@@ -43,12 +57,14 @@ const statusLabel = computed(() => {
     }
 });
 
-watch(localStream, (stream) => {
-    if (localVideoEl.value) localVideoEl.value.srcObject = stream ?? null;
+const titleLabel = computed(() => {
+    if (soloPerson.value) return soloPerson.value.name ?? 'Unknown';
+    if (isGroupCall.value) return peers.value.length ? `${peers.value.length + 1} in call` : 'Waiting for others to join…';
+    return 'Unknown';
 });
 
-watch(remoteStream, (stream) => {
-    if (remoteVideoEl.value) remoteVideoEl.value.srcObject = stream ?? null;
+watch(localStream, (stream) => {
+    if (localVideoEl.value) localVideoEl.value.srcObject = stream ?? null;
 });
 </script>
 
@@ -59,7 +75,7 @@ watch(remoteStream, (stream) => {
     >
         <div class="flex w-full items-center justify-between gap-4 px-5 pb-0 pt-[max(env(safe-area-inset-top),20px)] sm:pt-6">
             <span class="text-xs font-bold uppercase tracking-wide text-converse-textMuted">
-                {{ video ? 'Video call' : 'Voice call' }}
+                {{ video ? 'Video call' : 'Voice call' }}{{ isGroupCall ? ' · Group' : '' }}
             </span>
             <button
                 type="button"
@@ -73,20 +89,48 @@ watch(remoteStream, (stream) => {
         </div>
 
         <div class="flex flex-1 min-h-0 w-full flex-col items-center justify-center gap-6 px-6">
-            <div v-if="video" class="relative aspect-[16/10] w-full max-w-[760px] overflow-hidden rounded-[32px] bg-converse-railBg shadow-lg">
-                <video ref="remoteVideoEl" autoplay playsinline class="h-full w-full object-cover" />
-                <div class="absolute bottom-4 right-4 aspect-[4/3] w-[150px] overflow-hidden rounded-2xl border-2 border-converse-surface bg-converse-railBg">
-                    <video ref="localVideoEl" autoplay playsinline muted class="h-full w-full object-cover" />
+            <template v-if="video">
+                <div class="relative w-full max-w-[760px] overflow-hidden rounded-[32px] bg-converse-railBg shadow-lg">
+                    <div
+                        class="grid gap-1"
+                        :class="peers.length > 1 ? 'aspect-[16/10] grid-cols-2' : 'aspect-[16/10] grid-cols-1'"
+                    >
+                        <video
+                            v-for="p in peers"
+                            :key="p.key"
+                            :ref="(el) => { if (el) el.srcObject = p.stream; }"
+                            autoplay
+                            playsinline
+                            class="h-full w-full object-cover"
+                        />
+                        <div v-if="!peers.length" class="flex items-center justify-center">
+                            <Avatar :name="soloPerson?.name ?? ''" :avatar-url="soloPerson?.avatar_url" :size="96" />
+                        </div>
+                    </div>
+                    <div class="absolute bottom-4 right-4 aspect-[4/3] w-[150px] overflow-hidden rounded-2xl border-2 border-converse-surface bg-converse-railBg">
+                        <video ref="localVideoEl" autoplay playsinline muted class="h-full w-full object-cover" />
+                    </div>
                 </div>
-            </div>
+            </template>
 
-            <div v-else class="relative grid place-items-center">
-                <div class="cv-animate-call-pulse absolute inset-0 rounded-full" />
-                <Avatar :name="person?.name ?? ''" :avatar-url="person?.avatar_url" :size="132" />
-            </div>
+            <template v-else-if="!isGroupCall || peers.length <= 1">
+                <div class="relative grid place-items-center">
+                    <div class="cv-animate-call-pulse absolute inset-0 rounded-full" />
+                    <Avatar :name="soloPerson?.name ?? ''" :avatar-url="soloPerson?.avatar_url" :size="132" />
+                </div>
+            </template>
+
+            <template v-else>
+                <div class="flex flex-wrap items-center justify-center gap-5">
+                    <div v-for="p in peers" :key="p.key" class="flex flex-col items-center gap-1.5">
+                        <Avatar :name="get(p).name ?? ''" :avatar-url="get(p).avatar_url" :size="76" />
+                        <span class="max-w-[90px] truncate text-xs text-converse-textMuted">{{ get(p).name }}</span>
+                    </div>
+                </div>
+            </template>
 
             <div class="text-center">
-                <div class="font-display text-3xl font-normal text-converse-text">{{ person?.name ?? 'Unknown' }}</div>
+                <div class="font-display text-3xl font-normal text-converse-text">{{ titleLabel }}</div>
                 <div class="mt-2 text-sm font-semibold tabular-nums text-converse-textMuted">{{ statusLabel }}</div>
             </div>
         </div>

@@ -44,6 +44,34 @@ it('relays a call signal to the conversation channel without writing to the data
     DB::disableQueryLog();
 });
 
+it('relays a targeted call signal to only the specified recipient, for a group call mesh', function () {
+    $alice = callSignalUser('alice-call-3@example.com');
+    $bob = callSignalUser('bob-call-3@example.com');
+    $carol = callSignalUser('carol-call-3@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'group',
+        'name' => 'Call mesh group',
+        'participants' => chatableRefs([$bob, $carol]),
+    ])->json('data.id');
+
+    Event::fake();
+
+    $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/call/signal", [
+            'payload' => ['kind' => 'offer', 'sdp' => 'v=0...'],
+            'to_type' => $bob->getMorphClass(),
+            'to_id' => $bob->getKey(),
+        ])
+        ->assertNoContent();
+
+    Event::assertDispatched(CallSignal::class, function (CallSignal $event) use ($conversationId, $bob, $carol) {
+        return $event->conversationId === $conversationId
+            && $event->recipientChannels === ["chatable.{$bob->getMorphClass()}.{$bob->getKey()}"]
+            && ! in_array("chatable.{$carol->getMorphClass()}.{$carol->getKey()}", $event->recipientChannels, true);
+    });
+});
+
 it('refuses to relay a call signal for a non-participant', function () {
     $alice = callSignalUser('alice-call-2@example.com');
     $bob = callSignalUser('bob-call-2@example.com');
