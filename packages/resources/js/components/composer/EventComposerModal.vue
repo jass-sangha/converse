@@ -1,16 +1,31 @@
 <script setup>
 import { computed, ref } from 'vue';
 import Modal from '../shared/Modal.vue';
+import LocationPickerModal from '../shared/LocationPickerModal.vue';
 
 const emit = defineEmits(['close', 'create']);
 
 const title = ref('');
 const startsAt = ref('');
 const location = ref('');
+const locationCoords = ref(null);
 const description = ref('');
 const submitting = ref(false);
+const showLocationPicker = ref(false);
 
 const canSubmit = computed(() => title.value.trim().length > 0 && startsAt.value.length > 0);
+
+function onLocationPicked(picked) {
+    location.value = picked.name;
+    locationCoords.value = { lat: picked.lat, lng: picked.lng };
+    showLocationPicker.value = false;
+}
+
+function onLocationInput() {
+    // Manually editing the name after picking a spot on the map means it no longer describes
+    // that pin — drop the coordinates rather than silently keep sending a stale location.
+    locationCoords.value = null;
+}
 
 async function submit() {
     if (!canSubmit.value || submitting.value) return;
@@ -21,6 +36,8 @@ async function submit() {
             title: title.value.trim(),
             starts_at: new Date(startsAt.value).toISOString(),
             location: location.value.trim() || null,
+            location_lat: locationCoords.value?.lat ?? null,
+            location_lng: locationCoords.value?.lng ?? null,
             description: description.value.trim() || null,
         });
     } finally {
@@ -48,13 +65,26 @@ async function submit() {
         >
 
         <label class="mb-1 block text-xs font-medium uppercase text-converse-textMuted">Location (optional)</label>
-        <input
-            v-model="location"
-            type="text"
-            maxlength="255"
-            placeholder="Where?"
-            class="mb-4 w-full rounded-cv border border-converse-border bg-transparent px-3 py-1.5 text-sm text-converse-text focus:border-converse-accent focus:outline-none"
-        >
+        <div class="mb-1 flex items-center gap-2">
+            <input
+                v-model="location"
+                type="text"
+                maxlength="255"
+                placeholder="Where?"
+                class="w-full rounded-cv border border-converse-border bg-transparent px-3 py-1.5 text-sm text-converse-text focus:border-converse-accent focus:outline-none"
+                @input="onLocationInput"
+            >
+            <button
+                type="button"
+                title="Choose on map"
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-cv border border-converse-border text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-accentText"
+                @click="showLocationPicker = true"
+            >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
+            </button>
+        </div>
+        <p v-if="locationCoords" class="mb-4 text-xs text-converse-accentText">Pinned on map</p>
+        <p v-else class="mb-4 text-xs text-converse-textMuted">No pin selected — just a name will be shown</p>
 
         <label class="mb-1 block text-xs font-medium uppercase text-converse-textMuted">Description (optional)</label>
         <textarea
@@ -76,4 +106,12 @@ async function submit() {
             </button>
         </template>
     </Modal>
+
+    <LocationPickerModal
+        v-if="showLocationPicker"
+        :initial-lat="locationCoords?.lat ?? null"
+        :initial-lng="locationCoords?.lng ?? null"
+        @close="showLocationPicker = false"
+        @pick="onLocationPicked"
+    />
 </template>

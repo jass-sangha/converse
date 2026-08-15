@@ -6,6 +6,7 @@ import { chatableKey } from '../../../chatable';
 
 const props = defineProps({
     message: { type: Object, required: true },
+    isOwn: { type: Boolean, default: false },
 });
 
 const { respondToEvent } = useMessages();
@@ -19,6 +20,12 @@ const RSVP_OPTIONS = [
 
 const title = computed(() => props.message.metadata?.title ?? '');
 const location = computed(() => props.message.metadata?.location ?? null);
+const locationLat = computed(() => props.message.metadata?.location_lat ?? null);
+const locationLng = computed(() => props.message.metadata?.location_lng ?? null);
+const mapUrl = computed(() => {
+    if (locationLat.value === null || locationLng.value === null) return null;
+    return `https://www.openstreetmap.org/?mlat=${locationLat.value}&mlon=${locationLng.value}#map=16/${locationLat.value}/${locationLng.value}`;
+});
 const description = computed(() => props.message.metadata?.description ?? null);
 const tally = computed(() => props.message.event ?? {});
 
@@ -53,14 +60,27 @@ async function onRespond(status) {
 </script>
 
 <template>
-    <div class="cv-event-message min-w-[240px] max-w-sm rounded border border-converse-border bg-converse-surface p-3">
+    <div
+        class="cv-event-message min-w-[240px] max-w-sm rounded-2xl p-3"
+        :class="isOwn ? 'bg-[rgba(140,73,26,.09)]' : 'bg-converse-surfaceHover'"
+    >
         <div class="mb-2 flex items-center gap-2">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="shrink-0 text-converse-textMuted"><path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z"/></svg>
             <p class="text-sm font-medium text-converse-text">{{ title }}</p>
         </div>
 
         <p class="text-xs text-converse-textMuted">{{ formattedStartsAt }}</p>
-        <p v-if="location" class="text-xs text-converse-textMuted">📍 {{ location }}</p>
+        <p v-if="location" class="text-xs text-converse-textMuted">
+            📍 {{ location }}
+            <a
+                v-if="mapUrl"
+                :href="mapUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="ml-1 font-medium text-converse-accentText hover:underline"
+                @click.stop
+            >View map</a>
+        </p>
         <p v-if="description" class="mt-1 whitespace-pre-wrap text-sm text-converse-text">{{ description }}</p>
 
         <div class="mt-3 flex gap-2">

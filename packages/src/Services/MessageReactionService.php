@@ -35,6 +35,11 @@ class MessageReactionService implements MessageReactionServiceInterface
         return $reactions;
     }
 
+    // No `self` field here on purpose — this same collection is both the HTTP response to the
+    // actor *and* the broadcast payload shared by every other participant, and "self" can't be
+    // scoped per-recipient in a single shared payload. `chatables` carries the objective voter
+    // list instead, and the frontend derives "self" from it locally — the same pattern already
+    // used for poll/event tallies, for the identical reason (see PollMessage.vue).
     protected function grouped(Message $message): Collection
     {
         return $message->reactions()->get()

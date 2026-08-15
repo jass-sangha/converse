@@ -30,6 +30,8 @@ class StoreMessageRequest extends FormRequest
             'metadata.title' => ['required_if:type,event', 'string', 'max:255'],
             'metadata.starts_at' => ['required_if:type,event', 'date'],
             'metadata.location' => ['nullable', 'string', 'max:255'],
+            'metadata.location_lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'metadata.location_lng' => ['nullable', 'numeric', 'between:-180,180'],
             'metadata.description' => ['nullable', 'string', 'max:1000'],
             'attachment_ids' => ['required_if:type,image,video,audio,voice,document,gif,sticker', 'sometimes', 'array', 'min:1'],
             'attachment_ids.*' => ['integer'],

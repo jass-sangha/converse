@@ -159,10 +159,10 @@ async function onCreatePoll({ question, options, multiple }) {
     emit('sent');
 }
 
-async function onCreateEvent({ title: eventTitle, starts_at, location, description }) {
+async function onCreateEvent({ title: eventTitle, starts_at, location, location_lat, location_lng, description }) {
     await send(props.conversationId, {
         type: 'event',
-        metadata: { title: eventTitle, starts_at, location, description },
+        metadata: { title: eventTitle, starts_at, location, location_lat, location_lng, description },
     });
     showEventModal.value = false;
     emit('sent');
