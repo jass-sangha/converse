@@ -10,6 +10,7 @@ use Converse\Chat\Events\ParticipantAdded;
 use Converse\Chat\Events\ParticipantRemoved;
 use Converse\Chat\Events\ParticipantRoleChanged;
 use Converse\Chat\Models\Conversation;
+use Converse\Chat\Models\Message;
 use Converse\Chat\Traits\SendsSystemMessages;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -23,19 +24,21 @@ class ParticipantService implements ParticipantServiceInterface
         protected ParticipantRepositoryInterface $participants,
     ) {}
 
-    public function addParticipants(Conversation $conversation, Collection $chatables, Model $actor): void
+    public function addParticipants(Conversation $conversation, Collection $chatables, Model $actor): Message
     {
         $chatables = $chatables->unique(fn (Model $chatable) => Chat::identify($chatable))->values();
 
         $this->participants->addMany($conversation->id, $chatables);
 
-        $this->sendSystemMessage($conversation, 'participant_added', [
+        $message = $this->sendSystemMessage($conversation, 'participant_added', [
             'actor_type' => $actor->getMorphClass(),
             'actor_id' => $actor->getKey(),
             'targets' => $chatables->map(fn (Model $c) => ['type' => $c->getMorphClass(), 'id' => $c->getKey()])->values()->all(),
         ]);
 
         broadcast(new ParticipantAdded($conversation->id, $chatables, $actor))->toOthers();
+
+        return $message;
     }
 
     public function removeParticipant(Conversation $conversation, Model $target, Model $actor): void

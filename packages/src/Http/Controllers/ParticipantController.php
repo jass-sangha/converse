@@ -7,6 +7,7 @@ use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Contracts\ParticipantServiceInterface;
 use Converse\Chat\Http\Requests\AddParticipantsRequest;
 use Converse\Chat\Http\Requests\ChangeParticipantRoleRequest;
+use Converse\Chat\Http\Resources\MessageResource;
 use Converse\Chat\Http\Resources\ParticipantResource;
 use Converse\Chat\Models\Conversation;
 use Illuminate\Http\Request;
@@ -30,13 +31,14 @@ class ParticipantController extends Controller
     {
         Gate::authorize('manageParticipants', $conversation);
 
-        $this->participantService->addParticipants(
+        $message = $this->participantService->addParticipants(
             $conversation,
             Chat::resolveMany($request->validated()['participants']),
             $request->user(),
         );
 
-        return ParticipantResource::collection($this->participants->activeForConversation($conversation->id));
+        return ParticipantResource::collection($this->participants->activeForConversation($conversation->id))
+            ->additional(['message' => new MessageResource($message->load(MessageController::EAGER))]);
     }
 
     public function destroy(Conversation $conversation, string $chatableType, int $chatableId, Request $request)

@@ -15,7 +15,7 @@ export function useParticipants() {
         const { data } = await api.post(`/conversations/${conversationId}/participants`, {
             participants: participants.map((p) => ({ type: p.type, id: p.id })),
         });
-        return data.data;
+        return { participants: data.data, message: data.message };
     }
 
     async function remove(conversationId, type, id) {

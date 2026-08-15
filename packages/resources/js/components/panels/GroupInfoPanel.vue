@@ -12,7 +12,7 @@ import DisappearingToggle from "./DisappearingToggle.vue";
 import MediaDocsLinksGrid from "./MediaDocsLinksGrid.vue";
 import StarredMessagesPanel from "./StarredMessagesPanel.vue";
 import { mutedUntilFor, MUTE_DURATIONS } from "../../muteDurations";
-import { useChatStore } from "../../store";
+import { useChatStore, upsertMessage } from "../../store";
 import { chatableKey, chatableKeyOf } from "../../chatable";
 import { useUsers } from "../../composables/useUsers";
 import { useParticipants } from "../../composables/useParticipants";
@@ -196,7 +196,12 @@ function openMediaTile(index) {
 async function addMembers() {
     error.value = "";
     try {
-        await add(props.conversation.id, picked.value);
+        // Nothing else inserts this locally — the backend broadcast excludes the actor's own
+        // socket (mirroring how a sent message's own author doesn't wait on their own
+        // broadcast either), so without this the "X added Y" system message wouldn't show up
+        // for the person doing the adding until their next reload.
+        const { message } = await add(props.conversation.id, picked.value);
+        if (message) upsertMessage(props.conversation.id, message);
         await refreshOne(props.conversation.id);
         closeAddMember();
     } catch (e) {

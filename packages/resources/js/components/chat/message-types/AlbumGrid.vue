@@ -10,7 +10,9 @@ const props = defineProps({
 
 const viewerIndex = ref(null);
 
-const cols = computed(() => (props.attachments.length === 1 ? "1fr" : "1fr 1fr"));
+const cols = computed(() =>
+    props.attachments.length === 1 ? "minmax(0, 1fr)" : "minmax(0, 1fr) minmax(0, 1fr)",
+);
 
 // Only the first 4 tiles ever render; the 4th absorbs everything past it behind a "+N"
 // overlay rather than growing the grid unbounded. A lone 3-item album gets its own layout —
@@ -52,7 +54,7 @@ const viewerItems = computed(() =>
             :key="tile.attachment.id"
             type="button"
             title="View"
-            class="relative block bg-converse-surfaceHover"
+            class="relative block min-w-0 bg-converse-surfaceHover"
             :style="{ gridColumn: tile.span, aspectRatio: tile.ratio }"
             @click="viewerIndex = index"
         >
