@@ -140,8 +140,8 @@ function onEdit(message) {
         <p>Select a conversation to start chatting.</p>
     </div>
 
-    <div v-else class="cv-chat-window relative flex h-full">
-        <div class="cv-chat-window__main flex h-full flex-1 flex-col">
+    <div v-else class="cv-chat-window relative flex h-full min-w-0">
+        <div class="cv-chat-window__main flex h-full min-w-0 flex-1 flex-col">
             <ChatHeader
                 :conversation="conversation"
                 :search-open="chatSearchOpen"

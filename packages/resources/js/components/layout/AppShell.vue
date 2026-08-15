@@ -66,7 +66,7 @@ const showMobileTabBar = computed(
             </div>
 
             <div
-                class="cv-app-shell__main flex-1"
+                class="cv-app-shell__main min-w-0 flex-1"
                 :class="{
                     hidden: !(view === 'chats' && store.activeConversationId),
                     'sm:block': true,
