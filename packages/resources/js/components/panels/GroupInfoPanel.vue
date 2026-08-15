@@ -62,10 +62,15 @@ const PARTICIPANTS_PAGE_SIZE = 10;
 const visibleParticipantCount = ref(PARTICIPANTS_PAGE_SIZE);
 
 const visibleParticipants = computed(() =>
-    (props.conversation.participants ?? []).slice(0, visibleParticipantCount.value),
+    (props.conversation.participants ?? []).slice(
+        0,
+        visibleParticipantCount.value,
+    ),
 );
 const hasMoreParticipants = computed(
-    () => visibleParticipantCount.value < (props.conversation.participants?.length ?? 0),
+    () =>
+        visibleParticipantCount.value <
+        (props.conversation.participants?.length ?? 0),
 );
 
 function revealMoreParticipants() {
@@ -371,7 +376,7 @@ async function onDeleteChat() {
 
 <template>
     <div
-        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex w-full flex-col bg-converse-surface md:absolute md:inset-y-0 md:right-0 md:w-[330px] md:shadow-2xl md:border-l md:border-converse-border lg:relative lg:z-auto lg:shrink-0 lg:shadow-none"
+        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex w-full flex-col bg-converse-surface md:absolute md:inset-y-0 md:left-auto md:right-0 md:w-[330px] md:shadow-2xl md:border-l md:border-converse-border lg:relative lg:z-auto lg:shrink-0 lg:shadow-none"
     >
         <SidebarScreenHeader
             :title="isGroup ? 'Group info' : 'Contact info'"
