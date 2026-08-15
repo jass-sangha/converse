@@ -160,10 +160,6 @@ function onScroll() {
                     backgroundRepeat: wallpaper.backgroundRepeat ?? undefined,
                 }"
             />
-            <div
-                class="absolute inset-0"
-                style="background-image: radial-gradient(circle at 1px 1px, var(--cv-dots) 1px, transparent 0); background-size: 22px 22px"
-            />
             <template v-if="wallpaper.isDefault">
                 <div class="absolute -right-[60px] -top-[90px] h-[320px] w-[320px] rounded-full bg-converse-bubbleOut opacity-[.55]" />
                 <div class="absolute -bottom-[120px] left-[40px] h-[380px] w-[380px] rounded-full bg-converse-sageTint opacity-50" />

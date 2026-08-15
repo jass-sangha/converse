@@ -146,7 +146,19 @@ const linkItems = computed(() =>
         .filter(Boolean),
 );
 
+const docViewerItems = computed(() =>
+    docItems.value.map((item) => ({
+        url: item.url,
+        kind: "document",
+        mime_type: item.mime_type,
+        original_filename: item.original_filename,
+    })),
+);
+
 const viewerIndex = ref(null);
+const viewerItems = computed(() =>
+    state.tab === "docs" ? docViewerItems.value : mediaItems.value,
+);
 
 const activeBucket = computed(() => state.byKind[state.tab]);
 const hasMore = computed(
@@ -252,12 +264,11 @@ function formatSize(bytes) {
 
             <template v-else-if="state.tab === 'docs'">
                 <ul v-if="docItems.length" class="flex flex-col gap-1">
-                    <li v-for="item in docItems" :key="item.id">
-                        <a
-                            :href="item.url"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="flex items-center gap-2 rounded-2xl p-2 hover:bg-converse-surfaceHover"
+                    <li v-for="(item, i) in docItems" :key="item.id">
+                        <button
+                            type="button"
+                            class="flex w-full items-center gap-2 rounded-2xl p-2 text-left hover:bg-converse-surfaceHover"
+                            @click="viewerIndex = i"
                         >
                             <span
                                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white"
@@ -283,7 +294,7 @@ function formatSize(bytes) {
                                     >{{ formatSize(item.size_bytes) }}</span
                                 >
                             </span>
-                        </a>
+                        </button>
                     </li>
                 </ul>
                 <p
@@ -367,7 +378,7 @@ function formatSize(bytes) {
 
         <MediaViewerModal
             v-if="viewerIndex !== null"
-            :items="mediaItems"
+            :items="viewerItems"
             :index="viewerIndex"
             @close="viewerIndex = null"
         />

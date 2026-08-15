@@ -78,7 +78,7 @@ async function onRespond(status) {
 
 <template>
     <div
-        class="cv-event-message w-full max-w-sm rounded-2xl border border-converse-border bg-converse-surface p-3"
+        class="cv-event-message min-w-0 max-w-sm rounded-2xl border border-converse-border bg-converse-surface p-3"
     >
         <div class="mb-2 flex items-center gap-2">
             <svg
@@ -115,8 +115,10 @@ async function onRespond(status) {
             {{ description }}
         </p>
 
-        RSVP options disabled for now, kept for future use.
-        <div class="mt-3 flex flex-col gap-2">
+        <!-- RSVP options disabled for now, kept for future use: v-if="false" here (not an HTML
+        comment) survives formatting tools that otherwise strip comment delimiters around
+        directive-bearing markup and leave the content live. -->
+        <div v-if="false" class="mt-3 flex flex-col gap-2">
             <button
                 v-for="option in RSVP_OPTIONS"
                 :key="option.key"
