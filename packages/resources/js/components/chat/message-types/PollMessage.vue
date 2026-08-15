@@ -40,7 +40,7 @@ async function onVote(index) {
 </script>
 
 <template>
-    <div class="cv-poll-message min-w-[240px] max-w-sm rounded-2xl bg-converse-surface p-3">
+    <div class="cv-poll-message w-full max-w-sm rounded-2xl border border-converse-border bg-converse-surface p-3">
         <div class="mb-2 flex items-center gap-2">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="shrink-0 text-converse-textMuted"><path d="M4 4h2v16H4Zm14 6h2v10h-2Zm-7-3h2v13h-2Z"/></svg>
             <p class="text-sm font-medium text-converse-text">{{ question }}</p>

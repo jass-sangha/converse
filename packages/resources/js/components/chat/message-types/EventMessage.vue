@@ -59,7 +59,7 @@ async function onRespond(status) {
 </script>
 
 <template>
-    <div class="cv-event-message min-w-[240px] max-w-sm rounded-2xl bg-converse-surface p-3">
+    <div class="cv-event-message w-full max-w-sm rounded-2xl border border-converse-border bg-converse-surface p-3">
         <div class="mb-2 flex items-center gap-2">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="shrink-0 text-converse-textMuted"><path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z"/></svg>
             <p class="text-sm font-medium text-converse-text">{{ title }}</p>
@@ -84,7 +84,7 @@ async function onRespond(status) {
                 v-for="option in RSVP_OPTIONS"
                 :key="option.key"
                 type="button"
-                class="flex-1 rounded-cv border px-2 py-1.5 text-center text-xs"
+                class="min-w-0 flex-1 rounded-cv border px-2 py-1.5 text-center text-xs"
                 :class="myStatus === option.key
                     ? 'border-converse-accent bg-converse-accent/15 text-converse-accent'
                     : 'border-converse-border text-converse-text hover:bg-converse-surfaceHover'"
