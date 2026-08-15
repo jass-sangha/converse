@@ -34,7 +34,19 @@ class MessageResource extends JsonResource
                 'id' => $this->replyTo->id,
                 'chatable_type' => $this->replyTo->chatable_type,
                 'chatable_id' => $this->replyTo->chatable_id,
+                'type' => $this->replyTo->type?->value,
                 'body' => str($this->replyTo->body ?? '')->limit(100)->toString(),
+                'metadata' => $this->replyTo->metadata,
+                'deleted_for_everyone' => $this->replyTo->isDeletedForEveryone(),
+                'attachments' => $this->replyTo->relationLoaded('attachments')
+                    ? $this->replyTo->attachments->map(fn ($attachment) => [
+                        'id' => $attachment->id,
+                        'url' => $attachment->url,
+                        'thumbnail_url' => $attachment->thumbnail_url,
+                        'mime_type' => $attachment->mime_type,
+                        'original_filename' => $attachment->original_filename,
+                    ])->values()
+                    : [],
             ] : null),
             'attachments' => $this->whenLoaded('attachments', fn () => $this->attachments->map(fn ($attachment) => [
                 'id' => $attachment->id,

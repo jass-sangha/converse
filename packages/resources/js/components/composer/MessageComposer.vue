@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import ReplyPreview from '../chat/ReplyPreview.vue';
 import EmojiPicker from './EmojiPicker.vue';
 import AttachmentPicker from './AttachmentPicker.vue';
@@ -10,6 +10,7 @@ import { useMessages } from '../../composables/useMessages';
 import { useTyping } from '../../composables/useTyping';
 import { useApi } from '../../composables/useApi';
 import { useToast } from '../../composables/useToast';
+import { useExclusiveDropdown } from '../../composables/useExclusiveDropdown';
 
 const props = defineProps({
     conversationId: { type: Number, required: true },
@@ -26,6 +27,7 @@ const { show: showToast } = useToast();
 
 const body = ref('');
 const showEmoji = ref(false);
+const emojiWrap = ref(null);
 const linkPreview = ref(null);
 const recording = ref(false);
 const inputEl = ref(null);
@@ -33,6 +35,37 @@ const stagedAttachments = ref([]);
 const showPollModal = ref(false);
 const showEventModal = ref(false);
 let linkDebounce = null;
+
+const { opened: dropdownOpened, closed: dropdownClosed } = useExclusiveDropdown();
+
+function closeEmoji() {
+    showEmoji.value = false;
+}
+
+function toggleEmoji() {
+    showEmoji.value = !showEmoji.value;
+}
+
+function onEmojiDocumentClick(event) {
+    if (emojiWrap.value && !emojiWrap.value.contains(event.target)) {
+        closeEmoji();
+    }
+}
+
+watch(showEmoji, (open) => {
+    if (open) {
+        document.addEventListener('click', onEmojiDocumentClick);
+        dropdownOpened(closeEmoji);
+    } else {
+        document.removeEventListener('click', onEmojiDocumentClick);
+        dropdownClosed(closeEmoji);
+    }
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', onEmojiDocumentClick);
+    dropdownClosed(closeEmoji);
+});
 
 const hasStaged = computed(() => stagedAttachments.value.length > 0);
 
@@ -268,8 +301,8 @@ async function submit() {
                     @create-event="showEventModal = true"
                 />
 
-                <div class="cv-composer__emoji-wrap relative hidden shrink-0 sm:block">
-                    <button type="button" title="Emoji" class="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent" @click="showEmoji = !showEmoji">
+                <div ref="emojiWrap" class="cv-composer__emoji-wrap relative hidden shrink-0 sm:block">
+                    <button type="button" title="Emoji" class="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent" @click="toggleEmoji">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
                     </button>
                     <div v-if="showEmoji" class="cv-animate-pop-in absolute bottom-14 left-0 z-10">

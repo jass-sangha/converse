@@ -3,6 +3,7 @@
 namespace Converse\Chat\Policies;
 
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
+use Converse\Chat\Enums\ConversationType;
 use Converse\Chat\Enums\MessageType;
 use Converse\Chat\Enums\ParticipantRole;
 use Converse\Chat\Models\Message;
@@ -93,6 +94,15 @@ class MessagePolicy
 
     protected function isAdmin(Message $message, Model $user): bool
     {
+        // "Admin" only means something for a group — a private conversation's creator gets the
+        // same role value as a data-model artifact of how participant rows are seeded, not
+        // because a 1:1 chat has an admin. Without this guard, the sender of a private message
+        // would be able to delete it for everyone past the window purely by having started the
+        // conversation.
+        if ($message->conversation->type !== ConversationType::Group) {
+            return false;
+        }
+
         $participant = $this->participants->findFor($message->conversation_id, $user);
 
         return $participant !== null

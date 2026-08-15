@@ -22,7 +22,12 @@ class OpenGraphLinkPreviewFetcher implements LinkPreviewFetcher
         ];
 
         try {
-            $response = Http::timeout(5)->get($url);
+            // A short timeout here sounds safe but isn't — DNS resolution + connection setup for
+            // an arbitrary third-party URL can legitimately take several seconds, and a fetch
+            // that dies before finishing silently produces a preview with every field null (the
+            // card still renders — it's just blank). Generous, bounded timeouts beat a fast
+            // failure that looks like a bug.
+            $response = Http::connectTimeout(8)->timeout(12)->get($url);
         } catch (\Throwable) {
             return $preview;
         }

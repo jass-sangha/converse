@@ -90,6 +90,23 @@ it('deletes a message for me without affecting the other participant, and for ev
         ->and($alicesListAfter->json('data.0.deleted_for_everyone'))->toBeTrue();
 });
 
+it('only lets the sender delete for everyone within the configured window', function () {
+    $alice = socialUser('alice-delwindow@example.com');
+    $bob = socialUser('bob-delwindow@example.com');
+    $conversationId = privateConversationBetween($alice, $bob);
+
+    $messageId = $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'oops'])
+        ->json('data.id');
+
+    // Past config('chat.message.delete_for_everyone_window_minutes') (5) — the sender can no
+    // longer delete for everyone, only for themselves.
+    $this->travel(6)->minutes();
+
+    $this->actingAs($alice)->deleteJson("/api/chat/messages/{$messageId}")->assertForbidden();
+    $this->actingAs($alice)->deleteJson("/api/chat/messages/{$messageId}/me")->assertNoContent();
+});
+
 it('edits a message body within the edit window', function () {
     $alice = socialUser('alice-edit@example.com');
     $bob = socialUser('bob-edit@example.com');

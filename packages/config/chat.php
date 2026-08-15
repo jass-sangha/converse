@@ -186,7 +186,7 @@ return [
     */
     'message' => [
         'edit_window_minutes' => 15,
-        'delete_for_everyone_window_minutes' => null,
+        'delete_for_everyone_window_minutes' => 5,
     ],
 
     /*

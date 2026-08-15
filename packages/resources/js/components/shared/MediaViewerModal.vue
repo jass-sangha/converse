@@ -35,7 +35,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
 
 <template>
     <div class="cv-media-viewer cv-animate-fade-in fixed inset-0 z-[60] flex flex-col bg-black/90" @click.self="close">
-        <div class="flex items-center justify-between px-4 py-3 text-white/90">
+        <div class="flex items-center justify-between px-4 py-3 text-white/90" @click.self="close">
             <span class="truncate text-sm">{{ item?.original_filename }}</span>
             <div class="flex shrink-0 items-center gap-3">
                 <span v-if="items.length > 1" class="text-xs text-white/60">{{ current + 1 }} / {{ items.length }}</span>

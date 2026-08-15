@@ -3,6 +3,7 @@ import { onBeforeUnmount, ref, watch } from "vue";
 import CameraCapture from "./CameraCapture.vue";
 import { useMessages } from "../../composables/useMessages";
 import { useToast } from "../../composables/useToast";
+import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 
 const emit = defineEmits(["uploaded", "create-poll", "create-event"]);
 
@@ -46,25 +47,36 @@ const showCamera = ref(false);
 const root = ref(null);
 let forcedType = null;
 
+const { opened: dropdownOpened, closed: dropdownClosed } = useExclusiveDropdown();
+
+function closeMenu() {
+    showMenu.value = false;
+}
+
 function toggleMenu() {
     showMenu.value = !showMenu.value;
 }
 
 function onDocumentClick(event) {
     if (root.value && !root.value.contains(event.target)) {
-        showMenu.value = false;
+        closeMenu();
     }
 }
 
 watch(showMenu, (open) => {
     if (open) {
         document.addEventListener("click", onDocumentClick);
+        dropdownOpened(closeMenu);
     } else {
         document.removeEventListener("click", onDocumentClick);
+        dropdownClosed(closeMenu);
     }
 });
 
-onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
+onBeforeUnmount(() => {
+    document.removeEventListener("click", onDocumentClick);
+    dropdownClosed(closeMenu);
+});
 
 function pick(option) {
     if (option.disabled) return;

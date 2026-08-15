@@ -4,6 +4,8 @@ import { useChatStore } from "../../store";
 import { chatableKeyOf } from "../../chatable";
 import { useMessages } from "../../composables/useMessages";
 import { useMessagePins } from "../../composables/useMessagePins";
+import { useUsers } from "../../composables/useUsers";
+import Avatar from "../shared/Avatar.vue";
 import TextMessage from "./message-types/TextMessage.vue";
 import ImageMessage from "./message-types/ImageMessage.vue";
 import VideoMessage from "./message-types/VideoMessage.vue";
@@ -25,6 +27,7 @@ import MessageInfoModal from "./MessageInfoModal.vue";
 import ReadReceiptTicks from "./ReadReceiptTicks.vue";
 import ForwardModal from "./ForwardModal.vue";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
+import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 
 const TYPE_COMPONENTS = {
     text: TextMessage,
@@ -100,9 +103,15 @@ const MENU_ITEMS = [
         label: "Delete for everyone",
         danger: true,
         ownOnly: true,
+        windowed: true,
         path: "M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z",
     },
 ];
+
+// Mirrors config('chat.message.delete_for_everyone_window_minutes') — the backend is the real
+// enforcement (this only avoids showing an option that would then 403), so a little drift near
+// the boundary is fine.
+const DELETE_FOR_EVERYONE_WINDOW_MINUTES = 5;
 
 const props = defineProps({
     message: { type: Object, required: true },
@@ -114,6 +123,7 @@ const store = useChatStore();
 const { react, unreact, star, unstar, deleteForMe, deleteForEveryone } =
     useMessages();
 const { pin, unpin } = useMessagePins();
+const { get, resolve } = useUsers();
 
 const pinError = ref("");
 const root = ref(null);
@@ -223,6 +233,25 @@ const isGroupConversation = computed(
             ?.type === "group",
 );
 
+// Group chats need to show who sent an incoming message — a private chat's header already
+// says who you're talking to, so this stays off there to match the mockup.
+const showSenderInfo = computed(
+    () => !isOwn.value && isGroupConversation.value && !isSystem.value,
+);
+const senderRef = computed(() => ({
+    type: props.message.chatable_type,
+    id: props.message.chatable_id,
+}));
+const sender = computed(() => get(senderRef.value));
+
+watch(
+    showSenderInfo,
+    (show) => {
+        if (show) resolve([senderRef.value]);
+    },
+    { immediate: true },
+);
+
 const showMenu = ref(false);
 const showReactionPicker = ref(false);
 const showFullEmojiPicker = ref(false);
@@ -241,6 +270,10 @@ const visibleMenuItems = computed(() =>
     MENU_ITEMS.filter((item) => {
         if (item.ownOnly && !isOwn.value) return false;
         if (item.textOnly && props.message.type !== "text") return false;
+        if (item.windowed) {
+            const ageMinutes = (Date.now() - new Date(props.message.created_at).getTime()) / 60000;
+            if (ageMinutes > DELETE_FOR_EVERYONE_WINDOW_MINUTES) return false;
+        }
         return true;
     }),
 );
@@ -277,22 +310,31 @@ function toggleReactionPicker() {
 
 function onDocumentClick(event) {
     if (root.value && !root.value.contains(event.target)) {
-        showMenu.value = false;
-        showReactionPicker.value = false;
-        showFullEmojiPicker.value = false;
+        closeAllPopups();
     }
+}
+
+const { opened: dropdownOpened, closed: dropdownClosed } = useExclusiveDropdown();
+
+function closeAllPopups() {
+    showMenu.value = false;
+    showReactionPicker.value = false;
+    showFullEmojiPicker.value = false;
 }
 
 watch([showMenu, showReactionPicker], ([menu, reaction]) => {
     if (menu || reaction) {
         document.addEventListener("click", onDocumentClick);
+        dropdownOpened(closeAllPopups);
     } else {
         document.removeEventListener("click", onDocumentClick);
+        dropdownClosed(closeAllPopups);
     }
 });
 
 onBeforeUnmount(() => {
     document.removeEventListener("click", onDocumentClick);
+    dropdownClosed(closeAllPopups);
     stopDragListeners();
 });
 
@@ -502,7 +544,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="cv-message-bubble__menu cv-animate-pop-in absolute right-0 z-20 w-[184px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-cv-lg"
+                class="cv-message-bubble__menu cv-animate-pop-in absolute right-0 z-20 w-[220px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-cv-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 :style="{ maxHeight: popMax + 'px' }"
             >
@@ -532,6 +574,15 @@ function onMenuAction(key) {
             </div>
         </div>
 
+        <Avatar
+            v-if="showSenderInfo"
+            :name="sender.name"
+            :avatar-url="sender.avatar_url"
+            :size="30"
+            class="mb-[3px] self-end"
+            :title="sender.name"
+        />
+
         <div
             class="cv-message-bubble__content relative max-w-[min(55%,380px)] rounded-[20px] p-1 shadow-cv"
             :class="[
@@ -547,6 +598,13 @@ function onMenuAction(key) {
                 title="Pinned"
                 >📌</span
             >
+
+            <p
+                v-if="showSenderInfo"
+                class="mb-0.5 truncate text-[11.5px] font-bold text-converse-sageText"
+            >
+                {{ sender.name }}
+            </p>
 
             <ReplyPreview
                 v-if="message.reply_to"
@@ -690,7 +748,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="cv-message-bubble__menu cv-animate-pop-in absolute left-0 z-20 w-[184px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-cv-lg"
+                class="cv-message-bubble__menu cv-animate-pop-in absolute left-0 z-20 w-[220px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-cv-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 :style="{ maxHeight: popMax + 'px' }"
             >

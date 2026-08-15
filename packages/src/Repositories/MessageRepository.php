@@ -31,7 +31,7 @@ class MessageRepository implements MessageRepositoryInterface
         $query = Message::query()
             ->where('conversation_id', $conversation->id)
             ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
-            ->with(['chatable', 'attachments', 'reactions', 'replyTo', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps'])
+            ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps'])
             ->orderByDesc('id');
 
         if ($beforeId !== null) {
@@ -48,7 +48,7 @@ class MessageRepository implements MessageRepositoryInterface
             ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
             ->whereNull('deleted_for_everyone_at')
             ->where('body', 'like', '%'.$query.'%')
-            ->with(['chatable', 'attachments', 'reactions', 'replyTo', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps', 'conversation.participants'])
+            ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps', 'conversation.participants'])
             ->orderByDesc('id');
 
         if ($conversationId !== null) {
