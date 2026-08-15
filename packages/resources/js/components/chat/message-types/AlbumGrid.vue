@@ -4,7 +4,7 @@ import MediaViewerModal from "../../shared/MediaViewerModal.vue";
 
 const props = defineProps({
     attachments: { type: Array, required: true },
-    kind: { type: String, default: "image" }, // 'image' | 'video'
+    kind: { type: String, default: "image" }, // 'image' | 'video' | 'document'
     badge: { type: String, default: null },
 });
 
@@ -32,6 +32,7 @@ const viewerItems = computed(() =>
     props.attachments.map((attachment) => ({
         url: attachment.url,
         kind: props.kind,
+        mime_type: attachment.mime_type,
         original_filename: attachment.original_filename,
     })),
 );
@@ -60,6 +61,13 @@ const viewerItems = computed(() =>
                 playsinline
                 class="h-full w-full object-cover"
             />
+            <div
+                v-else-if="kind === 'document'"
+                class="flex h-full w-full flex-col items-center justify-center gap-1.5 p-2 text-center"
+            >
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" class="shrink-0 text-converse-textMuted"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /></svg>
+                <span class="line-clamp-2 w-full break-words text-[10.5px] font-medium leading-tight text-converse-textMuted">{{ tile.attachment.original_filename }}</span>
+            </div>
             <img
                 v-else
                 :src="tile.attachment.thumbnail_url || tile.attachment.url"

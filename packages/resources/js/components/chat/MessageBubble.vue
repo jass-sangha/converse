@@ -575,7 +575,7 @@ function onMenuAction(key) {
                             ? 'text-converse-danger'
                             : 'text-converse-text'
                     "
-                    @click="onMenuAction(item.key)"
+                    @click.stop="onMenuAction(item.key)"
                 >
                     <svg
                         viewBox="0 0 24 24"
@@ -609,12 +609,25 @@ function onMenuAction(key) {
                 message.reactions?.length ? 'mb-3' : '',
             ]"
         >
-            <span
-                v-if="message.is_pinned"
-                class="cv-message-bubble__pin-indicator absolute -top-2 -left-2 text-xs"
-                title="Pinned"
-                >📌</span
+            <div
+                v-if="message.is_pinned || message.is_starred_by_me"
+                class="cv-message-bubble__badges absolute -top-2 -left-2 flex items-center gap-1"
             >
+                <span
+                    v-if="message.is_pinned"
+                    class="cv-message-bubble__pin-indicator flex h-5 w-5 items-center justify-center rounded-full bg-converse-surface text-converse-accent shadow-cv"
+                    title="Pinned"
+                >
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M16 3v6.5l2 3V15h-6v6l-1 1-1-1v-6H4v-2.5l2-3V3Z" /></svg>
+                </span>
+                <span
+                    v-if="message.is_starred_by_me"
+                    class="cv-message-bubble__star-indicator flex h-5 w-5 items-center justify-center rounded-full bg-converse-surface text-converse-accent shadow-cv"
+                    title="Starred"
+                >
+                    <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2 15 9l7 .6-5.3 4.6L18.2 21 12 17.3 5.8 21l1.5-6.8L2 9.6 9 9Z" /></svg>
+                </span>
+            </div>
 
             <ReplyPreview
                 v-if="message.reply_to"
@@ -780,7 +793,7 @@ function onMenuAction(key) {
                             ? 'text-converse-danger'
                             : 'text-converse-text'
                     "
-                    @click="onMenuAction(item.key)"
+                    @click.stop="onMenuAction(item.key)"
                 >
                     <svg
                         viewBox="0 0 24 24"

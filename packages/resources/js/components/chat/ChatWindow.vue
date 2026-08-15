@@ -176,7 +176,9 @@ function onEdit(message) {
                     class="cv-chat-window__pinned-item flex cursor-pointer items-center gap-2 border-b border-converse-border px-3 py-1.5 last:border-b-0 hover:bg-converse-surfaceHover"
                     @click="scrollToMessage(pinned.id)"
                 >
-                    <span class="text-xs">📌</span>
+                    <span class="flex shrink-0 items-center text-converse-accent">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M16 3v6.5l2 3V15h-6v6l-1 1-1-1v-6H4v-2.5l2-3V3Z" /></svg>
+                    </span>
                     <span class="flex-1 truncate text-xs text-converse-textMuted">{{ pinned.deleted_for_everyone ? 'This message was deleted' : (pinned.type === 'text' ? pinned.body : `[${pinned.type}]`) }}</span>
                     <button type="button" class="cv-chat-window__pinned-unpin text-xs text-converse-textMuted hover:text-converse-danger" @click.stop="onUnpinFromBanner(pinned)">✕</button>
                 </div>

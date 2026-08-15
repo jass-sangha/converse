@@ -80,7 +80,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
                 v-else-if="isIframeRenderable"
                 :src="item.url"
                 :title="item.original_filename"
-                class="h-full w-full rounded bg-white"
+                class="h-full max-h-full w-full max-w-3xl rounded bg-white"
             />
             <div
                 v-else-if="isDocument"
