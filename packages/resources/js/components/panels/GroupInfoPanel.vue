@@ -246,11 +246,12 @@ async function onAvatarRemove() {
 async function removeMember(participant) {
     error.value = "";
     try {
-        await remove(
+        const { message } = await remove(
             props.conversation.id,
             participant.chatable_type,
             participant.chatable_id,
         );
+        if (message) upsertMessage(props.conversation.id, message);
         await refreshOne(props.conversation.id);
     } catch (e) {
         error.value = e.response?.data?.message ?? "Could not remove member.";
@@ -260,12 +261,13 @@ async function removeMember(participant) {
 async function toggleAdmin(participant) {
     error.value = "";
     try {
-        await changeRole(
+        const { message } = await changeRole(
             props.conversation.id,
             participant.chatable_type,
             participant.chatable_id,
             participant.role === "admin" ? "member" : "admin",
         );
+        if (message) upsertMessage(props.conversation.id, message);
         await refreshOne(props.conversation.id);
     } catch (e) {
         error.value = e.response?.data?.message ?? "Could not change role.";

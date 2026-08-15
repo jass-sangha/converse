@@ -64,13 +64,37 @@ function isFavourited(conversation) {
     return !!(conversation.favourited_at || conversation.me?.favourited_at);
 }
 
+// Mirrors the backend's own ORDER BY exactly (pinned first, most-recently-pinned first among
+// those, then most-recently-active) — `upsertConversation()` only patches a conversation's data
+// in place at its existing array index, it never re-sorts, so without this a freshly pinned (or
+// unpinned) chat would keep its old position until the next full list refetch.
+function sortKey(conversation) {
+    const pinnedAt = conversation.me?.pinned_at ? new Date(conversation.me.pinned_at).getTime() : null;
+    const lastActivityAt = conversation.last_activity_at ? new Date(conversation.last_activity_at).getTime() : 0;
+    return { pinnedAt, lastActivityAt };
+}
+
+const sortedConversations = computed(() =>
+    [...store.conversations].sort((a, b) => {
+        const ka = sortKey(a);
+        const kb = sortKey(b);
+        if ((ka.pinnedAt !== null) !== (kb.pinnedAt !== null)) {
+            return ka.pinnedAt !== null ? -1 : 1;
+        }
+        if (ka.pinnedAt !== null && kb.pinnedAt !== null && ka.pinnedAt !== kb.pinnedAt) {
+            return kb.pinnedAt - ka.pinnedAt;
+        }
+        return kb.lastActivityAt - ka.lastActivityAt;
+    }),
+);
+
 const filteredConversations = computed(() => {
     // `refresh()` keeps the conversation open on the right in the store even when a filtered
     // fetch excludes it (e.g. Archived), so the chat window doesn't lose it — exclude it here
     // when it doesn't actually belong in the Archived list, so it doesn't leak into view.
     const source = showArchived.value
-        ? store.conversations.filter((c) => c.me?.archived_at)
-        : store.conversations;
+        ? sortedConversations.value.filter((c) => c.me?.archived_at)
+        : sortedConversations.value;
 
     switch (filter.value) {
         case "unread":

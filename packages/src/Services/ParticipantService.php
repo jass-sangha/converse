@@ -41,13 +41,13 @@ class ParticipantService implements ParticipantServiceInterface
         return $message;
     }
 
-    public function removeParticipant(Conversation $conversation, Model $target, Model $actor): void
+    public function removeParticipant(Conversation $conversation, Model $target, Model $actor): Message
     {
         $this->guardAgainstRemovingSoleAdmin($conversation, $target);
 
         $this->participants->remove($conversation->id, $target);
 
-        $this->sendSystemMessage($conversation, 'participant_removed', [
+        $message = $this->sendSystemMessage($conversation, 'participant_removed', [
             'actor_type' => $actor->getMorphClass(),
             'actor_id' => $actor->getKey(),
             'target_type' => $target->getMorphClass(),
@@ -55,9 +55,11 @@ class ParticipantService implements ParticipantServiceInterface
         ]);
 
         broadcast(new ParticipantRemoved($conversation->id, $target, $actor))->toOthers();
+
+        return $message;
     }
 
-    public function changeRole(Conversation $conversation, Model $target, string $role): void
+    public function changeRole(Conversation $conversation, Model $target, string $role): Message
     {
         $role = ParticipantRole::from($role);
 
@@ -70,13 +72,15 @@ class ParticipantService implements ParticipantServiceInterface
 
         $participant->update(['role' => $role]);
 
-        $this->sendSystemMessage($conversation, 'participant_role_changed', [
+        $message = $this->sendSystemMessage($conversation, 'participant_role_changed', [
             'target_type' => $target->getMorphClass(),
             'target_id' => $target->getKey(),
             'role' => $role->value,
         ]);
 
         broadcast(new ParticipantRoleChanged($conversation->id, $target, $role->value))->toOthers();
+
+        return $message;
     }
 
     public function leaveGroup(Conversation $conversation, Model $chatable): void

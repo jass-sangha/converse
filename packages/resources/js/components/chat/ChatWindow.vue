@@ -12,12 +12,15 @@ import { useMessagePins } from '../../composables/useMessagePins';
 import { useEcho } from '../../composables/useEcho';
 import { useBlockedUsers } from '../../composables/useBlockedUsers';
 import { chatableKey, chatableKeyOf } from '../../chatable';
+import { resolveWallpaper } from '../../wallpapers';
+import { usePreferences } from '../../composables/usePreferences';
 
 const store = useChatStore();
 const { setActive } = useConversations();
-const { load, markDelivered, markRead, search } = useMessages();
+const { load, loadOlder, markDelivered, markRead, search } = useMessages();
 const { list: listPinned, unpin, pinnedFor } = useMessagePins();
 const { unblock } = useBlockedUsers();
+const { defaultWallpaper } = usePreferences();
 
 const replyTo = ref(null);
 const editing = ref(null);
@@ -28,6 +31,9 @@ const chatSearchQuery = ref('');
 
 const conversation = computed(() => store.conversations.find((c) => c.id === store.activeConversationId));
 const activeSearchQuery = computed(() => (chatSearchOpen.value ? chatSearchQuery.value : ''));
+const wallpaper = computed(() =>
+    resolveWallpaper(conversation.value?.me?.wallpaper ?? defaultWallpaper.value),
+);
 
 const otherParticipant = computed(() => {
     if (!conversation.value || conversation.value.type !== 'private') return null;
@@ -77,25 +83,42 @@ watch(() => store.activeConversationId, async (newId, oldId) => {
 
 // Handles jumping to a message within the conversation that's already open — a switch to a
 // different conversation is instead handled inside the activeConversationId watcher above,
-// once that conversation's messages have actually loaded into the DOM.
+// once that conversation's messages have actually loaded. `setActive()` is a no-op when the
+// target conversation is already the active one (Vue's watcher on activeConversationId won't
+// re-fire for a same-value assignment), so this is the only signal for that case.
 watch(() => store.pendingScrollMessageId, (id) => {
     if (!id) return;
-
-    if (document.getElementById(`cv-message-${id}`)) {
-        store.pendingScrollMessageId = null;
-        scrollToMessage(id);
-    }
+    store.pendingScrollMessageId = null;
+    scrollToMessage(id);
 });
 
 const pinnedMessages = computed(() => (conversation.value ? pinnedFor(conversation.value.id) : []));
 
-function scrollToMessage(messageId) {
-    const el = document.getElementById(`cv-message-${messageId}`);
-    if (!el) return;
+// The target may be older than what's currently paginated into the DOM (jumping to a search hit
+// or a pinned/starred message from way back in history) — keep loading older pages until it
+// shows up or there's genuinely nothing left, instead of silently giving up when the element
+// isn't found on the first try.
+async function scrollToMessage(messageId, { conversationId = null } = {}) {
+    const targetConversationId = conversationId ?? store.activeConversationId;
+    if (!targetConversationId) return false;
+
+    let el = document.getElementById(`cv-message-${messageId}`);
+    let guard = 0;
+
+    while (!el && guard < 30) {
+        const older = await loadOlder(targetConversationId);
+        if (!older.length) break;
+        await nextTick();
+        el = document.getElementById(`cv-message-${messageId}`);
+        guard += 1;
+    }
+
+    if (!el) return false;
 
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     el.classList.add('cv-message-bubble--highlight');
     setTimeout(() => el.classList.remove('cv-message-bubble--highlight'), 1600);
+    return true;
 }
 
 async function onUnpinFromBanner(message) {
@@ -184,8 +207,24 @@ function onEdit(message) {
                 </div>
             </div>
 
-            <div class="flex min-h-0 flex-1 flex-col">
-                <div v-if="activeSearchQuery" class="cv-chat-window__search-results min-h-0 flex-1 overflow-y-auto bg-converse-chatBg p-3">
+            <div class="relative flex min-h-0 flex-1 flex-col">
+                <div class="pointer-events-none absolute inset-0 overflow-hidden">
+                    <div
+                        class="absolute inset-0 bg-converse-chatBg"
+                        :style="{
+                            backgroundImage: wallpaper.backgroundImage ?? undefined,
+                            backgroundSize: wallpaper.backgroundSize ?? undefined,
+                            backgroundPosition: wallpaper.backgroundPosition ?? undefined,
+                            backgroundRepeat: wallpaper.backgroundRepeat ?? undefined,
+                        }"
+                    />
+                    <template v-if="wallpaper.isDefault">
+                        <div class="absolute -right-[60px] -top-[90px] h-[320px] w-[320px] rounded-full bg-converse-bubbleOut opacity-[.55]" />
+                        <div class="absolute -bottom-[120px] left-[40px] h-[380px] w-[380px] rounded-full bg-converse-sageTint opacity-50" />
+                    </template>
+                </div>
+
+                <div v-if="activeSearchQuery" class="cv-chat-window__search-results relative min-h-0 flex-1 overflow-y-auto p-3">
                     <p class="mb-2 text-xs text-converse-textMuted">Results for "{{ activeSearchQuery }}"</p>
                     <div v-for="message in searchResults" :key="message.id" class="cursor-pointer" @click="jumpToResult(message)">
                         <MessageBubble :message="message" />
@@ -200,7 +239,7 @@ function onEdit(message) {
                     @edit="onEdit"
                 />
 
-                <div v-if="isBlocked" class="cv-chat-window__blocked-bar flex shrink-0 items-center justify-between gap-2 border-t border-converse-border bg-converse-surface px-4 py-3">
+                <div v-if="isBlocked" class="cv-chat-window__blocked-bar relative flex shrink-0 items-center justify-between gap-2 border-t border-converse-border bg-converse-surface px-4 py-3">
                     <span class="text-sm text-converse-textMuted">You blocked this contact. New messages won't be sent.</span>
                     <button type="button" class="shrink-0 text-sm font-medium text-converse-accent" @click="onUnblock">Unblock</button>
                 </div>

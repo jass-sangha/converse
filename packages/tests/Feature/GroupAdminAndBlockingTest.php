@@ -33,7 +33,8 @@ it('lets the group admin add and remove members but rejects a non-admin', functi
 
     $this->actingAs($alice)
         ->deleteJson("/api/chat/conversations/{$conversationId}/participants/user/{$carol->id}")
-        ->assertNoContent();
+        ->assertOk()
+        ->assertJsonPath('message.metadata.event', 'participant_removed');
 
     $participants = $this->actingAs($alice)
         ->getJson("/api/chat/conversations/{$conversationId}/participants")
@@ -64,7 +65,8 @@ it('prevents the sole admin from demoting themselves or leaving without promotin
 
     $this->actingAs($alice)
         ->patchJson("/api/chat/conversations/{$conversationId}/participants/user/{$bob->id}/role", ['role' => 'admin'])
-        ->assertNoContent();
+        ->assertOk()
+        ->assertJsonPath('message.metadata.event', 'participant_role_changed');
 
     $this->actingAs($alice)
         ->postJson("/api/chat/conversations/{$conversationId}/leave")

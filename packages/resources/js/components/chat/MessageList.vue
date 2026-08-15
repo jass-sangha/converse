@@ -3,8 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, watch }
 import MessageBubble from './MessageBubble.vue';
 import { useChatStore } from '../../store';
 import { useMessages } from '../../composables/useMessages';
-import { resolveWallpaper } from '../../wallpapers';
-import { usePreferences } from '../../composables/usePreferences';
+import { chatableKeyOf } from '../../chatable';
 
 const props = defineProps({
     conversationId: { type: Number, required: true },
@@ -14,16 +13,11 @@ const emit = defineEmits(['reply', 'edit']);
 
 const store = useChatStore();
 const { loadOlder } = useMessages();
-const { defaultWallpaper } = usePreferences();
-
-const conversation = computed(() => store.conversations.find((c) => c.id === props.conversationId));
-const wallpaper = computed(() =>
-    resolveWallpaper(conversation.value?.me?.wallpaper ?? defaultWallpaper.value),
-);
 
 const scrollEl = ref(null);
 const sentinelEl = ref(null);
 const contentEl = ref(null);
+const showScrollToBottom = ref(false);
 let observer = null;
 let resizeObserver = null;
 let stickToBottom = true;
@@ -139,33 +133,41 @@ watch(() => props.conversationId, () => {
     // conversation's messages are already cached (no re-render triggered by a fetch), onUpdated
     // may never fire and the view would stay wherever the previous conversation left it.
     stickToBottom = true;
+    showScrollToBottom.value = false;
     scrollToBottom();
     nextTick(setupObserver);
 });
 
 function onScroll() {
     stickToBottom = isNearBottom();
+    // A separate, larger threshold than stickToBottom's — that one governs "should a new message
+    // auto-scroll me" (only when already essentially at the bottom), this one governs "have I
+    // scrolled far enough away that jumping back down needs its own button".
+    const el = scrollEl.value;
+    showScrollToBottom.value = !!el && el.scrollHeight - el.scrollTop - el.clientHeight > 400;
 }
+
+function onScrollToBottomClick() {
+    stickToBottom = true;
+    scrollToBottom();
+}
+
+// Sending your own message should always land you at the bottom to see it, even if you'd
+// scrolled up to read older history first — `stickToBottom` alone won't cover that since it only
+// tracks whether the user was already near the bottom before this message arrived.
+watch(
+    () => messages.value[messages.value.length - 1],
+    (last) => {
+        if (last && chatableKeyOf(last) === store.currentKey) {
+            stickToBottom = true;
+            scrollToBottom();
+        }
+    },
+);
 </script>
 
 <template>
     <div class="cv-message-list-wrap relative min-h-0 flex-1 overflow-hidden">
-        <div class="pointer-events-none absolute inset-0 overflow-hidden">
-            <div
-                class="absolute inset-0 bg-converse-chatBg"
-                :style="{
-                    backgroundImage: wallpaper.backgroundImage ?? undefined,
-                    backgroundSize: wallpaper.backgroundSize ?? undefined,
-                    backgroundPosition: wallpaper.backgroundPosition ?? undefined,
-                    backgroundRepeat: wallpaper.backgroundRepeat ?? undefined,
-                }"
-            />
-            <template v-if="wallpaper.isDefault">
-                <div class="absolute -right-[60px] -top-[90px] h-[320px] w-[320px] rounded-full bg-converse-bubbleOut opacity-[.55]" />
-                <div class="absolute -bottom-[120px] left-[40px] h-[380px] w-[380px] rounded-full bg-converse-sageTint opacity-50" />
-            </template>
-        </div>
-
         <div
             ref="scrollEl"
             class="cv-message-list relative h-full overflow-y-auto px-3 pb-3 pt-10 sm:px-12"
@@ -188,5 +190,15 @@ function onScroll() {
                 </template>
             </div>
         </div>
+
+        <button
+            v-if="showScrollToBottom"
+            type="button"
+            title="Scroll to bottom"
+            class="cv-animate-pop-in absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full border border-converse-border bg-converse-surface text-converse-textMuted shadow-cv-lg hover:text-converse-accentText sm:right-12"
+            @click="onScrollToBottomClick"
+        >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10l6 6 6-6" /></svg>
+        </button>
     </div>
 </template>

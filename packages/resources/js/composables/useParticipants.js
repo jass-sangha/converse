@@ -19,11 +19,13 @@ export function useParticipants() {
     }
 
     async function remove(conversationId, type, id) {
-        await api.delete(`/conversations/${conversationId}/participants/${type}/${id}`);
+        const { data } = await api.delete(`/conversations/${conversationId}/participants/${type}/${id}`);
+        return { message: data.message };
     }
 
     async function changeRole(conversationId, type, id, role) {
-        await api.patch(`/conversations/${conversationId}/participants/${type}/${id}/role`, { role });
+        const { data } = await api.patch(`/conversations/${conversationId}/participants/${type}/${id}/role`, { role });
+        return { message: data.message };
     }
 
     return { list, add, remove, changeRole };

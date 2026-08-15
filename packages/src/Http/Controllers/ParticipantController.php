@@ -47,9 +47,9 @@ class ParticipantController extends Controller
 
         $target = Chat::resolveChatable($chatableType, $chatableId);
 
-        $this->participantService->removeParticipant($conversation, $target, $request->user());
+        $message = $this->participantService->removeParticipant($conversation, $target, $request->user());
 
-        return response()->noContent();
+        return response()->json(['message' => new MessageResource($message->load(MessageController::EAGER))]);
     }
 
     public function updateRole(ChangeParticipantRoleRequest $request, Conversation $conversation, string $chatableType, int $chatableId)
@@ -58,9 +58,9 @@ class ParticipantController extends Controller
 
         $target = Chat::resolveChatable($chatableType, $chatableId);
 
-        $this->participantService->changeRole($conversation, $target, $request->validated()['role']);
+        $message = $this->participantService->changeRole($conversation, $target, $request->validated()['role']);
 
-        return response()->noContent();
+        return response()->json(['message' => new MessageResource($message->load(MessageController::EAGER))]);
     }
 
     public function leave(Request $request, Conversation $conversation)
