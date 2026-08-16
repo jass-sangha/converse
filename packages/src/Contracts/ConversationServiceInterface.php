@@ -43,6 +43,8 @@ interface ConversationServiceInterface
 
     public function setHidden(Conversation $conversation, Model $chatable, bool $hidden): void;
 
+    public function setManuallyUnread(Conversation $conversation, Model $chatable, bool $unread): void;
+
     public function setWallpaper(Conversation $conversation, Model $chatable, ?string $wallpaper): void;
 
     public function setDisappearingTtl(Conversation $conversation, ?int $ttlSeconds): Conversation;

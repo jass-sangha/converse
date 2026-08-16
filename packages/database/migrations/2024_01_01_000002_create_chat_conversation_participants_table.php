@@ -24,6 +24,7 @@ return new class extends Migration
             $table->timestamp('hidden_at')->nullable();
             $table->string('wallpaper')->nullable();
             $table->unsignedBigInteger('last_read_message_id')->nullable();
+            $table->timestamp('manually_unread_at')->nullable();
             $table->timestamps();
 
             $table->unique(

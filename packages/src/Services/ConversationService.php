@@ -158,6 +158,31 @@ class ConversationService implements ConversationServiceInterface
         $participant->update(['hidden_at' => $hidden ? now() : null]);
     }
 
+    public function setManuallyUnread(Conversation $conversation, Model $chatable, bool $unread): void
+    {
+        $participant = $this->participants->findFor($conversation->id, $chatable);
+
+        abort_if($participant === null, 403);
+
+        if ($unread) {
+            // Independent of last_read_message_id on purpose — this is a personal reminder flag,
+            // not an actual "un-read" of anything, so it must never affect the read receipts the
+            // sender sees on their own messages.
+            $participant->update(['manually_unread_at' => now()]);
+
+            return;
+        }
+
+        $latestId = $conversation->lastMessage?->id;
+
+        $participant->update([
+            'manually_unread_at' => null,
+            'last_read_message_id' => $latestId !== null
+                ? max($latestId, $participant->last_read_message_id ?? 0)
+                : $participant->last_read_message_id,
+        ]);
+    }
+
     public function setWallpaper(Conversation $conversation, Model $chatable, ?string $wallpaper): void
     {
         $participant = $this->participants->findFor($conversation->id, $chatable);

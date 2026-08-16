@@ -171,6 +171,22 @@ class ConversationController extends Controller
         ]));
     }
 
+    public function unread(Request $request, Conversation $conversation)
+    {
+        Gate::authorize('view', $conversation);
+
+        $this->conversations->setManuallyUnread(
+            $conversation,
+            $request->user(),
+            $request->boolean('unread', true),
+        );
+
+        return new ConversationResource($conversation->fresh([
+            'participants' => fn ($query) => $query->whereNull('left_at'),
+            'lastMessage',
+        ]));
+    }
+
     public function favourite(Request $request, Conversation $conversation)
     {
         Gate::authorize('view', $conversation);

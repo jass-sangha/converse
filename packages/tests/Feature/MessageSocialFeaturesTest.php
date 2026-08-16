@@ -204,6 +204,47 @@ it('mutes, archives, and pins a conversation for the requesting participant only
         ->assertJsonPath('data.me.pinned_at', fn ($value) => $value !== null);
 });
 
+it('marks a conversation manually unread without disturbing read receipts, then clears it on mark-read', function () {
+    $alice = socialUser('alice-unread@example.com');
+    $bob = socialUser('bob-unread@example.com');
+    $conversationId = privateConversationBetween($alice, $bob);
+
+    $messageId = $this->actingAs($bob)
+        ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'hi'])
+        ->json('data.id');
+
+    // Alice genuinely reads it — Bob's message now shows as read to Bob.
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", [
+        'up_to_message_id' => $messageId,
+    ])->assertNoContent();
+
+    $bobsReadStatus = $this->actingAs($bob)
+        ->getJson("/api/chat/conversations/{$conversationId}/messages")
+        ->json('data.0.status');
+    expect($bobsReadStatus)->toBe('read');
+
+    // Alice marks it unread again — purely cosmetic on her side.
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/conversations/{$conversationId}/unread", ['unread' => true])
+        ->assertOk()
+        ->assertJsonPath('data.unread_count', 1);
+
+    // Bob's read receipt must be untouched — marking unread never un-reads anything for Bob.
+    $bobsReadStatusAfter = $this->actingAs($bob)
+        ->getJson("/api/chat/conversations/{$conversationId}/messages")
+        ->json('data.0.status');
+    expect($bobsReadStatusAfter)->toBe('read');
+
+    // Opening the conversation again (the normal mark-read flow) clears the manual flag.
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", [
+        'up_to_message_id' => $messageId,
+    ])->assertNoContent();
+
+    $this->actingAs($alice)
+        ->getJson("/api/chat/conversations/{$conversationId}")
+        ->assertJsonPath('data.unread_count', 0);
+});
+
 it('favourites a conversation independently of pinning it', function () {
     $alice = socialUser('alice-fav@example.com');
     $bob = socialUser('bob-fav@example.com');

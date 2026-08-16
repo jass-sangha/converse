@@ -71,10 +71,20 @@ class ConversationResource extends JsonResource
             $query->where('id', '>', $participant->last_read_message_id);
         }
 
-        return $query
+        $count = $query
             ->where(fn ($q) => $q
                 ->where('chatable_type', '!=', $participant->chatable_type)
                 ->orWhere('chatable_id', '!=', $participant->chatable_id))
             ->count();
+
+        // A manual "mark as unread" doesn't move last_read_message_id (that field also drives
+        // read receipts shown to the sender, which this must never touch) — it just floors the
+        // count at 1 so the conversation still shows as unread even when the real cursor-based
+        // count would otherwise be 0.
+        if ($participant->manually_unread_at && $count === 0) {
+            return 1;
+        }
+
+        return $count;
     }
 }

@@ -26,6 +26,7 @@ class ConversationParticipant extends Model
         'hidden_at',
         'wallpaper',
         'last_read_message_id',
+        'manually_unread_at',
     ];
 
     protected $casts = [
@@ -37,6 +38,7 @@ class ConversationParticipant extends Model
         'pinned_at' => 'datetime',
         'favourited_at' => 'datetime',
         'hidden_at' => 'datetime',
+        'manually_unread_at' => 'datetime',
     ];
 
     public function getTable(): string

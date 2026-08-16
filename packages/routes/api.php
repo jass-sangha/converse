@@ -34,6 +34,7 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
         Route::patch('conversations/{conversation}/mute', [ConversationController::class, 'mute']);
         Route::patch('conversations/{conversation}/archive', [ConversationController::class, 'archive']);
         Route::patch('conversations/{conversation}/pin', [ConversationController::class, 'pin']);
+        Route::patch('conversations/{conversation}/unread', [ConversationController::class, 'unread']);
         Route::patch('conversations/{conversation}/favourite', [ConversationController::class, 'favourite']);
         Route::patch('conversations/{conversation}/hide', [ConversationController::class, 'hide']);
         Route::patch('conversations/{conversation}/wallpaper', [ConversationController::class, 'wallpaper']);

@@ -59,6 +59,11 @@ export function useConversations() {
         upsertConversation(data.data);
     }
 
+    async function setUnread(conversationId, unread) {
+        const { data } = await api.patch(`/conversations/${conversationId}/unread`, { unread });
+        upsertConversation(data.data);
+    }
+
     async function setFavourited(conversationId, favourited) {
         const { data } = await api.patch(`/conversations/${conversationId}/favourite`, { favourited });
         upsertConversation(data.data);
@@ -117,6 +122,7 @@ export function useConversations() {
         mute,
         setArchived,
         setPinned,
+        setUnread,
         setFavourited,
         setHidden,
         updateAvatar,

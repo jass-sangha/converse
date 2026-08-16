@@ -8,7 +8,7 @@ const props = defineProps({
     conversation: { type: Object, required: true },
 });
 
-const { mute, setPinned, setFavourited, setArchived } = useConversations();
+const { mute, setPinned, setUnread, setFavourited, setArchived } = useConversations();
 
 const isPinned = computed(
     () => !!(props.conversation.pinned_at || props.conversation.me?.pinned_at),
@@ -22,6 +22,7 @@ const isFavourited = computed(
 );
 const isMuted = computed(() => !!props.conversation.me?.muted_until);
 const isArchived = computed(() => !!props.conversation.me?.archived_at);
+const isUnread = computed(() => (props.conversation.unread_count ?? 0) > 0);
 
 const menuOpen = ref(false);
 const root = ref(null);
@@ -40,13 +41,13 @@ function onDocumentClick(event) {
 }
 
 function toggleMenu() {
-    if (!menuOpen.value) place(triggerEl.value, { preferredHeight: 190 });
+    if (!menuOpen.value) place(triggerEl.value, { preferredHeight: 220 });
     menuOpen.value = !menuOpen.value;
 }
 
 function openMenu() {
     if (menuOpen.value) return;
-    place(triggerEl.value, { preferredHeight: 190 });
+    place(triggerEl.value, { preferredHeight: 220 });
     menuOpen.value = true;
 }
 
@@ -94,6 +95,12 @@ function toggleArchive(event) {
     event.stopPropagation();
     menuOpen.value = false;
     setArchived(props.conversation.id, !isArchived.value);
+}
+
+function toggleUnread(event) {
+    event.stopPropagation();
+    menuOpen.value = false;
+    setUnread(props.conversation.id, !isUnread.value);
 }
 </script>
 
@@ -198,6 +205,27 @@ function toggleArchive(event) {
                     <path d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM12 13v8" />
                 </svg>
                 <span>{{ isPinned ? "Unpin" : "Pin" }}</span>
+            </button>
+            <button
+                type="button"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="toggleUnread"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="shrink-0 text-converse-textMuted"
+                >
+                    <circle cx="12" cy="12" r="9" />
+                    <circle v-if="!isUnread" cx="12" cy="12" r="3.5" fill="currentColor" stroke="none" />
+                </svg>
+                <span>{{ isUnread ? "Mark as read" : "Mark as unread" }}</span>
             </button>
             <button
                 type="button"
