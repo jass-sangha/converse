@@ -1,15 +1,21 @@
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
 import { useBlockedUsers } from "../../composables/useBlockedUsers";
 import { useUsers } from "../../composables/useUsers";
 import { useSidebarUi } from "../../composables/useSidebarUi";
+import { useChatStore } from "../../store";
 
 const { setView } = useSidebarUi();
 const { list: listBlocked, unblock } = useBlockedUsers();
 const { resolve: resolveUsers, get: getUser } = useUsers();
+const store = useChatStore();
+
+function rowKey(row) {
+    return `${row.blocked_type}:${row.blocked_id}`;
+}
 
 const blockedRows = ref([]);
 const loading = ref(false);
@@ -60,7 +66,7 @@ onMounted(async () => {
 onBeforeUnmount(() => observer?.disconnect());
 
 async function onUnblock(row) {
-    const key = `${row.blocked_type}:${row.blocked_id}`;
+    const key = rowKey(row);
     unblockingKey.value = key;
     try {
         await unblock(row.blocked_type, row.blocked_id);
@@ -69,6 +75,37 @@ async function onUnblock(row) {
         unblockingKey.value = null;
     }
 }
+
+// `store.blockedKeys` is the shared source of truth `block()`/`unblock()` update from anywhere in
+// the app (chat header, group info, ...) — this panel's own `blockedRows` comes from its own
+// paginated fetch instead, so blocking/unblocking someone while this panel stays open otherwise
+// only shows up the next time it's closed and reopened. Diff old vs new keys and only add/remove
+// the ones that actually changed — rebuilding the whole list from blockedKeys on every change
+// would reorder every existing row to match that array's order instead of just the one that
+// changed (the same shuffling bug already fixed for the starred-messages panel).
+watch(
+    () => store.blockedKeys.join(","),
+    (newCsv, oldCsv) => {
+        const newKeys = newCsv ? newCsv.split(",") : [];
+        const oldKeys = oldCsv ? oldCsv.split(",") : [];
+        const removedKeys = oldKeys.filter((k) => !newKeys.includes(k));
+        const existingKeys = new Set(blockedRows.value.map(rowKey));
+        const addedKeys = newKeys.filter((k) => !oldKeys.includes(k) && !existingKeys.has(k));
+
+        if (removedKeys.length) {
+            blockedRows.value = blockedRows.value.filter((r) => !removedKeys.includes(rowKey(r)));
+        }
+
+        if (addedKeys.length) {
+            const addedRows = addedKeys.map((k) => {
+                const [blocked_type, blocked_id] = k.split(":");
+                return { blocked_type, blocked_id: Number(blocked_id) };
+            });
+            resolveUsers(addedRows.map((r) => ({ type: r.blocked_type, id: r.blocked_id })));
+            blockedRows.value = [...addedRows, ...blockedRows.value];
+        }
+    },
+);
 </script>
 
 <template>
