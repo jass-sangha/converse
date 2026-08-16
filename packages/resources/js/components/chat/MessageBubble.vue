@@ -692,9 +692,11 @@ function onMenuAction(key) {
                     <button
                         v-if="message.edited_at"
                         type="button"
-                        class="underline decoration-dotted underline-offset-2 hover:text-converse-text"
+                        class="hover:text-converse-text"
                         @click.stop="showEditHistory = true"
-                    >(edited)</button>
+                    >
+                        (edited)
+                    </button>
                     <ReadReceiptTicks v-if="isOwn" :status="message.status" />
                 </span>
             </div>
