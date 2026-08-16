@@ -162,6 +162,111 @@ If you'd rather iframe the full-page route than use the native `<x-chat::widget 
 
 The `chat.frame_ancestors` config (default `"'self'"`) controls who's allowed to frame it — same-origin only by default. Set it to a space-separated list of origins for cross-origin embedding, or to `null`/`false` to disable the header entirely. The page also posts its content height to the parent window via `postMessage` (`{source: 'converse-chat', height}`) whenever it's actually running inside an iframe, so you can auto-size the iframe instead of hardcoding a height. Cross-*origin* iframe embedding additionally needs `SESSION_SAME_SITE=none` and a secure-cookie setup in your own app's session config — same-origin embedding needs no session changes at all.
 
+#### Framework snippets
+
+There's no npm package to install for any of these — the widget stays entirely server-side, you're just pointing an `<iframe>` at `route('converse.chat.page')` and wiring up the auto-resize `postMessage` listener in whatever framework your host app uses. Each snippet below is the whole component.
+
+**Plain HTML / vanilla JS**
+
+```html
+<iframe id="converse-chat" src="/converse/chat" style="width:100%;border:0" title="Chat"></iframe>
+<script>
+  window.addEventListener('message', (e) => {
+    if (e.data?.source === 'converse-chat') {
+      document.getElementById('converse-chat').style.height = e.data.height + 'px';
+    }
+  });
+</script>
+```
+
+**React**
+
+```jsx
+import { useEffect, useRef } from 'react';
+
+export default function ConverseChat({ src = '/converse/chat' }) {
+    const frameRef = useRef(null);
+
+    useEffect(() => {
+        function onMessage(e) {
+            if (e.data?.source === 'converse-chat' && frameRef.current) {
+                frameRef.current.style.height = `${e.data.height}px`;
+            }
+        }
+        window.addEventListener('message', onMessage);
+        return () => window.removeEventListener('message', onMessage);
+    }, []);
+
+    return <iframe ref={frameRef} src={src} style={{ width: '100%', border: 0 }} title="Chat" />;
+}
+```
+
+**Vue 3**
+
+```vue
+<template>
+    <iframe ref="frame" :src="src" style="width:100%;border:0" title="Chat" />
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+
+const props = defineProps({ src: { type: String, default: '/converse/chat' } });
+const frame = ref(null);
+
+function onMessage(e) {
+    if (e.data?.source === 'converse-chat' && frame.value) {
+        frame.value.style.height = `${e.data.height}px`;
+    }
+}
+
+onMounted(() => window.addEventListener('message', onMessage));
+onUnmounted(() => window.removeEventListener('message', onMessage));
+</script>
+```
+
+**Angular**
+
+```ts
+import { Component, ElementRef, HostListener, Input, ViewChild } from '@angular/core';
+
+@Component({
+    selector: 'converse-chat',
+    template: `<iframe #frame [src]="src" style="width:100%;border:0" title="Chat"></iframe>`,
+})
+export class ConverseChatComponent {
+    @Input() src = '/converse/chat';
+    @ViewChild('frame') frame!: ElementRef<HTMLIFrameElement>;
+
+    @HostListener('window:message', ['$event'])
+    onMessage(e: MessageEvent) {
+        if (e.data?.source === 'converse-chat') {
+            this.frame.nativeElement.style.height = `${e.data.height}px`;
+        }
+    }
+}
+```
+
+**Svelte**
+
+```svelte
+<script>
+    export let src = '/converse/chat';
+    let frame;
+
+    function onMessage(e) {
+        if (e.data?.source === 'converse-chat' && frame) {
+            frame.style.height = `${e.data.height}px`;
+        }
+    }
+</script>
+
+<svelte:window on:message={onMessage} />
+<iframe bind:this={frame} {src} style="width:100%;border:0" title="Chat" />
+```
+
+All five assume the frontend is served from the **same origin** as the Laravel app (so the Sanctum session cookie authenticates the iframe for free) and that `src`/`route('converse.chat.page')` resolves to that same origin — swap in an absolute URL plus the cross-origin `frame_ancestors`/`SESSION_SAME_SITE` config above if it isn't.
+
 ## Scheduled commands
 
 Register these in your app's scheduler (`routes/console.php` on Laravel 11/12):
