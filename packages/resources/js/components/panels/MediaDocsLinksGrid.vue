@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
 import { useMessages } from "../../composables/useMessages";
+import { useChatStore } from "../../store";
 import MediaViewerModal from "../shared/MediaViewerModal.vue";
 
 const props = defineProps({
@@ -9,6 +10,17 @@ const props = defineProps({
 });
 
 const messagesApi = useMessages();
+const store = useChatStore();
+
+const MEDIA_TYPES = new Set(["image", "video", "gif", "sticker"]);
+const URL_PATTERN = /https?:\/\/\S+/;
+
+function kindOf(message) {
+    if (MEDIA_TYPES.has(message.type)) return "media";
+    if (message.type === "document") return "docs";
+    if (message.type === "text" && URL_PATTERN.test(message.body ?? "")) return "links";
+    return null;
+}
 
 const TABS = [
     { key: "media", label: "Media" },
@@ -104,6 +116,34 @@ watch(
 
 loadKind(state.tab, { reset: true });
 
+// This panel's items come from its own paginated fetch, not from the shared message store, so a
+// message arriving while the panel stays open (sent from the composer right next to it, or via
+// realtime) would otherwise only show up the next time the panel is closed and reopened. Mirror
+// new messages in directly instead. The global panel (no conversationId prop — opened from the
+// icon rail) has no single conversation of its own to watch, but the chat window next to it can
+// still be showing (and sending into) whichever conversation is currently active, so fall back
+// to that — it's also the only conversation this session ever receives realtime updates for
+// regardless of which one this panel happens to be scoped to.
+watch(
+    () => {
+        const targetId = props.conversationId ?? store.activeConversationId;
+        if (!targetId) return null;
+        const list = store.messagesByConversation[targetId];
+        return list?.[list.length - 1] ?? null;
+    },
+    (last) => {
+        if (!last || last.deleted_for_everyone || state.search) return;
+
+        const kind = kindOf(last);
+        if (!kind) return;
+
+        const bucket = state.byKind[kind];
+        if (!bucket.loaded || bucket.items[0]?.id === last.id) return;
+
+        bucket.items = [last, ...bucket.items];
+    },
+);
+
 const mediaItems = computed(() =>
     state.byKind.media.items
         .filter((m) => !m.deleted_for_everyone)
@@ -126,8 +166,6 @@ const docItems = computed(() =>
             })),
         ),
 );
-
-const URL_PATTERN = /https?:\/\/\S+/;
 
 // Not every link-containing message has a fetched OG preview (that fetch races the send, and
 // can fail or simply never finish in time) — fall back to the bare URL pulled from the body so
