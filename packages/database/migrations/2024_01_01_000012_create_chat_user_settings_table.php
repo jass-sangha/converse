@@ -12,8 +12,12 @@ return new class extends Migration
             $table->id();
             $table->string('chatable_type');
             $table->unsignedBigInteger('chatable_id');
+            $table->string('avatar_path')->nullable();
+            $table->string('about')->nullable();
             $table->boolean('show_last_seen')->default(true);
+            $table->timestamp('last_seen_hidden_until')->nullable();
             $table->boolean('show_read_receipts')->default(true);
+            $table->timestamp('read_receipts_hidden_until')->nullable();
             $table->timestamps();
 
             $table->unique(['chatable_type', 'chatable_id']);

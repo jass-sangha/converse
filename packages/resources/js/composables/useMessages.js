@@ -78,6 +78,11 @@ export function useMessages() {
         return data.data;
     }
 
+    async function editHistory(messageId) {
+        const { data } = await api.get(`/messages/${messageId}/edits`);
+        return data.data;
+    }
+
     async function deleteForEveryone(messageId, conversationId) {
         await api.delete(`/messages/${messageId}`);
         const existing = (store.messagesByConversation[conversationId] ?? []).find((m) => m.id === messageId);
@@ -197,6 +202,7 @@ export function useMessages() {
         loadOlder,
         send,
         update,
+        editHistory,
         deleteForEveryone,
         deleteForMe,
         forward,

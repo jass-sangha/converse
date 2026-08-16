@@ -126,6 +126,33 @@ it('edits a message body within the edit window', function () {
         ->assertForbidden();
 });
 
+it('records each previous body in edit history, visible to any participant', function () {
+    $alice = socialUser('alice-edit-history@example.com');
+    $bob = socialUser('bob-edit-history@example.com');
+    $conversationId = privateConversationBetween($alice, $bob);
+
+    $messageId = $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'first draft'])
+        ->json('data.id');
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/messages/{$messageId}", ['body' => 'second draft'])
+        ->assertOk();
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/messages/{$messageId}", ['body' => 'final'])
+        ->assertOk();
+
+    // Bob never sent or edited it, but can still see what it used to say.
+    $history = $this->actingAs($bob)
+        ->getJson("/api/chat/messages/{$messageId}/edits")
+        ->assertOk()
+        ->json('data');
+
+    expect($history)->toHaveCount(2);
+    expect(collect($history)->pluck('previous_body')->all())->toBe(['second draft', 'first draft']);
+});
+
 it('stars and unstars a message', function () {
     $alice = socialUser('alice-star@example.com');
     $bob = socialUser('bob-star@example.com');

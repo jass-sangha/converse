@@ -25,6 +25,7 @@ import EmojiPicker from "../composer/EmojiPicker.vue";
 import ReactionPills from "./ReactionPills.vue";
 import ReactionDetailsModal from "./ReactionDetailsModal.vue";
 import MessageInfoModal from "./MessageInfoModal.vue";
+import MessageEditHistoryModal from "./MessageEditHistoryModal.vue";
 import ReadReceiptTicks from "./ReadReceiptTicks.vue";
 import ForwardModal from "./ForwardModal.vue";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
@@ -47,6 +48,12 @@ const TYPE_COMPONENTS = {
 };
 
 const QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
+
+// Mirror config('chat.message.edit_window_minutes') / delete_for_everyone_window_minutes — the
+// backend is the real enforcement (this only avoids showing an option that would then 403), so a
+// little drift near the boundary is fine.
+const EDIT_WINDOW_MINUTES = 15;
+const DELETE_FOR_EVERYONE_WINDOW_MINUTES = 5;
 
 const MENU_ITEMS = [
     {
@@ -92,6 +99,7 @@ const MENU_ITEMS = [
         label: "Edit",
         ownOnly: true,
         textOnly: true,
+        windowMinutes: EDIT_WINDOW_MINUTES,
         path: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z",
     },
     {
@@ -105,15 +113,10 @@ const MENU_ITEMS = [
         label: "Delete for everyone",
         danger: true,
         ownOnly: true,
-        windowed: true,
+        windowMinutes: DELETE_FOR_EVERYONE_WINDOW_MINUTES,
         path: "M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z",
     },
 ];
-
-// Mirrors config('chat.message.delete_for_everyone_window_minutes') — the backend is the real
-// enforcement (this only avoids showing an option that would then 403), so a little drift near
-// the boundary is fine.
-const DELETE_FOR_EVERYONE_WINDOW_MINUTES = 5;
 
 const props = defineProps({
     message: { type: Object, required: true },
@@ -273,6 +276,7 @@ const showReactionPicker = ref(false);
 const showFullEmojiPicker = ref(false);
 const showForward = ref(false);
 const showInfo = ref(false);
+const showEditHistory = ref(false);
 const showReactionDetails = ref(false);
 const copied = ref(false);
 const actionsEl = ref(null);
@@ -286,11 +290,11 @@ const visibleMenuItems = computed(() =>
     MENU_ITEMS.filter((item) => {
         if (item.ownOnly && !isOwn.value) return false;
         if (item.textOnly && props.message.type !== "text") return false;
-        if (item.windowed) {
+        if (item.windowMinutes) {
             const ageMinutes =
                 (Date.now() - new Date(props.message.created_at).getTime()) /
                 60000;
-            if (ageMinutes > DELETE_FOR_EVERYONE_WINDOW_MINUTES) return false;
+            if (ageMinutes > item.windowMinutes) return false;
         }
         return true;
     }),
@@ -685,7 +689,12 @@ function onMenuAction(key) {
                             minute: "2-digit",
                         })
                     }}</span>
-                    <span v-if="message.edited_at">(edited)</span>
+                    <button
+                        v-if="message.edited_at"
+                        type="button"
+                        class="underline decoration-dotted underline-offset-2 hover:text-converse-text"
+                        @click.stop="showEditHistory = true"
+                    >(edited)</button>
                     <ReadReceiptTicks v-if="isOwn" :status="message.status" />
                 </span>
             </div>
@@ -843,6 +852,11 @@ function onMenuAction(key) {
             v-if="showInfo"
             :message="message"
             @close="showInfo = false"
+        />
+        <MessageEditHistoryModal
+            v-if="showEditHistory"
+            :message="message"
+            @close="showEditHistory = false"
         />
     </div>
 </template>

@@ -98,6 +98,11 @@ class Message extends Model
         return $this->hasOne(PinnedMessage::class, 'message_id');
     }
 
+    public function edits(): HasMany
+    {
+        return $this->hasMany(MessageEdit::class, 'message_id');
+    }
+
     public function isDeletedForEveryone(): bool
     {
         return $this->deleted_for_everyone_at !== null;

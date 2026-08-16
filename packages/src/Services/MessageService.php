@@ -17,6 +17,7 @@ use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\Message;
 use Converse\Chat\Models\MessageAttachment;
 use Converse\Chat\Models\MessageDeletion;
+use Converse\Chat\Models\MessageEdit;
 use Converse\Chat\Models\MessageReceipt;
 use Converse\Chat\Notifications\NewChatMessageNotification;
 use Illuminate\Database\Eloquent\Model;
@@ -90,6 +91,14 @@ class MessageService implements MessageServiceInterface
 
     public function update(Message $message, string $body): Message
     {
+        // Snapshot what it said *before* this edit overwrites it — a plain "edited_at" timestamp
+        // alone has nothing to show if someone wants to see the earlier version.
+        MessageEdit::query()->create([
+            'message_id' => $message->id,
+            'previous_body' => $message->body,
+            'edited_at' => now(),
+        ]);
+
         $message->update([
             'body' => $body,
             'edited_at' => now(),

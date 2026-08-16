@@ -49,6 +49,7 @@ return [
         'list_conversations' => 'chat_list_conversations',
         'poll_votes' => 'chat_poll_votes',
         'event_rsvps' => 'chat_event_rsvps',
+        'message_edits' => 'chat_message_edits',
     ],
 
     /*

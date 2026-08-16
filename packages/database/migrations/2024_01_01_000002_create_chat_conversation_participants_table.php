@@ -20,6 +20,9 @@ return new class extends Migration
             $table->timestamp('muted_until')->nullable();
             $table->timestamp('archived_at')->nullable();
             $table->timestamp('pinned_at')->nullable();
+            $table->timestamp('favourited_at')->nullable();
+            $table->timestamp('hidden_at')->nullable();
+            $table->string('wallpaper')->nullable();
             $table->unsignedBigInteger('last_read_message_id')->nullable();
             $table->timestamps();
 

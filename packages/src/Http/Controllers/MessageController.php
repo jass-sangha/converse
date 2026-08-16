@@ -6,6 +6,7 @@ use Converse\Chat\Contracts\MessageServiceInterface;
 use Converse\Chat\Http\Requests\ForwardMessageRequest;
 use Converse\Chat\Http\Requests\StoreMessageRequest;
 use Converse\Chat\Http\Requests\UpdateMessageRequest;
+use Converse\Chat\Http\Resources\MessageEditResource;
 use Converse\Chat\Http\Resources\MessageResource;
 use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\Message;
@@ -59,6 +60,15 @@ class MessageController extends Controller
         $updated = $this->messages->update($message, $request->validated()['body']);
 
         return new MessageResource($updated->load(self::EAGER));
+    }
+
+    public function edits(Message $message)
+    {
+        Gate::authorize('view', $message->conversation);
+
+        return MessageEditResource::collection(
+            $message->edits()->orderByDesc('edited_at')->get()
+        );
     }
 
     public function destroy(Message $message)
