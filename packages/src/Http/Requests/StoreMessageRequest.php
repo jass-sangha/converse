@@ -35,9 +35,12 @@ class StoreMessageRequest extends FormRequest
             'metadata.description' => ['nullable', 'string', 'max:1000'],
             'metadata.video' => ['sometimes', 'boolean'],
             'metadata.duration_seconds' => ['required_if:type,call', 'integer', 'min:0'],
-            'metadata.participants' => ['required_if:type,call', 'array'],
-            'metadata.participants.*.type' => ['required_with:metadata.participants', 'string'],
-            'metadata.participants.*.id' => ['required_with:metadata.participants', 'integer'],
+            // `array` alone (no `required_if`) — an unanswered call legitimately logs with zero
+            // participants, and Laravel's `required` family treats an empty array as "missing",
+            // which would 422 on exactly that case.
+            'metadata.participants' => ['present_if:type,call', 'array'],
+            'metadata.participants.*.type' => ['required_with:metadata.participants.*.id', 'string'],
+            'metadata.participants.*.id' => ['required_with:metadata.participants.*.type', 'integer'],
             'attachment_ids' => ['required_if:type,image,video,audio,voice,document,gif,sticker', 'sometimes', 'array', 'min:1'],
             'attachment_ids.*' => ['integer'],
         ];

@@ -1,15 +1,23 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, watch } from 'vue';
-import MessageBubble from './MessageBubble.vue';
-import { useChatStore } from '../../store';
-import { useMessages } from '../../composables/useMessages';
-import { chatableKeyOf } from '../../chatable';
+import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    onUpdated,
+    ref,
+    watch,
+} from "vue";
+import MessageBubble from "./MessageBubble.vue";
+import { useChatStore } from "../../store";
+import { useMessages } from "../../composables/useMessages";
+import { chatableKeyOf } from "../../chatable";
 
 const props = defineProps({
     conversationId: { type: Number, required: true },
 });
 
-const emit = defineEmits(['reply', 'edit']);
+const emit = defineEmits(["reply", "edit"]);
 
 const store = useChatStore();
 const { loadOlder } = useMessages();
@@ -22,20 +30,29 @@ let observer = null;
 let resizeObserver = null;
 let stickToBottom = true;
 
-const messages = computed(() => store.messagesByConversation[props.conversationId] ?? []);
+const messages = computed(
+    () => store.messagesByConversation[props.conversationId] ?? [],
+);
 
 function dateLabel(date) {
     const now = new Date();
-    if (date.toDateString() === now.toDateString()) return 'Today';
+    if (date.toDateString() === now.toDateString()) return "Today";
 
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
-    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
 
-    const daysAgo = Math.floor((now.setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86400000);
-    if (daysAgo < 7) return date.toLocaleDateString([], { weekday: 'long' });
+    const daysAgo = Math.floor(
+        (now.setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) /
+            86400000,
+    );
+    if (daysAgo < 7) return date.toLocaleDateString([], { weekday: "long" });
 
-    return date.toLocaleDateString([], { day: 'numeric', month: 'long', year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric' });
+    return date.toLocaleDateString([], {
+        day: "numeric",
+        month: "long",
+        year: date.getFullYear() === now.getFullYear() ? undefined : "numeric",
+    });
 }
 
 const timeline = computed(() => {
@@ -47,11 +64,15 @@ const timeline = computed(() => {
         const dateKey = date.toDateString();
 
         if (dateKey !== lastDateKey) {
-            items.push({ kind: 'date', key: `date-${dateKey}`, label: dateLabel(date) });
+            items.push({
+                kind: "date",
+                key: `date-${dateKey}`,
+                label: dateLabel(date),
+            });
             lastDateKey = dateKey;
         }
 
-        items.push({ kind: 'message', key: message.id, message });
+        items.push({ kind: "message", key: message.id, message });
     }
 
     return items;
@@ -68,7 +89,7 @@ function scrollToBottom({ smooth = false } = {}) {
         if (!scrollEl.value) return;
         scrollEl.value.scrollTo({
             top: scrollEl.value.scrollHeight,
-            behavior: smooth ? 'smooth' : 'auto',
+            behavior: smooth ? "smooth" : "auto",
         });
     });
 }
@@ -101,7 +122,9 @@ async function onIntersect(entries) {
 function setupObserver() {
     observer?.disconnect();
     if (sentinelEl.value) {
-        observer = new IntersectionObserver(onIntersect, { root: scrollEl.value });
+        observer = new IntersectionObserver(onIntersect, {
+            root: scrollEl.value,
+        });
         observer.observe(sentinelEl.value);
     }
 }
@@ -128,17 +151,20 @@ onUpdated(() => {
     if (stickToBottom) scrollToBottom();
 });
 
-watch(() => props.conversationId, () => {
-    // MessageList isn't keyed by conversationId in ChatWindow, so switching chats reuses this
-    // same instance — onMounted's initial scrollToBottom() only ever fires once. Scroll here
-    // explicitly rather than relying solely on onUpdated picking it up, since if the new
-    // conversation's messages are already cached (no re-render triggered by a fetch), onUpdated
-    // may never fire and the view would stay wherever the previous conversation left it.
-    stickToBottom = true;
-    showScrollToBottom.value = false;
-    scrollToBottom();
-    nextTick(setupObserver);
-});
+watch(
+    () => props.conversationId,
+    () => {
+        // MessageList isn't keyed by conversationId in ChatWindow, so switching chats reuses this
+        // same instance — onMounted's initial scrollToBottom() only ever fires once. Scroll here
+        // explicitly rather than relying solely on onUpdated picking it up, since if the new
+        // conversation's messages are already cached (no re-render triggered by a fetch), onUpdated
+        // may never fire and the view would stay wherever the previous conversation left it.
+        stickToBottom = true;
+        showScrollToBottom.value = false;
+        scrollToBottom();
+        nextTick(setupObserver);
+    },
+);
 
 function onScroll() {
     stickToBottom = isNearBottom();
@@ -146,7 +172,8 @@ function onScroll() {
     // auto-scroll me" (only when already essentially at the bottom), this one governs "have I
     // scrolled far enough away that jumping back down needs its own button".
     const el = scrollEl.value;
-    showScrollToBottom.value = !!el && el.scrollHeight - el.scrollTop - el.clientHeight > 400;
+    showScrollToBottom.value =
+        !!el && el.scrollHeight - el.scrollTop - el.clientHeight > 400;
 }
 
 function onScrollToBottomClick() {
@@ -177,10 +204,19 @@ watch(
         >
             <div ref="sentinelEl" class="cv-message-list__sentinel h-1" />
 
-            <div ref="contentEl" class="cv-message-list__messages mx-auto flex max-w-7xl flex-col gap-2">
+            <div
+                ref="contentEl"
+                class="cv-message-list__messages mx-auto flex max-w-7xl flex-col gap-2"
+            >
                 <template v-for="item in timeline" :key="item.key">
-                    <div v-if="item.kind === 'date'" class="flex justify-center py-1">
-                        <span class="rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-xs font-medium text-converse-textMuted shadow-sm">{{ item.label }}</span>
+                    <div
+                        v-if="item.kind === 'date'"
+                        class="flex justify-center py-1"
+                    >
+                        <span
+                            class="rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-xs font-medium text-converse-textMuted shadow-sm"
+                            >{{ item.label }}</span
+                        >
                     </div>
                     <MessageBubble
                         v-else
@@ -197,10 +233,21 @@ watch(
             v-if="showScrollToBottom"
             type="button"
             title="Scroll to bottom"
-            class="cv-animate-pop-in absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full border border-converse-border bg-converse-surface text-converse-textMuted shadow-cv-lg hover:text-converse-accentText sm:right-12"
+            class="cv-animate-pop-in absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full border border-converse-border bg-converse-surface text-converse-textMuted shadow-cv-lg hover:text-converse-accentText sm:right-12 z-20"
             @click="onScrollToBottomClick"
         >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10l6 6 6-6" /></svg>
+            <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M6 10l6 6 6-6" />
+            </svg>
         </button>
     </div>
 </template>

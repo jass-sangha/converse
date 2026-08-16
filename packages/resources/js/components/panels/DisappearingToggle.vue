@@ -59,9 +59,10 @@ const current = computed(
     () => props.conversation.disappearing_messages_ttl || null,
 );
 const isOn = computed(() => !!current.value);
-const currentLabel = computed(
-    () => OPTIONS.find((o) => o.seconds === current.value)?.label ?? null,
-);
+const currentLabel = computed(() => {
+    const option = OPTIONS.find((o) => o.seconds === current.value);
+    return option ? `Messages disappear after ${option.label}` : null;
+});
 
 function pick(seconds) {
     showMenu.value = false;
