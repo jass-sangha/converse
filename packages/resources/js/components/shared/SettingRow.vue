@@ -1,7 +1,7 @@
 <script setup>
-import { onBeforeUnmount, ref, watch } from 'vue';
-import { useExclusiveDropdown } from '../../composables/useExclusiveDropdown';
-import { useDropdownPlacement } from '../../composables/useDropdownPlacement';
+import { onBeforeUnmount, ref, watch } from "vue";
+import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
+import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 
 const props = defineProps({
     icon: { type: String, default: null },
@@ -9,10 +9,10 @@ const props = defineProps({
     hint: { type: String, default: null },
     isOn: { type: Boolean, default: false },
     options: { type: Array, default: () => [] },
-    menuTitle: { type: String, default: '' },
+    menuTitle: { type: String, default: "" },
 });
 
-const emit = defineEmits(['toggle', 'pick']);
+const emit = defineEmits(["toggle", "pick"]);
 
 const root = ref(null);
 const showMenu = ref(false);
@@ -32,16 +32,16 @@ function onDocumentClick(event) {
 watch(showMenu, (open) => {
     if (open) {
         opened(close);
-        document.addEventListener('click', onDocumentClick);
+        document.addEventListener("click", onDocumentClick);
     } else {
         closed(close);
-        document.removeEventListener('click', onDocumentClick);
+        document.removeEventListener("click", onDocumentClick);
     }
 });
 
 onBeforeUnmount(() => {
     closed(close);
-    document.removeEventListener('click', onDocumentClick);
+    document.removeEventListener("click", onDocumentClick);
 });
 
 // Off rows turn back on the instant you click them — no confirmation needed.
@@ -52,13 +52,13 @@ function onRowClick() {
         if (!showMenu.value) place(root.value, { preferredHeight: 250 });
         showMenu.value = !showMenu.value;
     } else {
-        emit('toggle');
+        emit("toggle");
     }
 }
 
 function pick(option) {
     showMenu.value = false;
-    emit('pick', option);
+    emit("pick", option);
 }
 </script>
 
@@ -70,14 +70,31 @@ function pick(option) {
             :aria-checked="isOn"
             @click="onRowClick"
         >
-            <svg v-if="icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="shrink-0 text-converse-textMuted">
+            <svg
+                v-if="icon"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="currentColor"
+                class="shrink-0 text-converse-textMuted"
+            >
                 <path :d="icon" />
             </svg>
             <span class="min-w-0 flex-1">
-                <span class="block text-[14px] font-semibold text-converse-text">{{ label }}</span>
-                <span v-if="hint" class="mt-0.5 block text-xs text-converse-textMuted">{{ hint }}</span>
+                <span
+                    class="block text-[14px] font-semibold text-converse-text"
+                    >{{ label }}</span
+                >
+                <span
+                    v-if="hint"
+                    class="mt-0.5 block text-xs text-converse-textMuted"
+                    >{{ hint }}</span
+                >
             </span>
-            <span class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors" :class="isOn ? 'bg-converse-sage' : 'bg-converse-border'">
+            <span
+                class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors"
+                :class="isOn ? 'bg-converse-sage' : 'bg-converse-border'"
+            >
                 <span
                     class="absolute top-[3px] h-[21px] w-[21px] rounded-full bg-white shadow transition-[left] duration-150 ease-out"
                     :class="isOn ? 'left-[22px]' : 'left-[3px]'"
@@ -91,7 +108,12 @@ function pick(option) {
             :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
             :style="{ maxHeight: maxHeight + 'px' }"
         >
-            <p v-if="menuTitle" class="px-3 pb-2 pt-1.5 text-[10.5px] font-bold uppercase tracking-wide text-converse-textDim">{{ menuTitle }}</p>
+            <p
+                v-if="menuTitle"
+                class="px-3 pb-2 pt-1.5 text-[10.5px] font-bold uppercase tracking-wide text-converse-textDim"
+            >
+                {{ menuTitle }}
+            </p>
             <button
                 v-for="option in options"
                 :key="option.key"

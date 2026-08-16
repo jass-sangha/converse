@@ -731,7 +731,9 @@ async function onDeleteChat() {
                 ref="muteMenuRoot"
                 class="relative mx-[10px] flex flex-col gap-0.5 border-t border-converse-border py-3.5"
             >
-                <div class="flex items-center gap-3.5 rounded-2xl px-3.5 py-3">
+                <div
+                    class="flex cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-converse-surfaceHover"
+                >
                     <svg
                         viewBox="0 0 24 24"
                         width="20"
