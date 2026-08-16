@@ -1,20 +1,19 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+use Converse\Chat\Http\Controllers\AssetController;
+use Converse\Chat\Http\Controllers\ChatPageController;
+use Converse\Chat\Http\Middleware\SetFrameAncestors;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::middleware(config('chat.asset_middleware', []))->group(function () {
+    Route::get(config('chat.asset_route_prefix', 'converse/assets').'/app.js', [AssetController::class, 'js']);
+    Route::get(config('chat.asset_route_prefix', 'converse/assets').'/app.css', [AssetController::class, 'css']);
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';
+Route::middleware(config('chat.web_middleware', ['web', 'auth']))
+    ->prefix(config('chat.chat_route_prefix', 'converse'))
+    ->group(function () {
+        Route::get('chat', [ChatPageController::class, 'show'])
+            ->middleware(SetFrameAncestors::class)
+            ->name('converse.chat.page');
+    });

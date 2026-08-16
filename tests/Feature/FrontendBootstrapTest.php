@@ -34,10 +34,13 @@ it('renders the mount page with a ConverseConfig script tag when reverb is confi
     $response->assertSee('test-key', false);
 });
 
-it('aborts the mount page when no reverb broadcasting connection is configured', function () {
+it('still renders the mount page when no reverb broadcasting connection is configured', function () {
     config(['broadcasting.connections.reverb' => null]);
 
     $user = frontendUser('frontend-noreverb@example.com');
 
-    $this->actingAs($user)->get('/converse/chat')->assertStatus(500);
+    $response = $this->actingAs($user)->get('/converse/chat');
+
+    $response->assertOk();
+    $response->assertSee('converse-chat-app', false);
 });

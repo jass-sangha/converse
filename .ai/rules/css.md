@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'packages/resources/css/**'
+  - 'resources/css/**'
 ---
 
 # Css

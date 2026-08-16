@@ -1,3 +1,195 @@
+@import './theme.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Tailwind's Preflight reset is disabled (corePlugins.preflight: false in
+ * tailwind.config.js) since it applies globally and would leak into a host
+ * page when this bundle is embedded via <x-chat::widget />. This is a scoped
+ * hand-port of the subset of Preflight the components actually rely on.
+ *
+ * Wrapped in @layer base so Tailwind places it before the utilities layer in
+ * the compiled output no matter where it sits in this file. Without it, the
+ * `button { background-color: transparent }` reset below ties in specificity
+ * with `.bg-converse-*` utility classes and — being the later rule on an
+ * unlayered stylesheet — always wins, silently blanking every button's
+ * background (switch tracks, the "+ New" button, etc).
+ */
+@layer base {
+#converse-chat-app,
+#converse-chat-app *,
+#converse-chat-app *::before,
+#converse-chat-app *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: currentColor;
+}
+
+#converse-chat-app a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+#converse-chat-app {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    /* Embedded mode (AppShell's h-full) fills this via the ordinary CSS percentage
+       chain — it only resolves to something non-zero once the host's own parent
+       container has an explicit height, which embedding hosts must provide. */
+    display: block;
+    height: 100%;
+}
+
+#converse-chat-app button,
+#converse-chat-app input,
+#converse-chat-app optgroup,
+#converse-chat-app select,
+#converse-chat-app textarea {
+    font-family: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+}
+
+#converse-chat-app button,
+#converse-chat-app select {
+    text-transform: none;
+}
+
+#converse-chat-app button,
+#converse-chat-app [type='button'],
+#converse-chat-app [type='reset'],
+#converse-chat-app [type='submit'] {
+    -webkit-appearance: button;
+    background-color: transparent;
+    background-image: none;
+}
+
+#converse-chat-app :is(h1, h2, h3, h4, h5, h6) {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+#converse-chat-app p,
+#converse-chat-app h1,
+#converse-chat-app h2,
+#converse-chat-app h3,
+#converse-chat-app h4,
+#converse-chat-app h5,
+#converse-chat-app h6,
+#converse-chat-app blockquote,
+#converse-chat-app figure {
+    margin: 0;
+}
+
+#converse-chat-app ul,
+#converse-chat-app ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#converse-chat-app img,
+#converse-chat-app svg,
+#converse-chat-app video,
+#converse-chat-app canvas {
+    display: block;
+    vertical-align: middle;
+}
+
+#converse-chat-app img,
+#converse-chat-app video {
+    max-width: 100%;
+    height: auto;
+}
+}
+
+.cv-app-shell,
+.cv-app-shell * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--cv-text-muted) / 0.35) transparent;
+}
+
+.cv-app-shell ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.cv-app-shell ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cv-app-shell ::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--cv-text-muted) / 0.35);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.cv-app-shell ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--cv-text-muted) / 0.55);
+}
+
+.cv-message-bubble--highlight .cv-message-bubble__content {
+    animation: cv-message-highlight 1.6s ease-out;
+}
+
+@keyframes cv-message-highlight {
+    0%, 40% {
+        box-shadow: 0 0 0 4px rgb(var(--cv-accent) / 0.35);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgb(var(--cv-accent) / 0);
+    }
+}
+
+@keyframes cv-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes cv-scale-in {
+    from { opacity: 0; transform: scale(0.96) translateY(6px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes cv-pop-in {
+    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.cv-animate-fade-in {
+    animation: cv-fade-in 0.15s ease-out;
+}
+
+.cv-animate-scale-in {
+    animation: cv-scale-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cv-animate-pop-in {
+    animation: cv-pop-in 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cv-panel-in {
+    from { opacity: 0; transform: translateX(46px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.cv-animate-panel-in {
+    animation: cv-panel-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes cv-call-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgb(var(--cv-accent) / 0.35); }
+    50% { box-shadow: 0 0 0 16px rgb(var(--cv-accent) / 0); }
+}
+
+.cv-animate-call-pulse {
+    animation: cv-call-pulse 1.8s ease-out infinite;
+}

@@ -10,9 +10,6 @@
 </head>
 <body>
     @include('chat::partials.assets', ['chatConfig' => $chatConfig, 'themeOverrideVersion' => $themeOverrideVersion])
-    <form id="cv-logout-form" method="POST" action="{{ route('logout') }}" class="hidden">
-        @csrf
-    </form>
 </body>
 </html>
  
