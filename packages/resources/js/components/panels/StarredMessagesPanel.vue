@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
@@ -64,6 +64,46 @@ onMounted(async () => {
     await loadPage(1);
     loading.value = false;
 });
+
+// Same gap as the media/docs/links panel: this list comes from its own paginated fetch, not the
+// shared message store, so starring/unstarring a message while this panel stays open otherwise
+// only shows up the next time it's closed and reopened. The global panel (no conversationId prop)
+// has no single conversation to watch — fall back to whichever one the chat window next to it is
+// currently showing, the only conversation this session gets live message updates for anyway.
+const scopeMessages = computed(() => {
+    const targetId = props.conversationId ?? store.activeConversationId;
+    return targetId ? (store.messagesByConversation[targetId] ?? []) : [];
+});
+
+watch(
+    () => scopeMessages.value.filter((m) => m.is_starred_by_me).map((m) => m.id).join(","),
+    async (newIdsCsv, oldIdsCsv) => {
+        if (loading.value) return;
+
+        // Surgical add/remove only — rebuilding the list from "every starred message currently
+        // in scope" on each change would reorder every existing row to match this conversation's
+        // own message order any time a single star toggled, shuffling the whole list instead of
+        // just inserting or dropping the one that actually changed.
+        const newIds = newIdsCsv ? newIdsCsv.split(",").map(Number) : [];
+        const oldIds = oldIdsCsv ? oldIdsCsv.split(",").map(Number) : [];
+        const addedIds = newIds.filter((id) => !oldIds.includes(id));
+        const removedIds = oldIds.filter((id) => !newIds.includes(id));
+
+        if (removedIds.length) {
+            messages.value = messages.value.filter((m) => !removedIds.includes(m.id));
+        }
+
+        if (addedIds.length) {
+            const added = scopeMessages.value.filter((m) => addedIds.includes(m.id));
+            const senders = added.map((m) => ({ type: m.chatable_type, id: m.chatable_id }));
+            if (senders.length) {
+                const unique = [...new Map(senders.map((r) => [chatableKey(r.type, r.id), r])).values()];
+                await resolve(unique);
+            }
+            messages.value = [...added, ...messages.value];
+        }
+    },
+);
 
 async function loadMore() {
     await loadPage(page.value + 1);
