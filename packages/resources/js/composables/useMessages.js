@@ -93,6 +93,20 @@ export function useMessages() {
 
     async function forward(messageId, conversationIds) {
         const { data } = await api.post(`/messages/${messageId}/forward`, { conversation_ids: conversationIds });
+
+        // Nothing else inserts these locally — each forwarded copy lands in a conversation this
+        // client didn't just "have open and type into" the way send() does, so without this the
+        // sender's own sidebar preview/ordering for the target conversation(s) only picks it up
+        // on the next reload, and the message itself wouldn't be there if you switch to one of
+        // those conversations without reloading either.
+        for (const message of data.data) {
+            upsertMessage(message.conversation_id, message);
+            const conversation = store.conversations.find((c) => c.id === message.conversation_id);
+            if (conversation) {
+                upsertConversation({ ...conversation, last_message: message, last_activity_at: message.created_at });
+            }
+        }
+
         return data.data;
     }
 
