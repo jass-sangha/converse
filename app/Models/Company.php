@@ -15,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
  * package's polymorphic chatable_type/chatable_id design works for more than
  * one kind of account, not just the default User model.
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['user_name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class Company extends Authenticatable
 {

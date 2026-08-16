@@ -4,7 +4,7 @@ use App\Models\Company;
 use App\Models\User;
 
 test('a company can authenticate via its own guard and be resolved as a chatable', function () {
-    $company = Company::factory()->create(['name' => 'Acme Corp']);
+    $company = Company::factory()->create(['user_name' => 'Acme Corp']);
 
     $response = $this->actingAs($company, 'company')->getJson('/api/chat/conversations');
 
@@ -13,7 +13,7 @@ test('a company can authenticate via its own guard and be resolved as a chatable
 
 test('a user and a company can hold a conversation together, each with their own chatable_type', function () {
     $user = User::factory()->create(['name' => 'Alice']);
-    $company = Company::factory()->create(['name' => 'Acme Corp']);
+    $company = Company::factory()->create(['user_name' => 'Acme Corp']);
 
     $conversationId = $this->actingAs($user)->postJson('/api/chat/conversations', [
         'type' => 'private',
@@ -51,7 +51,7 @@ test('a user and a company can hold a conversation together, each with their own
 
 test('a company is findable through the chat user search API with its own display name', function () {
     $user = User::factory()->create();
-    Company::factory()->create(['name' => 'Findable Co']);
+    Company::factory()->create(['user_name' => 'Findable Co']);
 
     $response = $this->actingAs($user)->getJson('/api/chat/users?type=company&q=Findable');
 

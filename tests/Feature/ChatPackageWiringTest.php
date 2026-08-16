@@ -12,7 +12,10 @@ test('the chat package service provider is registered', function () {
 });
 
 test('the chat package config is merged', function () {
-    expect(config('chat.chatable_models'))->toBe(['user' => User::class, 'company' => Company::class]);
+    expect(config('chat.chatable_models'))->toBe([
+        'user' => User::class,
+        'company' => ['model' => Company::class, 'name_field' => 'user_name'],
+    ]);
 });
 
 test('the chat package migrations have run', function () {

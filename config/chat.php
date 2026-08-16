@@ -29,7 +29,7 @@ return [
     */
     'chatable_models' => [
         'user' => env('CHAT_USER_MODEL', User::class),
-        'company' => Company::class,
+        'company' => ['model' => Company::class, 'name_field' => 'user_name'],
     ],
 
     /*
