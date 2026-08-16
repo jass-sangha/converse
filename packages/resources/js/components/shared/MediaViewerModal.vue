@@ -56,7 +56,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
                     title="Open original"
                     class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10"
                 >
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z"/></svg>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 20h14" /></svg>
                 </a>
                 <button type="button" title="Close" class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10" @click="close">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.7 2.9 18.3 9.19 12 2.9 5.71 4.3 4.29l6.3 6.3 6.29-6.3Z"/></svg>

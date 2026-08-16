@@ -82,15 +82,15 @@ async function submit() {
             <span class="text-sm text-converse-text">Allow multiple answers</span>
             <button
                 type="button"
-                class="relative h-6 w-11 shrink-0 rounded-full transition-colors"
-                :class="multiple ? 'bg-converse-accent' : 'bg-converse-border'"
+                class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
+                :class="multiple ? 'bg-converse-sage' : 'bg-converse-border'"
                 role="switch"
                 :aria-checked="multiple"
                 @click="multiple = !multiple"
             >
                 <span
-                    class="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-converse-accentContrast shadow transition-transform"
-                    :class="multiple ? 'translate-x-5' : 'translate-x-0.5'"
+                    class="absolute top-[3px] h-[21px] w-[21px] rounded-full bg-white shadow transition-[left] duration-150 ease-out"
+                    :class="multiple ? 'left-[22px]' : 'left-[3px]'"
                 />
             </button>
         </label>

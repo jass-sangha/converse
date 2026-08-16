@@ -8,7 +8,15 @@
  * tailwind.config.js) since it applies globally and would leak into a host
  * page when this bundle is embedded via <x-chat::widget />. This is a scoped
  * hand-port of the subset of Preflight the components actually rely on.
+ *
+ * Wrapped in @layer base so Tailwind places it before the utilities layer in
+ * the compiled output no matter where it sits in this file. Without it, the
+ * `button { background-color: transparent }` reset below ties in specificity
+ * with `.bg-converse-*` utility classes and — being the later rule on an
+ * unlayered stylesheet — always wins, silently blanking every button's
+ * background (switch tracks, the "+ New" button, etc).
  */
+@layer base {
 #converse-chat-app,
 #converse-chat-app *,
 #converse-chat-app *::before,
@@ -94,6 +102,7 @@
 #converse-chat-app video {
     max-width: 100%;
     height: auto;
+}
 }
 
 .cv-app-shell,
