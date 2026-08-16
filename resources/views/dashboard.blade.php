@@ -12,6 +12,10 @@
                     {{ __("You're logged in!") }}
                 </div>
             </div>
+
+            <div class="mt-6" style="height: 640px;">
+                <x-chat::widget />
+            </div>
         </div>
     </div>
 </x-app-layout>

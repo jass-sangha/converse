@@ -30,8 +30,11 @@ const defaultWallpaper = ref(read('defaultWallpaper', null));
 const effectiveTheme = computed(() => (theme.value === 'system' ? (systemPrefersDark.value ? 'dark' : 'light') : theme.value));
 
 function applyTheme(value) {
+    // Scoped to the widget's own mount element (not document.documentElement) so
+    // toggling theme never touches the host page's own <html> element when the
+    // widget is embedded via <x-chat::widget /> — see theme.css's matching scope.
     if (typeof document !== 'undefined') {
-        document.documentElement.setAttribute('data-theme', value);
+        document.getElementById('converse-chat-app')?.setAttribute('data-theme', value);
     }
 }
 

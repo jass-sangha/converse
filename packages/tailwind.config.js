@@ -12,6 +12,17 @@ export default {
         './resources/js/**/*.{vue,js}',
         './resources/views/**/*.blade.php',
     ],
+    // Scopes every generated utility class under the widget's own mount element
+    // (e.g. .flex becomes #converse-chat-app .flex) so the compiled bundle can be
+    // dropped into a host app's own layout without leaking styles either
+    // direction — no dependency on the host's own Tailwind setup, and no risk of
+    // colliding with the host's own class names. Preflight is disabled below in
+    // favor of a small hand-scoped reset in resources/css/app.css, since Tailwind's
+    // `important` selector option only scopes utilities, not the base/reset layer.
+    important: '#converse-chat-app',
+    corePlugins: {
+        preflight: false,
+    },
     theme: {
         extend: {
             colors: {

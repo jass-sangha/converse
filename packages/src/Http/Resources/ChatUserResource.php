@@ -2,6 +2,7 @@
 
 namespace Converse\Chat\Http\Resources;
 
+use Converse\Chat\Chat;
 use Converse\Chat\Contracts\UserSettingsServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -11,7 +12,7 @@ class ChatUserResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $nameField = config('chat.user_search.name_field', 'name');
+        $nameField = Chat::nameFieldFor($this->resource->getMorphClass());
         $setting = app(UserSettingsServiceInterface::class)->get($this->resource);
 
         return [

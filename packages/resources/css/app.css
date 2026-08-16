@@ -3,6 +3,99 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Tailwind's Preflight reset is disabled (corePlugins.preflight: false in
+ * tailwind.config.js) since it applies globally and would leak into a host
+ * page when this bundle is embedded via <x-chat::widget />. This is a scoped
+ * hand-port of the subset of Preflight the components actually rely on.
+ */
+#converse-chat-app,
+#converse-chat-app *,
+#converse-chat-app *::before,
+#converse-chat-app *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: currentColor;
+}
+
+#converse-chat-app {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    /* Embedded mode (AppShell's h-full) fills this via the ordinary CSS percentage
+       chain — it only resolves to something non-zero once the host's own parent
+       container has an explicit height, which embedding hosts must provide. */
+    display: block;
+    height: 100%;
+}
+
+#converse-chat-app button,
+#converse-chat-app input,
+#converse-chat-app optgroup,
+#converse-chat-app select,
+#converse-chat-app textarea {
+    font-family: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+}
+
+#converse-chat-app button,
+#converse-chat-app select {
+    text-transform: none;
+}
+
+#converse-chat-app button,
+#converse-chat-app [type='button'],
+#converse-chat-app [type='reset'],
+#converse-chat-app [type='submit'] {
+    -webkit-appearance: button;
+    background-color: transparent;
+    background-image: none;
+}
+
+#converse-chat-app :is(h1, h2, h3, h4, h5, h6) {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+#converse-chat-app p,
+#converse-chat-app h1,
+#converse-chat-app h2,
+#converse-chat-app h3,
+#converse-chat-app h4,
+#converse-chat-app h5,
+#converse-chat-app h6,
+#converse-chat-app blockquote,
+#converse-chat-app figure {
+    margin: 0;
+}
+
+#converse-chat-app ul,
+#converse-chat-app ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#converse-chat-app img,
+#converse-chat-app svg,
+#converse-chat-app video,
+#converse-chat-app canvas {
+    display: block;
+    vertical-align: middle;
+}
+
+#converse-chat-app img,
+#converse-chat-app video {
+    max-width: 100%;
+    height: auto;
+}
+
 .cv-app-shell,
 .cv-app-shell * {
     scrollbar-width: thin;

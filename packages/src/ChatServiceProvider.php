@@ -2,6 +2,7 @@
 
 namespace Converse\Chat;
 
+use Converse\Chat\Console\Commands\InstallCommand;
 use Converse\Chat\Console\Commands\PruneExpiredMessagesCommand;
 use Converse\Chat\Console\Commands\SweepPresenceCommand;
 use Converse\Chat\Contracts\AttachmentServiceInterface;
@@ -50,6 +51,7 @@ use Converse\Chat\Services\UserSearchService;
 use Converse\Chat\Services\UserSettingsService;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\LaravelPackageTools\Package;
@@ -90,9 +92,19 @@ class ChatServiceProvider extends PackageServiceProvider
 
     public function configurePackage(Package $package): void
     {
+        // Spatie's own hasConfigFile() merge (via registerPackageConfigs()) runs after this
+        // method, so the config()-driven gates below would only ever see unpublished defaults
+        // as null without merging it ourselves first. Idempotent — Spatie's later automatic
+        // merge is a no-op once these keys already exist, and a host's own published config
+        // values still win either way (mergeConfigFrom keeps existing keys over defaults). The
+        // gates themselves read env(...) INSIDE config/chat.php (matching chatable_models'
+        // existing convention), not as a config()-read-site fallback — once merged, the config
+        // key always exists, so a fallback given only at the read site would never be reached.
+        $this->mergeConfigFrom(__DIR__.'/../config/chat.php', 'chat');
+
         $package->name('chat')->hasConfigFile();
 
-        if ((bool) env('CHAT_RUN_MIGRATIONS', true)) {
+        if ((bool) config('chat.run_migrations', true)) {
             // discoversMigrations() (not hasMigrations()) preserves the timestamp-prefixed
             // filenames' natural sort order, which matters here since several tables have
             // foreign keys to earlier ones — hasMigrations() sorts by the bare name instead,
@@ -100,15 +112,15 @@ class ChatServiceProvider extends PackageServiceProvider
             $package->discoversMigrations()->runsMigrations();
         }
 
-        if ((bool) env('CHAT_REGISTER_ROUTES', true)) {
+        if ((bool) config('chat.register_routes', true)) {
             $package->hasRoutes(['api', 'channels']);
         }
 
-        if ((bool) env('CHAT_REGISTER_UI_ROUTES', true)) {
+        if ((bool) config('chat.register_ui_routes', true)) {
             $package->hasRoutes('web')->hasViews();
         }
 
-        $package->hasCommands([SweepPresenceCommand::class, PruneExpiredMessagesCommand::class]);
+        $package->hasCommands([SweepPresenceCommand::class, PruneExpiredMessagesCommand::class, InstallCommand::class]);
     }
 
     public function packageBooted(): void
@@ -118,6 +130,12 @@ class ChatServiceProvider extends PackageServiceProvider
         }
 
         Relation::enforceMorphMap(Chat::chatableModels());
+
+        // hasViews()'s loadViewsFrom() (called above via configurePackage()) registers the
+        // "chat::" view namespace, but Blade's <x-prefix::name /> component-tag compiler only
+        // consults namespaces registered here — without this, <x-chat::widget /> throws
+        // "Unable to locate a class or view for component [chat::widget]".
+        Blade::anonymousComponentNamespace('chat::components', 'chat');
 
         $this->registerDefaultDisk();
         $this->registerStatefulApiMiddleware();
@@ -158,12 +176,14 @@ class ChatServiceProvider extends PackageServiceProvider
 
         config(["filesystems.disks.{$disk}" => [
             'driver' => 'local',
-            // Nested under app/public (not app/chat) so it resolves through the standard
-            // public/storage symlink — the framework's dev-server storage.local route 403s
-            // any path outside app/public, and there's no other route in this package that
-            // serves media, so avatars/attachments would 403 on any disk root that isn't here.
-            'root' => storage_path('app/public/chat'),
-            'url' => '/storage/chat',
+            // Defaults nested under app/public (not app/chat) so it resolves through the
+            // standard public/storage symlink — the framework's dev-server storage.local route
+            // 403s any path outside app/public, and there's no other route in this package that
+            // serves media, so avatars/attachments would 403 on any disk root that isn't
+            // reachable that way. A host overriding chat.media.disk_root/disk_url is responsible
+            // for keeping that same guarantee (a symlink or an equivalent serving route).
+            'root' => config('chat.media.disk_root', storage_path('app/public/chat')),
+            'url' => config('chat.media.disk_url', '/storage/chat'),
             'visibility' => 'public',
         ]]);
     }

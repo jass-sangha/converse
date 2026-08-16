@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Company;
 use App\Models\User;
 use Converse\Chat\ChatServiceProvider;
 use Converse\Chat\Contracts\ConversationServiceInterface;
@@ -11,7 +12,7 @@ test('the chat package service provider is registered', function () {
 });
 
 test('the chat package config is merged', function () {
-    expect(config('chat.chatable_models'))->toBe(['user' => User::class]);
+    expect(config('chat.chatable_models'))->toBe(['user' => User::class, 'company' => Company::class]);
 });
 
 test('the chat package migrations have run', function () {

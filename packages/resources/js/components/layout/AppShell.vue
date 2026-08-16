@@ -16,6 +16,7 @@ import { usePreferences } from "../../composables/usePreferences";
 import { useResizable } from "../../composables/useResizable";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 import { useCall } from "../../composables/useCall";
+import { useEmbedMode } from "../../composables/useEmbedMode";
 
 const store = useChatStore();
 
@@ -23,6 +24,7 @@ const { sidebarWidth } = usePreferences();
 const { startDrag } = useResizable(sidebarWidth, { invert: false });
 const { view } = useSidebarUi();
 const { isActive: callIsActive } = useCall();
+const { isEmbedded } = useEmbedMode();
 
 const showMobileTabBar = computed(
     () => !store.activeConversationId && !callIsActive.value,
@@ -31,7 +33,8 @@ const showMobileTabBar = computed(
 
 <template>
     <div
-        class="cv-app-shell flex h-screen w-screen flex-col overflow-hidden bg-converse-chatBg text-converse-text"
+        class="cv-app-shell flex flex-col overflow-hidden bg-converse-chatBg text-converse-text"
+        :class="isEmbedded ? 'h-full w-full' : 'h-screen w-screen'"
     >
         <div class="flex min-h-0 flex-1">
             <!-- Icon rail is desktop-only — mobile navigates via the bottom tab bar. -->

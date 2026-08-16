@@ -13,7 +13,24 @@ class Chat
      */
     public static function chatableModels(): array
     {
-        return config('chat.chatable_models', []);
+        return collect(config('chat.chatable_models', []))
+            ->map(fn ($entry) => is_array($entry) ? $entry['model'] : $entry)
+            ->all();
+    }
+
+    /**
+     * The display-name column for a given chatable alias — its own configured
+     * name_field if chatable_models declared one, otherwise the global default.
+     */
+    public static function nameFieldFor(string $alias): string
+    {
+        $entry = config("chat.chatable_models.{$alias}");
+
+        if (is_array($entry) && isset($entry['name_field'])) {
+            return $entry['name_field'];
+        }
+
+        return config('chat.user_search.name_field', 'name');
     }
 
     /**
@@ -120,12 +137,12 @@ class Chat
      */
     public static function matchingChatablePairs(string $term): array
     {
-        $nameField = config('chat.user_search.name_field', 'name');
         $pairs = [];
 
         foreach (array_keys(static::chatableModels()) as $morphType) {
             $model = static::modelForAlias($morphType);
             $instance = new $model;
+            $nameField = static::nameFieldFor($morphType);
 
             $model::query()
                 ->where($nameField, 'like', '%'.$term.'%')

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Company;
 use App\Models\User;
 
 return [
@@ -28,6 +29,7 @@ return [
     */
     'chatable_models' => [
         'user' => env('CHAT_USER_MODEL', User::class),
+        'company' => Company::class,
     ],
 
     /*

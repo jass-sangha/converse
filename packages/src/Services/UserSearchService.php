@@ -13,7 +13,7 @@ class UserSearchService implements UserSearchServiceInterface
     public function search(Model $exclude, string $type, ?string $q, int $perPage): LengthAwarePaginator
     {
         $model = Chat::modelForAlias($type);
-        $nameField = config('chat.user_search.name_field', 'name');
+        $nameField = Chat::nameFieldFor($type);
 
         $query = $model::query();
 

@@ -7,7 +7,7 @@ it('lets a User and an Agent share a private conversation, even when their ids c
     // Deliberately force id collisions between the two tables: User #1 and Agent #1
     // are different chatables and must never be confused with each other.
     $user = User::query()->create(['name' => 'Alice', 'email' => 'alice-multi@example.com', 'password' => bcrypt('secret')]);
-    $agent = Agent::query()->create(['name' => 'Support Bot', 'email' => 'bot-multi@example.com', 'password' => bcrypt('secret')]);
+    $agent = Agent::query()->create(['full_name' => 'Support Bot', 'email' => 'bot-multi@example.com', 'password' => bcrypt('secret')]);
 
     expect($user->id)->toBe($agent->id);
 
@@ -49,11 +49,28 @@ it('lets a User and an Agent share a private conversation, even when their ids c
 
     expect($userRow)->not->toBeNull()
         ->and($agentRow)->not->toBeNull();
+
+    // The agent's own display-name column (full_name) differs from the user's
+    // (name) — chat.chatable_models declares this per-alias in TestCase, and both
+    // must resolve correctly through the shared ChatUserResource/UserSearchService.
+    $agentLookup = $this->actingAs($user)
+        ->getJson("/api/chat/users?type=agent&ids[]={$agent->id}")
+        ->assertOk()
+        ->json('data');
+
+    expect($agentLookup[0]['name'])->toBe('Support Bot');
+
+    $userLookup = $this->actingAs($agent)
+        ->getJson("/api/chat/users?type=user&ids[]={$user->id}")
+        ->assertOk()
+        ->json('data');
+
+    expect($userLookup[0]['name'])->toBe('Alice');
 });
 
 it('keeps presence and blocking independent per chatable type despite colliding ids', function () {
     $user = User::query()->create(['name' => 'Bob', 'email' => 'bob-multi@example.com', 'password' => bcrypt('secret')]);
-    $agent = Agent::query()->create(['name' => 'Bot Two', 'email' => 'bot-two-multi@example.com', 'password' => bcrypt('secret')]);
+    $agent = Agent::query()->create(['full_name' => 'Bot Two', 'email' => 'bot-two-multi@example.com', 'password' => bcrypt('secret')]);
 
     expect($user->id)->toBe($agent->id);
 

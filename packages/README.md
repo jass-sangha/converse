@@ -17,6 +17,15 @@ composer require jass-sangha/converse
 php artisan migrate
 ```
 
+To also publish the config, views, and theme CSS for full customization in one step:
+
+```bash
+php artisan chat:install
+php artisan migrate
+```
+
+Migrations run automatically and are **not** published by `chat:install` — run `php artisan vendor:publish --tag=chat-migrations` yourself if you need to edit them directly.
+
 ## Chatable models
 
 Every `chat_*` table stores a polymorphic `chatable_type` / `chatable_id` pair rather than a plain `user_id`, so more than one Authenticatable model can hold conversations — with each other, not just within their own model. Configure which models are allowed, keyed by a short alias (persisted in `chatable_type` instead of the FQCN, via a Laravel morph map, so renaming a model class later doesn't orphan rows):
@@ -25,7 +34,9 @@ Every `chat_*` table stores a polymorphic `chatable_type` / `chatable_id` pair r
 // config/chat.php (publish with php artisan vendor:publish --tag=chat-config to override)
 'chatable_models' => [
     'user' => App\Models\User::class,
-    // 'agent' => App\Models\Agent::class,
+    // A model whose display-name column differs from the global
+    // user_search.name_field default gets its own name_field:
+    // 'agent' => ['model' => App\Models\Agent::class, 'name_field' => 'full_name'],
 ],
 ```
 
@@ -56,15 +67,19 @@ Key options in `config/chat.php`:
 
 | Key | Purpose |
 |---|---|
-| `chatable_models` | Alias => Authenticatable model map of who's allowed to participate in chat (see "Chatable models" above) |
+| `chatable_models` | Alias => Authenticatable model map of who's allowed to participate in chat, optionally with a per-model `name_field` (see "Chatable models" above) |
 | `table_names` | Override any table name if it collides with your app |
+| `register_routes` / `register_ui_routes` | Toggle the JSON API + broadcast channels, and the web page/widget routes, independently |
 | `route_prefix` / `middleware` | Where the API mounts and what protects it (default `api/chat`, `['api','auth:sanctum']`) |
 | `media.disk` | Filesystem disk for attachments/avatars (defaults to a package-registered local disk; override in `config/filesystems.php` to switch to S3 etc.) |
+| `media.disk_root` / `media.disk_url` | Location of the package's auto-registered disk, when `media.disk` isn't already defined in your own `config/filesystems.php` |
 | `media.mime_types` / `media.max_sizes` | Per-message-type upload validation |
 | `presence.*`, `typing.ttl_seconds` | Heartbeat/online-grace/typing-decay tuning |
 | `message.edit_window_minutes`, `message.delete_for_everyone_window_minutes` | `null` = unlimited |
 | `disappearing_messages.*` | Enable/default TTL for auto-vanishing messages |
 | `notifications.channels` | Extra notification channels appended to `broadcast` (see below) |
+| `theme.overrides` | Config-only color/border-radius tweaks, no CSS file required (see "Theming" below) |
+| `frame_ancestors` | Frame policy for embedding the full page in an `<iframe>` (see "Iframe embedding" below) |
 
 ## API surface
 
@@ -84,7 +99,7 @@ All routes are prefixed with `config('chat.route_prefix')` (default `api/chat`).
 
 **Media & link previews** — `POST /attachments`, `POST /link-preview`
 
-**People search** — `GET /users?q=` (search by `chat.user_search.name_field`, excludes yourself) / `GET /users?ids[]=1&ids[]=2` (batch-resolve display info for known participant ids) — used to power "new chat"/"add member" pickers; the package can't assume your user schema, so this is deliberately minimal (`{id, name, avatar_url}`) and configurable via `chat.user_search.{name_field,avatar_field}`.
+**People search** — `GET /users?q=` (search by each chatable's `name_field`, excludes yourself) / `GET /users?ids[]=1&ids[]=2` (batch-resolve display info for known participant ids) — used to power "new chat"/"add member" pickers; the package can't assume your user schema, so this is deliberately minimal (`{id, name, avatar_url}`) and configurable via `chat.user_search.name_field` (global default) or a per-model override in `chat.chatable_models` (see "Chatable models" above). `avatar_url` is always package-owned — see `chat_user_settings` — never read from a column on your own model.
 
 ## Bundled Chat UI
 
@@ -100,15 +115,52 @@ behind your app's normal `web` + `auth` middleware (configurable via `chat.web_m
 
 It covers the full feature set: conversation list with search/pin/archive/mute, new chat/group creation, every message type (text, image, video, audio, voice notes via `MediaRecorder`, documents, location, contact cards), replies, reactions, forwarding, starred messages, group admin (add/remove/promote/demote, surfaces the sole-admin guard as an inline error), blocked-users management, disappearing-messages toggle, link previews, typing indicators, read receipts, and live presence — including live push when someone starts a new chat with you or adds you to a group (`ConversationCreated`/`ParticipantAdded` broadcast onto your personal `private-user.{id}` channel).
 
-To disable the bundled UI entirely and expose only the JSON API (e.g. you're building your own React/mobile client):
+To disable the bundled UI entirely and expose only the JSON API (e.g. you're building your own React/mobile client), set `chat.register_ui_routes` to `false` in `config/chat.php` (or `CHAT_REGISTER_UI_ROUTES=false` in `.env` if you haven't published the config):
 
-```env
-CHAT_REGISTER_UI_ROUTES=false
+```php
+'register_ui_routes' => false,
 ```
 
 Relevant config: `chat.web_middleware`, `chat.chat_route_prefix` (default `converse`), `chat.asset_middleware`, `chat.asset_route_prefix` (default `converse/assets`).
 
 If you ever need to modify the widget's source, it lives in `resources/js/` (Vue SFCs) and `resources/css/` (Tailwind) inside the package, with its own `package.json`/`vite.config.js`/`tailwind.config.js`. Run `npm install && npm run build` inside the package directory to regenerate the committed `resources/dist/app.{js,css}` bundle the `AssetController` serves.
+
+### Embedding inside your own layout
+
+Drop the widget directly into any Blade view — no iframe, no separate page:
+
+```blade
+<div style="height: 640px">
+    <x-chat::widget />
+</div>
+```
+
+The widget fills its parent container's size (not the browser viewport), so the parent **must** have an explicit CSS height, or it collapses to zero. Its CSS is fully scoped to its own mount element (`#converse-chat-app`) — dropping it in won't affect the rest of your page's styling, and your page's own styles/Tailwind setup won't affect it either. Only one instance is supported per page. It shares the exact same compiled `resources/dist/app.{js,css}` bundle as the full-page route — no separate build.
+
+### Theming
+
+Three levels of control, from lightest to heaviest:
+
+1. **`chat.theme.overrides` config** — quick single-token tweaks, no CSS file needed:
+   ```php
+   'theme' => ['overrides' => ['accent' => '198 113 57', 'radius' => '0.75rem']],
+   ```
+2. **Publish and hand-edit the theme CSS** — every color, both light/dark, full control:
+   ```bash
+   php artisan vendor:publish --tag=chat-theme
+   # then edit public/vendor/chat/theme.css
+   ```
+3. Both apply together — config overrides win, since they're injected last.
+
+### Iframe embedding
+
+If you'd rather iframe the full-page route than use the native `<x-chat::widget />` embed above:
+
+```blade
+<iframe src="{{ route('converse.chat.page') }}" style="width:100%;height:100%;border:0" title="Chat"></iframe>
+```
+
+The `chat.frame_ancestors` config (default `"'self'"`) controls who's allowed to frame it — same-origin only by default. Set it to a space-separated list of origins for cross-origin embedding, or to `null`/`false` to disable the header entirely. The page also posts its content height to the parent window via `postMessage` (`{source: 'converse-chat', height}`) whenever it's actually running inside an iframe, so you can auto-size the iframe instead of hardcoding a height. Cross-*origin* iframe embedding additionally needs `SESSION_SAME_SITE=none` and a secure-cookie setup in your own app's session config — same-origin embedding needs no session changes at all.
 
 ## Scheduled commands
 

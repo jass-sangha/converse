@@ -2,6 +2,7 @@
 
 use Converse\Chat\Http\Controllers\AssetController;
 use Converse\Chat\Http\Controllers\ChatPageController;
+use Converse\Chat\Http\Middleware\SetFrameAncestors;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(config('chat.asset_middleware', []))->group(function () {
@@ -12,5 +13,7 @@ Route::middleware(config('chat.asset_middleware', []))->group(function () {
 Route::middleware(config('chat.web_middleware', ['web', 'auth']))
     ->prefix(config('chat.chat_route_prefix', 'converse'))
     ->group(function () {
-        Route::get('chat', [ChatPageController::class, 'show'])->name('converse.chat.page');
+        Route::get('chat', [ChatPageController::class, 'show'])
+            ->middleware(SetFrameAncestors::class)
+            ->name('converse.chat.page');
     });

@@ -26,7 +26,12 @@ class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
-        $app['config']->set('chat.chatable_models', ['user' => User::class, 'agent' => Agent::class]);
+        $app['config']->set('chat.chatable_models', [
+            'user' => User::class,
+            // Array shape (vs. User's plain-string shape above) exercises the per-alias
+            // name_field override across the whole suite, not just one dedicated test.
+            'agent' => ['model' => Agent::class, 'name_field' => 'full_name'],
+        ]);
         $app['config']->set('chat.middleware', ['api']);
         $app['config']->set('database.default', 'testing');
         $app['config']->set('auth.providers.users.model', User::class);
