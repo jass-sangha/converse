@@ -55,31 +55,39 @@ Conversations broadcast on **presence channels** (`presence-conversation.{id}`),
 ```js
 // Example Echo usage in a consuming frontend
 Echo.join(`conversation.${conversationId}`)
-    .here(users => { /* who's currently viewing */ })
-    .listen('.message.sent', e => { /* new message */ })
-    .listen('.messages.read', e => { /* read receipt */ })
-    .listenForWhisper('typing', e => { /* peer typed, zero backend cost */ });
+    .here((users) => {
+        /* who's currently viewing */
+    })
+    .listen(".message.sent", (e) => {
+        /* new message */
+    })
+    .listen(".messages.read", (e) => {
+        /* read receipt */
+    })
+    .listenForWhisper("typing", (e) => {
+        /* peer typed, zero backend cost */
+    });
 ```
 
 ## Configuration
 
 Key options in `config/chat.php`:
 
-| Key | Purpose |
-|---|---|
-| `chatable_models` | Alias => Authenticatable model map of who's allowed to participate in chat, optionally with a per-model `name_field` (see "Chatable models" above) |
-| `table_names` | Override any table name if it collides with your app |
-| `register_routes` / `register_ui_routes` | Toggle the JSON API + broadcast channels, and the web page/widget routes, independently |
-| `route_prefix` / `middleware` | Where the API mounts and what protects it (default `api/chat`, `['api','auth:sanctum']`) |
-| `media.disk` | Filesystem disk for attachments/avatars (defaults to a package-registered local disk; override in `config/filesystems.php` to switch to S3 etc.) |
-| `media.disk_root` / `media.disk_url` | Location of the package's auto-registered disk, when `media.disk` isn't already defined in your own `config/filesystems.php` |
-| `media.mime_types` / `media.max_sizes` | Per-message-type upload validation |
-| `presence.*`, `typing.ttl_seconds` | Heartbeat/online-grace/typing-decay tuning |
-| `message.edit_window_minutes`, `message.delete_for_everyone_window_minutes` | `null` = unlimited |
-| `disappearing_messages.*` | Enable/default TTL for auto-vanishing messages |
-| `notifications.channels` | Extra notification channels appended to `broadcast` (see below) |
-| `theme.overrides` | Config-only color/border-radius tweaks, no CSS file required (see "Theming" below) |
-| `frame_ancestors` | Frame policy for embedding the full page in an `<iframe>` (see "Iframe embedding" below) |
+| Key                                                                         | Purpose                                                                                                                                            |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `chatable_models`                                                           | Alias => Authenticatable model map of who's allowed to participate in chat, optionally with a per-model `name_field` (see "Chatable models" above) |
+| `table_names`                                                               | Override any table name if it collides with your app                                                                                               |
+| `register_routes` / `register_ui_routes`                                    | Toggle the JSON API + broadcast channels, and the web page/widget routes, independently                                                            |
+| `route_prefix` / `middleware`                                               | Where the API mounts and what protects it (default `api/chat`, `['api','auth:sanctum']`)                                                           |
+| `media.disk`                                                                | Filesystem disk for attachments/avatars (defaults to a package-registered local disk; override in `config/filesystems.php` to switch to S3 etc.)   |
+| `media.disk_root` / `media.disk_url`                                        | Location of the package's auto-registered disk, when `media.disk` isn't already defined in your own `config/filesystems.php`                       |
+| `media.mime_types` / `media.max_sizes`                                      | Per-message-type upload validation                                                                                                                 |
+| `presence.*`, `typing.ttl_seconds`                                          | Heartbeat/online-grace/typing-decay tuning                                                                                                         |
+| `message.edit_window_minutes`, `message.delete_for_everyone_window_minutes` | `null` = unlimited                                                                                                                                 |
+| `disappearing_messages.*`                                                   | Enable/default TTL for auto-vanishing messages                                                                                                     |
+| `notifications.channels`                                                    | Extra notification channels appended to `broadcast` (see below)                                                                                    |
+| `theme.overrides`                                                           | Config-only color/border-radius tweaks, no CSS file required (see "Theming" below)                                                                 |
+| `frame_ancestors`                                                           | Frame policy for embedding the full page in an `<iframe>` (see "Iframe embedding" below)                                                           |
 
 ## API surface
 
@@ -142,14 +150,14 @@ The widget fills its parent container's size (not the browser viewport), so the 
 Three levels of control, from lightest to heaviest:
 
 1. **`chat.theme.overrides` config** — quick single-token tweaks, no CSS file needed:
-   ```php
-   'theme' => ['overrides' => ['accent' => '198 113 57', 'radius' => '0.75rem']],
-   ```
+    ```php
+    'theme' => ['overrides' => ['accent' => '198 113 57', 'radius' => '0.75rem']],
+    ```
 2. **Publish and hand-edit the theme CSS** — every color, both light/dark, full control:
-   ```bash
-   php artisan vendor:publish --tag=chat-theme
-   # then edit public/vendor/chat/theme.css
-   ```
+    ```bash
+    php artisan vendor:publish --tag=chat-theme
+    # then edit public/vendor/chat/theme.css
+    ```
 3. Both apply together — config overrides win, since they're injected last.
 
 ### Iframe embedding
@@ -160,44 +168,78 @@ If you'd rather iframe the full-page route than use the native `<x-chat::widget 
 <iframe src="{{ route('converse.chat.page') }}" style="width:100%;height:100%;border:0" title="Chat"></iframe>
 ```
 
-The `chat.frame_ancestors` config (default `"'self'"`) controls who's allowed to frame it — same-origin only by default. Set it to a space-separated list of origins for cross-origin embedding, or to `null`/`false` to disable the header entirely. The page also posts its content height to the parent window via `postMessage` (`{source: 'converse-chat', height}`) whenever it's actually running inside an iframe, so you can auto-size the iframe instead of hardcoding a height. Cross-*origin* iframe embedding additionally needs `SESSION_SAME_SITE=none` and a secure-cookie setup in your own app's session config — same-origin embedding needs no session changes at all.
+The `chat.frame_ancestors` config (default `"'self'"`) controls who's allowed to frame it — same-origin only by default. Set it to a space-separated list of origins for cross-origin embedding, or to `null`/`false` to disable the header entirely. The page also posts its content height to the parent window via `postMessage` (`{source: 'converse-chat', height}`) whenever it's actually running inside an iframe, so you can auto-size the iframe instead of hardcoding a height. Cross-_origin_ iframe embedding additionally needs `SESSION_SAME_SITE=none` and a secure-cookie setup in your own app's session config — same-origin embedding needs no session changes at all.
 
-#### Framework snippets
+#### Fixed-height container (no `postMessage` needed)
+
+If the iframe already sits inside a container with a definite height — a dashboard content area, a flex layout with `h-full`, a modal with a fixed size — skip the `postMessage` auto-resize listener entirely and just size the iframe with CSS to fill its parent:
+
+```tsx
+// React example (Inertia page, Tailwind)
+export default function ConverseChat() {
+    return (
+        <div className="flex h-full flex-1 flex-col p-4">
+            <iframe
+                src="/converse/chat"
+                title="Chat"
+                className="h-full w-full flex-1 rounded-xl border"
+            />
+        </div>
+    );
+}
+```
+
+This is simpler whenever you control the surrounding layout. Reach for the auto-resize snippets below only when the iframe needs to grow with its content instead — e.g. embedding it inline in a page with no fixed-height region around it.
+
+#### Framework snippets (auto-resize via `postMessage`)
 
 There's no npm package to install for any of these — the widget stays entirely server-side, you're just pointing an `<iframe>` at `route('converse.chat.page')` and wiring up the auto-resize `postMessage` listener in whatever framework your host app uses. Each snippet below is the whole component.
 
 **Plain HTML / vanilla JS**
 
 ```html
-<iframe id="converse-chat" src="/converse/chat" style="width:100%;border:0" title="Chat"></iframe>
+<iframe
+    id="converse-chat"
+    src="/converse/chat"
+    style="width:100%;border:0"
+    title="Chat"
+></iframe>
 <script>
-  window.addEventListener('message', (e) => {
-    if (e.data?.source === 'converse-chat') {
-      document.getElementById('converse-chat').style.height = e.data.height + 'px';
-    }
-  });
+    window.addEventListener("message", (e) => {
+        if (e.data?.source === "converse-chat") {
+            document.getElementById("converse-chat").style.height =
+                e.data.height + "px";
+        }
+    });
 </script>
 ```
 
 **React**
 
 ```jsx
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
-export default function ConverseChat({ src = '/converse/chat' }) {
+export default function ConverseChat({ src = "/converse/chat" }) {
     const frameRef = useRef(null);
 
     useEffect(() => {
         function onMessage(e) {
-            if (e.data?.source === 'converse-chat' && frameRef.current) {
+            if (e.data?.source === "converse-chat" && frameRef.current) {
                 frameRef.current.style.height = `${e.data.height}px`;
             }
         }
-        window.addEventListener('message', onMessage);
-        return () => window.removeEventListener('message', onMessage);
+        window.addEventListener("message", onMessage);
+        return () => window.removeEventListener("message", onMessage);
     }, []);
 
-    return <iframe ref={frameRef} src={src} style={{ width: '100%', border: 0 }} title="Chat" />;
+    return (
+        <iframe
+            ref={frameRef}
+            src={src}
+            style={{ width: "100%", border: 0 }}
+            title="Chat"
+        />
+    );
 }
 ```
 
@@ -209,38 +251,49 @@ export default function ConverseChat({ src = '/converse/chat' }) {
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from "vue";
 
-const props = defineProps({ src: { type: String, default: '/converse/chat' } });
+const props = defineProps({ src: { type: String, default: "/converse/chat" } });
 const frame = ref(null);
 
 function onMessage(e) {
-    if (e.data?.source === 'converse-chat' && frame.value) {
+    if (e.data?.source === "converse-chat" && frame.value) {
         frame.value.style.height = `${e.data.height}px`;
     }
 }
 
-onMounted(() => window.addEventListener('message', onMessage));
-onUnmounted(() => window.removeEventListener('message', onMessage));
+onMounted(() => window.addEventListener("message", onMessage));
+onUnmounted(() => window.removeEventListener("message", onMessage));
 </script>
 ```
 
 **Angular**
 
 ```ts
-import { Component, ElementRef, HostListener, Input, ViewChild } from '@angular/core';
+import {
+    Component,
+    ElementRef,
+    HostListener,
+    Input,
+    ViewChild,
+} from "@angular/core";
 
 @Component({
-    selector: 'converse-chat',
-    template: `<iframe #frame [src]="src" style="width:100%;border:0" title="Chat"></iframe>`,
+    selector: "converse-chat",
+    template: `<iframe
+        #frame
+        [src]="src"
+        style="width:100%;border:0"
+        title="Chat"
+    ></iframe>`,
 })
 export class ConverseChatComponent {
-    @Input() src = '/converse/chat';
-    @ViewChild('frame') frame!: ElementRef<HTMLIFrameElement>;
+    @Input() src = "/converse/chat";
+    @ViewChild("frame") frame!: ElementRef<HTMLIFrameElement>;
 
-    @HostListener('window:message', ['$event'])
+    @HostListener("window:message", ["$event"])
     onMessage(e: MessageEvent) {
-        if (e.data?.source === 'converse-chat') {
+        if (e.data?.source === "converse-chat") {
             this.frame.nativeElement.style.height = `${e.data.height}px`;
         }
     }
