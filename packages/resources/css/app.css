@@ -27,6 +27,11 @@
     border-color: currentColor;
 }
 
+#converse-chat-app a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
 #converse-chat-app {
     line-height: 1.5;
     -webkit-text-size-adjust: 100%;
