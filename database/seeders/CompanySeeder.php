@@ -3,11 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Company;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class UserSeeder extends Seeder
+class CompanySeeder extends Seeder
 {
     use WithoutModelEvents;
 
@@ -16,7 +15,6 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory(10)->create();
         Company::factory(10)->create();
     }
 }
