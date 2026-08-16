@@ -15,7 +15,7 @@ class StoreMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ['sometimes', Rule::in(['text', 'image', 'video', 'audio', 'voice', 'document', 'location', 'contact', 'gif', 'sticker', 'poll', 'event'])],
+            'type' => ['sometimes', Rule::in(['text', 'image', 'video', 'audio', 'voice', 'document', 'location', 'contact', 'gif', 'sticker', 'poll', 'event', 'call'])],
             'body' => ['required_if:type,text', 'nullable', 'string'],
             'reply_to_message_id' => ['nullable', 'integer'],
             'metadata' => ['nullable', 'array'],
@@ -33,6 +33,11 @@ class StoreMessageRequest extends FormRequest
             'metadata.location_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'metadata.location_lng' => ['nullable', 'numeric', 'between:-180,180'],
             'metadata.description' => ['nullable', 'string', 'max:1000'],
+            'metadata.video' => ['sometimes', 'boolean'],
+            'metadata.duration_seconds' => ['required_if:type,call', 'integer', 'min:0'],
+            'metadata.participants' => ['required_if:type,call', 'array'],
+            'metadata.participants.*.type' => ['required_with:metadata.participants', 'string'],
+            'metadata.participants.*.id' => ['required_with:metadata.participants', 'integer'],
             'attachment_ids' => ['required_if:type,image,video,audio,voice,document,gif,sticker', 'sometimes', 'array', 'min:1'],
             'attachment_ids.*' => ['integer'],
         ];

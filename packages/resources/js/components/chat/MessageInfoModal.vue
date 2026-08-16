@@ -30,8 +30,13 @@ const isGroup = computed(
     () => store.conversations.find((c) => c.id === props.message.conversation_id)?.type === 'group',
 );
 
+const isCall = computed(() => props.message.type === 'call');
+const callParticipants = computed(() => props.message.metadata?.participants ?? []);
+
 onMounted(async () => {
-    const refs = details.value.map((d) => ({ type: d.chatable_type, id: d.chatable_id }));
+    const refs = isCall.value
+        ? callParticipants.value.map((p) => ({ type: p.type, id: p.id }))
+        : details.value.map((d) => ({ type: d.chatable_type, id: d.chatable_id }));
     if (refs.length) {
         const unique = [...new Map(refs.map((r) => [chatableKey(r.type, r.id), r])).values()];
         await resolve(unique);
@@ -59,6 +64,19 @@ function formatTime(at) {
         </p>
 
         <p v-if="loading" class="text-sm text-converse-textMuted">Loading&hellip;</p>
+
+        <template v-else-if="isCall">
+            <h3 class="mb-1 text-xs font-medium uppercase text-converse-textMuted">
+                Joined the call ({{ callParticipants.length }})
+            </h3>
+            <ul class="flex flex-col gap-1">
+                <li v-for="p in callParticipants" :key="`${p.type}-${p.id}`" class="flex items-center gap-3 py-1">
+                    <Avatar :name="get(p).name" :avatar-url="get(p).avatar_url" :size="36" />
+                    <span class="min-w-0 flex-1 truncate text-sm text-converse-text">{{ get(p).name }}</span>
+                </li>
+            </ul>
+            <p v-if="!callParticipants.length" class="text-sm text-converse-textMuted">No one else joined.</p>
+        </template>
 
         <template v-else>
             <template v-if="isGroup">

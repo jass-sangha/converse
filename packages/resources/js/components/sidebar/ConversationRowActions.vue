@@ -8,7 +8,7 @@ const props = defineProps({
     conversation: { type: Object, required: true },
 });
 
-const { mute, setPinned, setFavourited } = useConversations();
+const { mute, setPinned, setFavourited, setArchived } = useConversations();
 
 const isPinned = computed(
     () => !!(props.conversation.pinned_at || props.conversation.me?.pinned_at),
@@ -21,6 +21,7 @@ const isFavourited = computed(
         ),
 );
 const isMuted = computed(() => !!props.conversation.me?.muted_until);
+const isArchived = computed(() => !!props.conversation.me?.archived_at);
 
 const menuOpen = ref(false);
 const root = ref(null);
@@ -87,6 +88,12 @@ function togglePin(event) {
     event.stopPropagation();
     menuOpen.value = false;
     setPinned(props.conversation.id, !isPinned.value);
+}
+
+function toggleArchive(event) {
+    event.stopPropagation();
+    menuOpen.value = false;
+    setArchived(props.conversation.id, !isArchived.value);
 }
 </script>
 
@@ -191,6 +198,26 @@ function togglePin(event) {
                     <path d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM12 13v8" />
                 </svg>
                 <span>{{ isPinned ? "Unpin" : "Pin" }}</span>
+            </button>
+            <button
+                type="button"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                @click="toggleArchive"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="shrink-0 text-converse-textMuted"
+                >
+                    <path d="M3 4h18v4H3zM5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 13h4" />
+                </svg>
+                <span>{{ isArchived ? "Unarchive" : "Archive" }}</span>
             </button>
         </div>
     </span>

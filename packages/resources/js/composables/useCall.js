@@ -3,6 +3,7 @@ import { useChatStore } from '../store';
 import { chatableKey, chatableKeyOf } from '../chatable';
 import { useCalls } from './useCalls';
 import { useToast } from './useToast';
+import { useMessages } from './useMessages';
 
 const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
 const RING_TIMEOUT_MS = 45000;
@@ -258,6 +259,12 @@ export function useCall() {
         const wasLive = phase.value === 'live';
         const wasOutgoing = phase.value === 'outgoing' || phase.value === 'connecting';
         const finalElapsed = elapsed.value;
+        // Captured before cleanup() wipes them — a group call goes 'live' the moment it's
+        // announced (see startCall), even with nobody else in it yet, so `peers` (not `wasLive`
+        // alone) is what actually tells us whether anyone joined and this is worth logging.
+        const finalConversationId = conversationId.value;
+        const finalVideo = video.value;
+        const finalParticipants = peers.value.map((p) => ({ type: p.type, id: p.id }));
 
         if (conversationId.value && phase.value !== 'idle' && !silent) {
             useCalls().signal(conversationId.value, { kind: 'leave' }).catch(() => {});
@@ -268,6 +275,17 @@ export function useCall() {
 
         if (wasLive) {
             useToast().show(`Call ended · ${formatCallClock(finalElapsed)}`);
+
+            if (finalConversationId && finalParticipants.length > 0) {
+                useMessages().send(finalConversationId, {
+                    type: 'call',
+                    metadata: {
+                        video: finalVideo,
+                        duration_seconds: Math.round(finalElapsed),
+                        participants: finalParticipants,
+                    },
+                }).catch(() => {});
+            }
         } else if (wasOutgoing && !silent) {
             useToast().show('Call cancelled.');
         }
@@ -364,6 +382,12 @@ export function useCall() {
 
                 if (connections.has(fromKey)) {
                     removePeer(fromKey);
+                    // A 1:1 call has no "room" to keep sitting in once the only other person is
+                    // gone — a group call does (others may still be in it), so only auto-end here
+                    // for the former; endCall() itself skips logging since peers is now empty.
+                    if (!isGroup.value && peers.value.length === 0 && phase.value === 'live') {
+                        endCall({ silent: true });
+                    }
                     return;
                 }
 

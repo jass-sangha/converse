@@ -18,6 +18,7 @@ import GifMessage from "./message-types/GifMessage.vue";
 import StickerMessage from "./message-types/StickerMessage.vue";
 import PollMessage from "./message-types/PollMessage.vue";
 import EventMessage from "./message-types/EventMessage.vue";
+import CallMessage from "./message-types/CallMessage.vue";
 import SystemMessage from "./message-types/SystemMessage.vue";
 import ReplyPreview from "./ReplyPreview.vue";
 import EmojiPicker from "../composer/EmojiPicker.vue";
@@ -42,6 +43,7 @@ const TYPE_COMPONENTS = {
     sticker: StickerMessage,
     poll: PollMessage,
     event: EventMessage,
+    call: CallMessage,
 };
 
 const QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];

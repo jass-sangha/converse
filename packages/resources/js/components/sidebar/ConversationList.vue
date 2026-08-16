@@ -94,7 +94,7 @@ const filteredConversations = computed(() => {
     // when it doesn't actually belong in the Archived list, so it doesn't leak into view.
     const source = showArchived.value
         ? sortedConversations.value.filter((c) => c.me?.archived_at)
-        : sortedConversations.value;
+        : sortedConversations.value.filter((c) => !c.me?.archived_at || c.id === store.activeConversationId);
 
     switch (filter.value) {
         case "unread":
