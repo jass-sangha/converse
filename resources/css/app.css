@@ -71,6 +71,13 @@
     background-image: none;
 }
 
+#converse-chat-app button:not(:disabled),
+#converse-chat-app [type='button']:not(:disabled),
+#converse-chat-app [type='reset']:not(:disabled),
+#converse-chat-app [type='submit']:not(:disabled) {
+    cursor: pointer;
+}
+
 #converse-chat-app :is(h1, h2, h3, h4, h5, h6) {
     font-size: inherit;
     font-weight: inherit;
