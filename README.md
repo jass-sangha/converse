@@ -201,7 +201,7 @@ There's no npm package to install for any of these — the widget stays entirely
 <iframe
     id="converse-chat"
     src="/converse/chat"
-    style="width:100%;border:0"
+    style="width:100%;border:0;height:100%"
     title="Chat"
 ></iframe>
 <script>
@@ -236,7 +236,7 @@ export default function ConverseChat({ src = "/converse/chat" }) {
         <iframe
             ref={frameRef}
             src={src}
-            style={{ width: "100%", border: 0 }}
+            style={{ width: "100%", border: 0, height: 100% }}
             title="Chat"
         />
     );
@@ -247,7 +247,7 @@ export default function ConverseChat({ src = "/converse/chat" }) {
 
 ```vue
 <template>
-    <iframe ref="frame" :src="src" style="width:100%;border:0" title="Chat" />
+    <iframe ref="frame" :src="src" style="width:100%;border:0;height:100%" title="Chat" />
 </template>
 
 <script setup>
@@ -283,7 +283,7 @@ import {
     template: `<iframe
         #frame
         [src]="src"
-        style="width:100%;border:0"
+        style="width:100%;border:0;height:100%"
         title="Chat"
     ></iframe>`,
 })
@@ -315,7 +315,7 @@ export class ConverseChatComponent {
 </script>
 
 <svelte:window on:message={onMessage} />
-<iframe bind:this={frame} {src} style="width:100%;border:0" title="Chat" />
+<iframe bind:this={frame} {src} style="width:100%;border:0;height:100%" title="Chat" />
 ```
 
 All five assume the frontend is served from the **same origin** as the Laravel app (so the Sanctum session cookie authenticates the iframe for free) and that `src`/`route('converse.chat.page')` resolves to that same origin — swap in an absolute URL plus the cross-origin `frame_ancestors`/`SESSION_SAME_SITE` config above if it isn't.
