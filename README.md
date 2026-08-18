@@ -236,7 +236,7 @@ export default function ConverseChat({ src = "/converse/chat" }) {
         <iframe
             ref={frameRef}
             src={src}
-            style={{ width: "100%", border: 0, height: 100% }}
+            style={{ width: "100%", border: 0, height: "100%" }}
             title="Chat"
         />
     );
