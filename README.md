@@ -219,11 +219,16 @@ There's no npm package to install for any of these — the widget stays entirely
 ```jsx
 import { useEffect, useRef } from "react";
 
-export default function ConverseChat({ src = "/converse/chat" }) {
-    const frameRef = useRef(null);
+interface ConverseChatMessage {
+    source: "converse-chat";
+    height: number;
+}
+
+export default function ConverseChat({ src = "/converse/chat" }: { src?: string }) {
+    const frameRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
-        function onMessage(e) {
+        function onMessage(e: MessageEvent<ConverseChatMessage>) {
             if (e.data?.source === "converse-chat" && frameRef.current) {
                 frameRef.current.style.height = `${e.data.height}px`;
             }
