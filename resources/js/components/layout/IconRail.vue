@@ -3,11 +3,9 @@ import { computed } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import { useChatStore } from "../../store";
 import { useSidebarUi } from "../../composables/useSidebarUi";
-import { usePreferences } from "../../composables/usePreferences";
 
 const store = useChatStore();
 const { view, setView, setFilter } = useSidebarUi();
-const { theme, effectiveTheme, setTheme } = usePreferences();
 
 const me = computed(() => store.usersById[store.currentKey] ?? null);
 
@@ -18,8 +16,6 @@ const unreadCount = computed(() =>
 const isChats = computed(() => view.value === "chats");
 const isMedia = computed(() => view.value === "media");
 const isProfile = computed(() => view.value === "profile");
-
-const themeTitle = computed(() => `Theme: ${theme.value} — click to change`);
 
 function openChats() {
     setView("chats");
@@ -32,16 +28,6 @@ function openMedia() {
 
 function openProfile() {
     setView("profile");
-}
-
-function cycleTheme() {
-    const next =
-        theme.value === "light"
-            ? "dark"
-            : theme.value === "dark"
-              ? "system"
-              : "light";
-    setTheme(next);
 }
 </script>
 
@@ -110,59 +96,6 @@ function cycleTheme() {
                 <rect x="3" y="4" width="18" height="16" rx="4" />
                 <circle cx="8.5" cy="9.5" r="1.6" />
                 <path d="M4 17l4.5-5 4 4 2.5-2.5L20 17" />
-            </svg>
-        </button>
-
-        <button
-            type="button"
-            :title="themeTitle"
-            class="cv-icon-rail__button relative flex h-[46px] w-[46px] items-center justify-center rounded-2xl text-converse-textMuted hover:bg-converse-sageTint hover:text-converse-sageText"
-            @click="cycleTheme"
-        >
-            <svg
-                v-if="theme === 'dark'"
-                viewBox="0 0 24 24"
-                width="23"
-                height="23"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <path
-                    d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"
-                />
-            </svg>
-            <svg
-                v-else-if="theme === 'system'"
-                viewBox="0 0 24 24"
-                width="23"
-                height="23"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <rect x="3" y="4.5" width="18" height="12" rx="2.5" />
-                <path d="M9 20h6M12 16.5V20" />
-            </svg>
-            <svg
-                v-else
-                viewBox="0 0 24 24"
-                width="23"
-                height="23"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <circle cx="12" cy="12" r="3.6" />
-                <path
-                    d="M12 2.6v2M12 19.4v2M3.9 3.9l1.4 1.4M18.7 18.7l1.4 1.4M2.6 12h2M19.4 12h2M3.9 20.1l1.4-1.4M18.7 5.3l1.4-1.4"
-                />
             </svg>
         </button>
 

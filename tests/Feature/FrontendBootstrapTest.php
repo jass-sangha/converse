@@ -44,3 +44,19 @@ it('still renders the mount page when no reverb broadcasting connection is confi
     $response->assertOk();
     $response->assertSee('converse-chat-app', false);
 });
+
+it('applies the theme synchronously before the deferred app.js bundle to avoid a flash of the wrong theme', function () {
+    $user = frontendUser('frontend-theme-sync@example.com');
+
+    $html = $this->actingAs($user)->get('/converse/chat')->assertOk()->getContent();
+
+    $mountPosition = strpos($html, 'id="converse-chat-app"');
+    $themeScriptPosition = strpos($html, "localStorage.getItem('converse:theme')");
+    $deferredBundlePosition = strpos($html, ' defer>');
+
+    expect($mountPosition)->not->toBeFalse()
+        ->and($themeScriptPosition)->not->toBeFalse()
+        ->and($deferredBundlePosition)->not->toBeFalse()
+        ->and($themeScriptPosition)->toBeGreaterThan($mountPosition)
+        ->and($themeScriptPosition)->toBeLessThan($deferredBundlePosition);
+});
