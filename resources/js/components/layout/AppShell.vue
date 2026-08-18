@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import IconRail from "./IconRail.vue";
 import MobileTabBar from "./MobileTabBar.vue";
+import BrandingBadge from "../shared/BrandingBadge.vue";
 import ConversationList from "../sidebar/ConversationList.vue";
 import NewChatPanel from "../sidebar/NewChatPanel.vue";
 import NewGroupPanel from "../sidebar/NewGroupPanel.vue";
@@ -33,7 +34,7 @@ const showMobileTabBar = computed(
 
 <template>
     <div
-        class="cv-app-shell flex flex-col overflow-hidden bg-converse-chatBg text-converse-text"
+        class="cv-app-shell relative flex flex-col overflow-hidden bg-converse-chatBg text-converse-text"
         :class="isEmbedded ? 'h-full w-full' : 'h-screen w-screen'"
     >
         <div class="flex min-h-0 flex-1">
@@ -83,5 +84,6 @@ const showMobileTabBar = computed(
         </div>
 
         <MobileTabBar v-if="showMobileTabBar" />
+        <BrandingBadge />
     </div>
 </template>

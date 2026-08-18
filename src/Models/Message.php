@@ -3,8 +3,10 @@
 namespace Converse\Chat\Models;
 
 use Converse\Chat\Chat;
+use Converse\Chat\Contracts\LicenseServiceInterface;
 use Converse\Chat\Enums\MessageType;
 use Converse\Chat\Traits\BelongsToChatable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -111,5 +113,21 @@ class Message extends Model
     public function isSystemMessage(): bool
     {
         return $this->type === MessageType::System || $this->chatable_id === null;
+    }
+
+    /**
+     * Filters to the current plan's history window (no-op when unlimited). Messages past
+     * the window are never deleted — only hidden — so upgrading retroactively unlocks them;
+     * apply this wherever messages are queried for display, never at the deletion level.
+     */
+    public function scopeVisibleWithinPlan(Builder $query): Builder
+    {
+        $days = app(LicenseServiceInterface::class)->historyDays();
+
+        if ($days === null) {
+            return $query;
+        }
+
+        return $query->where('created_at', '>=', now()->subDays($days));
     }
 }

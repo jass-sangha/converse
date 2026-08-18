@@ -3,6 +3,7 @@
 namespace Converse\Chat\Services;
 
 use Converse\Chat\Chat;
+use Converse\Chat\Contracts\ConversationLimitServiceInterface;
 use Converse\Chat\Contracts\ConversationRepositoryInterface;
 use Converse\Chat\Contracts\ConversationServiceInterface;
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class ConversationService implements ConversationServiceInterface
 {
@@ -22,6 +24,7 @@ class ConversationService implements ConversationServiceInterface
     public function __construct(
         protected ConversationRepositoryInterface $conversations,
         protected ParticipantRepositoryInterface $participants,
+        protected ConversationLimitServiceInterface $limits,
     ) {}
 
     public function listForUser(Model $chatable, array $filters = []): Collection
@@ -57,6 +60,12 @@ class ConversationService implements ConversationServiceInterface
             ->push($creator)
             ->unique(fn (Model $chatable) => Chat::identify($chatable))
             ->values();
+
+        if (! $this->limits->canCreateGroupWith($participants->count())) {
+            throw ValidationException::withMessages([
+                'participants' => 'Group conversations are limited to '.$this->limits->maxGroupParticipants().' participants on the current plan. Upgrade to create larger groups.',
+            ]);
+        }
 
         $conversation = $this->conversations->create($data, $participants, $creator);
 

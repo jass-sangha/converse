@@ -3,6 +3,7 @@
 namespace Converse\Chat\Services;
 
 use Converse\Chat\Chat;
+use Converse\Chat\Contracts\ConversationLimitServiceInterface;
 use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Converse\Chat\Contracts\ParticipantServiceInterface;
 use Converse\Chat\Enums\ParticipantRole;
@@ -22,11 +23,14 @@ class ParticipantService implements ParticipantServiceInterface
 
     public function __construct(
         protected ParticipantRepositoryInterface $participants,
+        protected ConversationLimitServiceInterface $limits,
     ) {}
 
     public function addParticipants(Conversation $conversation, Collection $chatables, Model $actor): Message
     {
         $chatables = $chatables->unique(fn (Model $chatable) => Chat::identify($chatable))->values();
+
+        $this->guardAgainstExceedingGroupLimit($conversation, $chatables);
 
         $this->participants->addMany($conversation->id, $chatables);
 
@@ -102,6 +106,28 @@ class ParticipantService implements ParticipantServiceInterface
         ]);
 
         broadcast(new ParticipantRemoved($conversation->id, $chatable, $chatable))->toOthers();
+    }
+
+    /**
+     * Only chatables not already active in the conversation count against the plan's
+     * group-size budget — re-inviting someone who's still active (a no-op upsert) or who
+     * left and is rejoining a slot they already occupied shouldn't be double-counted.
+     */
+    protected function guardAgainstExceedingGroupLimit(Conversation $conversation, Collection $chatables): void
+    {
+        $newCount = $chatables
+            ->reject(fn (Model $chatable) => $this->participants->isActiveParticipant($conversation->id, $chatable))
+            ->count();
+
+        if ($newCount === 0) {
+            return;
+        }
+
+        if (! $this->limits->canAddParticipants($conversation, $newCount)) {
+            throw ValidationException::withMessages([
+                'participants' => 'This conversation is at its participant limit on the current plan. Upgrade to add more participants.',
+            ]);
+        }
     }
 
     protected function guardAgainstRemovingSoleAdmin(Conversation $conversation, Model $chatable): void

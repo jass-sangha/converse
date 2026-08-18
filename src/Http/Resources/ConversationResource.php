@@ -3,6 +3,8 @@
 namespace Converse\Chat\Http\Resources;
 
 use Converse\Chat\Chat;
+use Converse\Chat\Contracts\ConversationLimitServiceInterface;
+use Converse\Chat\Contracts\MessageServiceInterface;
 use Converse\Chat\Models\ConversationParticipant;
 use Converse\Chat\Models\Message;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +32,12 @@ class ConversationResource extends JsonResource
             'last_message' => $this->resolveLastMessage($viewer),
             'participants' => ParticipantResource::collection($this->whenLoaded('participants')),
             'unread_count' => $me ? $this->unreadCountFor($me) : 0,
+            // Informational gating fields, never enforced client-side — the actual limits are
+            // re-checked server-side in ConversationLimitService/Message::visibleWithinPlan()
+            // regardless of what the frontend does with these.
+            'max_group_participants' => app(ConversationLimitServiceInterface::class)->maxGroupParticipants(),
+            'can_add_participants' => app(ConversationLimitServiceInterface::class)->canAddParticipant($this->resource),
+            'hidden_message_count' => app(MessageServiceInterface::class)->hiddenByPlanCount($this->resource),
             'me' => $me ? [
                 'role' => $me->role?->value,
                 'muted_until' => $me->muted_until,

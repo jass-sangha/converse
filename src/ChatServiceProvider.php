@@ -8,9 +8,11 @@ use Converse\Chat\Console\Commands\SweepPresenceCommand;
 use Converse\Chat\Contracts\AttachmentServiceInterface;
 use Converse\Chat\Contracts\BlockedUserServiceInterface;
 use Converse\Chat\Contracts\ChatListServiceInterface;
+use Converse\Chat\Contracts\ConversationLimitServiceInterface;
 use Converse\Chat\Contracts\ConversationRepositoryInterface;
 use Converse\Chat\Contracts\ConversationServiceInterface;
 use Converse\Chat\Contracts\EventRsvpServiceInterface;
+use Converse\Chat\Contracts\LicenseServiceInterface;
 use Converse\Chat\Contracts\LinkPreviewFetcher;
 use Converse\Chat\Contracts\MediaProcessor;
 use Converse\Chat\Contracts\MessageReactionServiceInterface;
@@ -35,8 +37,10 @@ use Converse\Chat\Repositories\ParticipantRepository;
 use Converse\Chat\Services\AttachmentService;
 use Converse\Chat\Services\BlockedUserService;
 use Converse\Chat\Services\ChatListService;
+use Converse\Chat\Services\ConversationLimitService;
 use Converse\Chat\Services\ConversationService;
 use Converse\Chat\Services\EventRsvpService;
+use Converse\Chat\Services\LicenseService;
 use Converse\Chat\Services\MessageReactionService;
 use Converse\Chat\Services\MessageReceiptService;
 use Converse\Chat\Services\MessageService;
@@ -83,6 +87,8 @@ class ChatServiceProvider extends PackageServiceProvider
         ChatListServiceInterface::class => ChatListService::class,
         PollVoteServiceInterface::class => PollVoteService::class,
         EventRsvpServiceInterface::class => EventRsvpService::class,
+        LicenseServiceInterface::class => LicenseService::class,
+        ConversationLimitServiceInterface::class => ConversationLimitService::class,
     ];
 
     protected array $policies = [
@@ -101,8 +107,9 @@ class ChatServiceProvider extends PackageServiceProvider
         // existing convention), not as a config()-read-site fallback — once merged, the config
         // key always exists, so a fallback given only at the read site would never be reached.
         $this->mergeConfigFrom(__DIR__.'/../config/chat.php', 'chat');
+        $this->mergeConfigFrom(__DIR__.'/../config/converse.php', 'converse');
 
-        $package->name('chat')->hasConfigFile();
+        $package->name('chat')->hasConfigFile(['chat', 'converse']);
 
         if ((bool) config('chat.run_migrations', true)) {
             // discoversMigrations() (not hasMigrations()) preserves the timestamp-prefixed
