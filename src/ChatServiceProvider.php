@@ -11,8 +11,8 @@ use Converse\Chat\Contracts\ChatListServiceInterface;
 use Converse\Chat\Contracts\ConversationLimitServiceInterface;
 use Converse\Chat\Contracts\ConversationRepositoryInterface;
 use Converse\Chat\Contracts\ConversationServiceInterface;
+use Converse\Chat\Contracts\ConverseLimitsInterface;
 use Converse\Chat\Contracts\EventRsvpServiceInterface;
-use Converse\Chat\Contracts\LicenseServiceInterface;
 use Converse\Chat\Contracts\LinkPreviewFetcher;
 use Converse\Chat\Contracts\MediaProcessor;
 use Converse\Chat\Contracts\MessageReactionServiceInterface;
@@ -39,8 +39,8 @@ use Converse\Chat\Services\BlockedUserService;
 use Converse\Chat\Services\ChatListService;
 use Converse\Chat\Services\ConversationLimitService;
 use Converse\Chat\Services\ConversationService;
+use Converse\Chat\Services\ConverseLimits;
 use Converse\Chat\Services\EventRsvpService;
-use Converse\Chat\Services\LicenseService;
 use Converse\Chat\Services\MessageReactionService;
 use Converse\Chat\Services\MessageReceiptService;
 use Converse\Chat\Services\MessageService;
@@ -87,7 +87,7 @@ class ChatServiceProvider extends PackageServiceProvider
         ChatListServiceInterface::class => ChatListService::class,
         PollVoteServiceInterface::class => PollVoteService::class,
         EventRsvpServiceInterface::class => EventRsvpService::class,
-        LicenseServiceInterface::class => LicenseService::class,
+        ConverseLimitsInterface::class => ConverseLimits::class,
         ConversationLimitServiceInterface::class => ConversationLimitService::class,
     ];
 

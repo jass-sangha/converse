@@ -3,7 +3,7 @@
 namespace Converse\Chat\Models;
 
 use Converse\Chat\Chat;
-use Converse\Chat\Contracts\LicenseServiceInterface;
+use Converse\Chat\Contracts\ConverseLimitsInterface;
 use Converse\Chat\Enums\MessageType;
 use Converse\Chat\Traits\BelongsToChatable;
 use Illuminate\Database\Eloquent\Builder;
@@ -122,7 +122,7 @@ class Message extends Model
      */
     public function scopeVisibleWithinPlan(Builder $query): Builder
     {
-        $days = app(LicenseServiceInterface::class)->historyDays();
+        $days = app(ConverseLimitsInterface::class)->historyDays();
 
         if ($days === null) {
             return $query;

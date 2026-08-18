@@ -56,7 +56,6 @@ return [
         'poll_votes' => 'chat_poll_votes',
         'event_rsvps' => 'chat_event_rsvps',
         'message_edits' => 'chat_message_edits',
-        'license' => 'converse_license',
     ],
 
     /*

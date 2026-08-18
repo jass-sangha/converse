@@ -1,6 +1,5 @@
 <?php
 
-use Converse\Chat\Models\License;
 use Converse\Chat\Tests\Fixtures\User;
 
 function chatUser(): User
@@ -32,7 +31,7 @@ it('creates a private conversation and dedupes on repeat', function () {
 });
 
 it('creates a group conversation with all participants admin-free except creator', function () {
-    License::query()->create(['plan' => 'paid']); // 3-participant group — exceeds the free plan's limit
+    config(['converse.max_group_participants' => null]); // 3-participant group — exceeds the free-tier limit
 
     $alice = chatUser();
     $bob = chatUser();

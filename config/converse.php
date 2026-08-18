@@ -4,28 +4,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Plan Limits
+    | Free-Tier Limits
     |--------------------------------------------------------------------------
     |
-    | Feature limits per license plan. `null` means unlimited. This file only
-    | defines what each plan is allowed — the install's *current* plan lives
-    | in the license table (see the License model / LicenseServiceInterface),
-    | not here, so upgrading never means editing this file.
+    | Defaults for this package on its own. `null` means unlimited. These are
+    | always what's in effect unless the `converse-pro` add-on is installed —
+    | see ConverseLimitsInterface / ConverseLimits for the extension point
+    | that lets it override these values, and the "Extension point" section
+    | of the README for how to build against it.
     |
     */
-    'plans' => [
-        'free' => [
-            // 2 total participants is effectively direct-message only — any attempt to
-            // grow a conversation past that (i.e. an actual group) is blocked.
-            'max_group_participants' => 2,
-            'history_days' => 30,
-            'show_branding' => true,
-        ],
-        'paid' => [
-            'max_group_participants' => null,
-            'history_days' => null,
-            'show_branding' => false,
-        ],
-    ],
+    // 2 total participants is effectively direct-message only — any attempt to grow a
+    // conversation past that (i.e. an actual group) is blocked.
+    'max_group_participants' => 2,
+    'history_days' => 30,
+    'show_branding' => true,
 
 ];

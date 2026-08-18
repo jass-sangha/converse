@@ -1,7 +1,6 @@
 <?php
 
 use Converse\Chat\Events\CallSignal;
-use Converse\Chat\Models\License;
 use Converse\Chat\Tests\Fixtures\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -46,7 +45,7 @@ it('relays a call signal to the conversation channel without writing to the data
 });
 
 it('relays a targeted call signal to only the specified recipient, for a group call mesh', function () {
-    License::query()->create(['plan' => 'paid']); // 3-participant group — exceeds the free plan's limit
+    config(['converse.max_group_participants' => null]); // 3-participant group — exceeds the free-tier limit
 
     $alice = callSignalUser('alice-call-3@example.com');
     $bob = callSignalUser('bob-call-3@example.com');

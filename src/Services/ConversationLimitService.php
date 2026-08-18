@@ -3,18 +3,18 @@
 namespace Converse\Chat\Services;
 
 use Converse\Chat\Contracts\ConversationLimitServiceInterface;
-use Converse\Chat\Contracts\LicenseServiceInterface;
+use Converse\Chat\Contracts\ConverseLimitsInterface;
 use Converse\Chat\Models\Conversation;
 
 class ConversationLimitService implements ConversationLimitServiceInterface
 {
     public function __construct(
-        protected LicenseServiceInterface $license,
+        protected ConverseLimitsInterface $limits,
     ) {}
 
     public function maxGroupParticipants(): ?int
     {
-        return $this->license->maxGroupParticipants();
+        return $this->limits->maxGroupParticipants();
     }
 
     public function canAddParticipant(Conversation $conversation): bool

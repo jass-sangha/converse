@@ -3,7 +3,7 @@
 namespace Converse\Chat\Repositories;
 
 use Converse\Chat\Chat;
-use Converse\Chat\Contracts\LicenseServiceInterface;
+use Converse\Chat\Contracts\ConverseLimitsInterface;
 use Converse\Chat\Contracts\MessageRepositoryInterface;
 use Converse\Chat\Models\Conversation;
 use Converse\Chat\Models\Message;
@@ -115,7 +115,7 @@ class MessageRepository implements MessageRepositoryInterface
      */
     public function hiddenByPlanCount(Conversation $conversation): int
     {
-        $days = app(LicenseServiceInterface::class)->historyDays();
+        $days = app(ConverseLimitsInterface::class)->historyDays();
 
         if ($days === null) {
             return 0;

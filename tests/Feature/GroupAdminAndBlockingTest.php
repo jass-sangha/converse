@@ -1,6 +1,5 @@
 <?php
 
-use Converse\Chat\Models\License;
 use Converse\Chat\Tests\Fixtures\User;
 
 function groupUser(string $email): User
@@ -9,7 +8,7 @@ function groupUser(string $email): User
 }
 
 it('lets the group admin add and remove members but rejects a non-admin', function () {
-    License::query()->create(['plan' => 'paid']); // grows past the free plan's 2-participant limit
+    config(['converse.max_group_participants' => null]); // grows past the free-tier 2-participant limit
 
     $alice = groupUser('alice-grp@example.com');
     $bob = groupUser('bob-grp@example.com');

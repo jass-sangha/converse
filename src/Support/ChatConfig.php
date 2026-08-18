@@ -2,7 +2,7 @@
 
 namespace Converse\Chat\Support;
 
-use Converse\Chat\Contracts\LicenseServiceInterface;
+use Converse\Chat\Contracts\ConverseLimitsInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Str;
 
@@ -50,9 +50,10 @@ class ChatConfig
             ],
             'assetVersion' => is_file($assetPath) ? filemtime($assetPath) : time(),
             'embed' => $embed,
-            // Server-resolved from the install's license plan — never a query param, so an
-            // embedding site can't strip its own branding requirement by tampering with the URL.
-            'showBranding' => app(LicenseServiceInterface::class)->showBranding(),
+            // Server-resolved (free default, or converse-pro's override if installed) —
+            // never a query param, so an embedding site can't strip its own branding
+            // requirement by tampering with the URL.
+            'showBranding' => app(ConverseLimitsInterface::class)->showBranding(),
         ];
     }
 
