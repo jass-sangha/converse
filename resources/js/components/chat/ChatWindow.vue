@@ -218,10 +218,6 @@ function onEdit(message) {
                             backgroundRepeat: wallpaper.backgroundRepeat ?? undefined,
                         }"
                     />
-                    <template v-if="wallpaper.isDefault">
-                        <div class="absolute -right-[60px] -top-[90px] h-[320px] w-[320px] rounded-full bg-riwaaq-bubbleOut opacity-[.55]" />
-                        <div class="absolute -bottom-[120px] left-[40px] h-[380px] w-[380px] rounded-full bg-riwaaq-sageTint opacity-50" />
-                    </template>
                 </div>
 
                 <div v-if="activeSearchQuery" class="chat-chat-window__search-results relative min-h-0 flex-1 overflow-y-auto p-3">
