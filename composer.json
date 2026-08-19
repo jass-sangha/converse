@@ -1,9 +1,16 @@
 {
     "name": "jass-sangha/riwaaq",
-    "description": "A WhatsApp-style real-time chat backend package for Laravel — conversations, groups, media, reactions, receipts, typing, presence, and more.",
+    "description": "Real-time Laravel chat package — 1-on-1 & group messaging, media sharing, reactions, read receipts, typing indicators & presence via WebSockets",
     "type": "library",
     "license": "MIT",
-    "keywords": ["laravel", "chat", "messaging", "whatsapp", "reverb", "realtime"],
+    "keywords": [
+        "laravel",
+        "chat",
+        "messaging",
+        "whatsapp",
+        "reverb",
+        "realtime"
+    ],
     "authors": [
         {
             "name": "Jass Sangha"
