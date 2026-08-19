@@ -13,7 +13,5 @@ interface LimitsOverrideInterface
 {
     public function maxGroupParticipants(): ?int;
 
-    public function historyDays(): ?int;
-
     public function showBranding(): bool;
 }

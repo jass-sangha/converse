@@ -399,11 +399,10 @@ This free/core package always runs with the limits in `config/riwaaq.php`:
 
 ```php
 'max_group_participants' => 10,   // direct-message only by default
-'history_days' => 30,
 'show_branding' => true,
 ```
 
-Everywhere a limit is checked (adding a participant, querying message history, rendering the widget's branding badge) reads through `Riwaaq\Chat\Contracts\RiwaaqLimitsInterface`, resolved to the `RiwaaqLimits` service — never `config('riwaaq.*')` directly. `RiwaaqLimits` itself does exactly one thing beyond reading that config: if a class named exactly `RiwaaqPro\LimitsOverride` is present (i.e. autoloadable — installing a package that ships one is enough, no manual wiring), it defers to that instead.
+Everywhere a limit is checked (adding a participant or rendering the widget's branding badge) reads through `Riwaaq\Chat\Contracts\RiwaaqLimitsInterface`, resolved to the `RiwaaqLimits` service — never `config('riwaaq.*')` directly. `RiwaaqLimits` itself does exactly one thing beyond reading that config: if a class named exactly `RiwaaqPro\LimitsOverride` is present (i.e. autoloadable — installing a package that ships one is enough, no manual wiring), it defers to that instead.
 
 A paid add-on hooks in by shipping a class implementing `Riwaaq\Chat\Contracts\LimitsOverrideInterface`:
 
@@ -415,7 +414,6 @@ use Riwaaq\Chat\Contracts\LimitsOverrideInterface;
 class LimitsOverride implements LimitsOverrideInterface
 {
     public function maxGroupParticipants(): ?int { return null; } // unlimited
-    public function historyDays(): ?int { return null; }
     public function showBranding(): bool { return false; }
 }
 ```

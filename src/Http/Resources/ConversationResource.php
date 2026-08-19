@@ -8,7 +8,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
 use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Contracts\ConversationLimitServiceInterface;
-use Riwaaq\Chat\Contracts\MessageServiceInterface;
 use Riwaaq\Chat\Models\ConversationParticipant;
 use Riwaaq\Chat\Models\Message;
 
@@ -32,12 +31,9 @@ class ConversationResource extends JsonResource
             'last_message' => $this->resolveLastMessage($viewer),
             'participants' => ParticipantResource::collection($this->whenLoaded('participants')),
             'unread_count' => $me ? $this->unreadCountFor($me) : 0,
-            // Informational gating fields, never enforced client-side — the actual limits are
-            // re-checked server-side in ConversationLimitService/Message::visibleWithinPlan()
-            // regardless of what the frontend does with these.
+            // Informational gating fields, never enforced client-side.
             'max_group_participants' => app(ConversationLimitServiceInterface::class)->maxGroupParticipants(),
             'can_add_participants' => app(ConversationLimitServiceInterface::class)->canAddParticipant($this->resource),
-            'hidden_message_count' => app(MessageServiceInterface::class)->hiddenByPlanCount($this->resource),
             'me' => $me ? [
                 'role' => $me->role?->value,
                 'muted_until' => $me->muted_until,

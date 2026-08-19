@@ -2,8 +2,8 @@
 
 namespace Riwaaq\Chat\Services;
 
-use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
 use Riwaaq\Chat\Contracts\LimitsOverrideInterface;
+use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
 use RiwaaqPro\LimitsOverride;
 
 /**
@@ -24,13 +24,6 @@ class RiwaaqLimits implements RiwaaqLimitsInterface
         // return value, not just "no override present" — using it would silently fall back
         // to the free-tier config every time an active license means unlimited.
         return $override !== null ? $override->maxGroupParticipants() : config('riwaaq.max_group_participants');
-    }
-
-    public function historyDays(): ?int
-    {
-        $override = $this->override();
-
-        return $override !== null ? $override->historyDays() : config('riwaaq.history_days');
     }
 
     public function showBranding(): bool

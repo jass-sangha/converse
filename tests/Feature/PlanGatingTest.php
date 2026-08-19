@@ -59,7 +59,7 @@ it('blocks creating a group past the free-tier participant limit but respects a 
     ])->assertCreated();
 });
 
-it('hides messages older than the free-tier history window but respects an unlimited config value', function () {
+it('does not limit message history by age', function () {
     $alice = licenseTestUser('alice-history@example.com');
     $bob = licenseTestUser('bob-history@example.com');
 
@@ -80,25 +80,16 @@ it('hides messages older than the free-tier history window but respects an unlim
 
     Message::query()->where('id', $oldId)->update(['created_at' => now()->subDays(45)]);
 
-    // Default free-tier config (history_days = 30): the old message is hidden, not deleted.
-    $limited = $this->actingAs($alice)
-        ->getJson("/api/chat/conversations/{$conversationId}/messages")
-        ->assertOk();
-
-    expect(collect($limited->json('data'))->pluck('id'))
-        ->toContain($recentId)
-        ->not->toContain($oldId);
-
-    expect(Message::query()->where('id', $oldId)->exists())->toBeTrue();
-
-    config(['riwaaq.history_days' => null]);
-
-    // Unlimited history: the same, never-deleted message is visible again.
+    // The default config has unlimited history, so old messages remain visible.
     $unlimited = $this->actingAs($alice)
         ->getJson("/api/chat/conversations/{$conversationId}/messages")
         ->assertOk();
 
-    expect(collect($unlimited->json('data'))->pluck('id'))->toContain($recentId, $oldId);
+    expect(collect($unlimited->json('data'))->pluck('id'))
+        ->toContain($recentId)
+        ->toContain($oldId);
+
+    expect(Message::query()->where('id', $oldId)->exists())->toBeTrue();
 });
 
 it('reflects the show_branding config value in the widget bootstrap payload', function () {

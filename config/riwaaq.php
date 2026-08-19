@@ -17,7 +17,6 @@ return [
     // Conversations may grow to at most 10 total participants; any attempt to add
     // beyond that is blocked.
     'max_group_participants' => 10,
-    'history_days' => 30,
     'show_branding' => true,
 
 ];

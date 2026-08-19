@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Contracts\MessageRepositoryInterface;
-use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
 use Riwaaq\Chat\Models\Conversation;
 use Riwaaq\Chat\Models\Message;
 use Riwaaq\Chat\Models\MessageDeletion;
@@ -32,7 +31,6 @@ class MessageRepository implements MessageRepositoryInterface
         $query = Message::query()
             ->where('conversation_id', $conversation->id)
             ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
-            ->visibleWithinPlan()
             ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps'])
             ->orderByDesc('id');
 
@@ -49,7 +47,6 @@ class MessageRepository implements MessageRepositoryInterface
             ->whereHas('conversation.participants', fn ($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
             ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
             ->whereNull('deleted_for_everyone_at')
-            ->visibleWithinPlan()
             ->where('body', 'like', '%'.$query.'%')
             ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps', 'conversation.participants'])
             ->orderByDesc('id');
@@ -67,7 +64,6 @@ class MessageRepository implements MessageRepositoryInterface
             ->whereHas('conversation.participants', fn ($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
             ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
             ->whereNull('deleted_for_everyone_at')
-            ->visibleWithinPlan()
             ->with(['chatable', 'attachments', 'conversation'])
             ->orderByDesc('id');
 
@@ -106,25 +102,6 @@ class MessageRepository implements MessageRepositoryInterface
         }
 
         return $builder->paginate($perPage);
-    }
-
-    /**
-     * How many messages in this conversation exist but fall outside the plan's history
-     * window — lets the frontend show "N older messages — upgrade to view" rather than
-     * cutting the conversation off with no explanation. Always 0 on an unlimited plan.
-     */
-    public function hiddenByPlanCount(Conversation $conversation): int
-    {
-        $days = app(RiwaaqLimitsInterface::class)->historyDays();
-
-        if ($days === null) {
-            return 0;
-        }
-
-        return Message::query()
-            ->where('conversation_id', $conversation->id)
-            ->where('created_at', '<', now()->subDays($days))
-            ->count();
     }
 
     public function clearForChatable(Conversation $conversation, Model $chatable): void

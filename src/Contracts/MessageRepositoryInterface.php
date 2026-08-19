@@ -24,8 +24,6 @@ interface MessageRepositoryInterface
 
     public function clearForChatable(Conversation $conversation, Model $chatable): void;
 
-    public function hiddenByPlanCount(Conversation $conversation): int;
-
     /**
      * @param  string  $kind  'media' (images/videos/gifs), 'docs', or 'links'
      * @param  string|null  $search  Matches attachment filename, conversation name, or participant name.

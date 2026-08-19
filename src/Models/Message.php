@@ -2,13 +2,11 @@
 
 namespace Riwaaq\Chat\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Riwaaq\Chat\Chat;
-use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
 use Riwaaq\Chat\Enums\MessageType;
 use Riwaaq\Chat\Traits\BelongsToChatable;
 
@@ -113,21 +111,5 @@ class Message extends Model
     public function isSystemMessage(): bool
     {
         return $this->type === MessageType::System || $this->chatable_id === null;
-    }
-
-    /**
-     * Filters to the current plan's history window (no-op when unlimited). Messages past
-     * the window are never deleted — only hidden — so upgrading retroactively unlocks them;
-     * apply this wherever messages are queried for display, never at the deletion level.
-     */
-    public function scopeVisibleWithinPlan(Builder $query): Builder
-    {
-        $days = app(RiwaaqLimitsInterface::class)->historyDays();
-
-        if ($days === null) {
-            return $query;
-        }
-
-        return $query->where('created_at', '>=', now()->subDays($days));
     }
 }
