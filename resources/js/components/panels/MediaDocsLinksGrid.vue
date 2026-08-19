@@ -18,7 +18,8 @@ const URL_PATTERN = /https?:\/\/\S+/;
 function kindOf(message) {
     if (MEDIA_TYPES.has(message.type)) return "media";
     if (message.type === "document") return "docs";
-    if (message.type === "text" && URL_PATTERN.test(message.body ?? "")) return "links";
+    if (message.type === "text" && URL_PATTERN.test(message.body ?? ""))
+        return "links";
     return null;
 }
 
@@ -213,7 +214,7 @@ function formatSize(bytes) {
 
 <template>
     <div class="chat-media-docs-links flex min-h-0 flex-1 flex-col">
-        <div class="px-4 pt-3">
+        <div class="px-4">
             <div class="relative">
                 <svg
                     viewBox="0 0 24 24"
