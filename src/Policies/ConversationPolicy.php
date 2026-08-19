@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Policies;
+namespace Riwaaq\Chat\Policies;
 
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Models\Conversation;
 use Illuminate\Database\Eloquent\Model;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Models\Conversation;
 
 class ConversationPolicy
 {

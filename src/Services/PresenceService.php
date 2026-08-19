@@ -1,15 +1,15 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\PresenceServiceInterface;
-use Converse\Chat\Contracts\UserSettingsServiceInterface;
-use Converse\Chat\Events\PresenceChanged;
-use Converse\Chat\Models\ConversationParticipant;
-use Converse\Chat\Models\UserPresence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\PresenceServiceInterface;
+use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
+use Riwaaq\Chat\Events\PresenceChanged;
+use Riwaaq\Chat\Models\ConversationParticipant;
+use Riwaaq\Chat\Models\UserPresence;
 
 class PresenceService implements PresenceServiceInterface
 {

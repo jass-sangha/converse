@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\LinkPreviewFetcher;
-use Converse\Chat\Http\Requests\LinkPreviewRequest;
 use Illuminate\Support\Facades\Cache;
+use Riwaaq\Chat\Contracts\LinkPreviewFetcher;
+use Riwaaq\Chat\Http\Requests\LinkPreviewRequest;
 
 class LinkPreviewController extends Controller
 {

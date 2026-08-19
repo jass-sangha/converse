@@ -38,7 +38,7 @@ export function useEcho() {
         return build();
     }
 
-    const config = window.ConverseConfig ?? {};
+    const config = window.RiwaaqConfig ?? {};
     const broadcasting = config.broadcasting ?? {};
     const driver = broadcasting.driver ?? 'reverb';
 
@@ -87,7 +87,7 @@ export function useEcho() {
                 });
         }
     } catch (error) {
-        console.warn('[converse] Realtime broadcasting is unavailable; live updates are disabled.', error);
+        console.warn('[riwaaq] Realtime broadcasting is unavailable; live updates are disabled.', error);
         echo = noopEcho;
     }
 

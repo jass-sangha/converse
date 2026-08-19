@@ -132,8 +132,8 @@ async function onImageChange(event) {
 </script>
 
 <template>
-    <div class="cv-wallpaper-picker">
-        <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-converse-textDim">
+    <div class="chat-wallpaper-picker">
+        <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-riwaaq-textDim">
             Pattern
         </p>
         <div class="mb-4 flex flex-wrap gap-[9px]">
@@ -142,7 +142,7 @@ async function onImageChange(event) {
                 :key="pattern.key"
                 type="button"
                 :title="pattern.label"
-                class="relative h-10 w-10 rounded-[10px] border border-converse-border bg-converse-surfaceHover"
+                class="relative h-10 w-10 rounded-[10px] border border-riwaaq-border bg-riwaaq-surfaceHover"
                 :class="isImage ? 'cursor-not-allowed opacity-30 grayscale' : ''"
                 :disabled="isImage"
                 :style="{
@@ -153,7 +153,7 @@ async function onImageChange(event) {
             >
                 <span
                     v-if="!isImage && current.patternKey === pattern.key"
-                    class="pointer-events-none absolute -inset-1 rounded-xl border-2 border-converse-accent"
+                    class="pointer-events-none absolute -inset-1 rounded-xl border-2 border-riwaaq-accent"
                 />
                 <svg
                     v-if="isImage"
@@ -164,14 +164,14 @@ async function onImageChange(event) {
                     stroke="currentColor"
                     stroke-width="2.5"
                     stroke-linecap="round"
-                    class="pointer-events-none absolute inset-0 m-auto text-converse-textMuted"
+                    class="pointer-events-none absolute inset-0 m-auto text-riwaaq-textMuted"
                 >
                     <path d="M4 4l16 16" />
                 </svg>
             </button>
         </div>
 
-        <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-converse-textDim">
+        <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-riwaaq-textDim">
             Color
         </p>
         <div class="flex flex-wrap gap-[9px]">
@@ -180,19 +180,19 @@ async function onImageChange(event) {
                 :key="color.key"
                 type="button"
                 :title="color.label"
-                class="relative h-8 w-8 rounded-full border border-converse-border"
+                class="relative h-8 w-8 rounded-full border border-riwaaq-border"
                 :style="{ backgroundColor: color.css ?? 'transparent' }"
                 @click="pickColor(color.key)"
             >
                 <span
                     v-if="!isImage && current.colorKeyOrHex === color.key"
-                    class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
+                    class="pointer-events-none absolute -inset-1 rounded-full border-2 border-riwaaq-accent"
                 />
             </button>
             <div ref="colorMenuRoot" data-menu-root="1" class="relative">
                 <button
                     type="button"
-                    class="relative h-8 w-8 rounded-full border border-converse-border"
+                    class="relative h-8 w-8 rounded-full border border-riwaaq-border"
                     title="Custom color"
                     :style="{ backgroundColor: isCustomHex ? current.colorKeyOrHex : 'transparent' }"
                     @click="toggleColorMenu"
@@ -207,26 +207,26 @@ async function onImageChange(event) {
                         stroke-width="2.25"
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        class="pointer-events-none absolute inset-0 m-auto text-converse-textMuted"
+                        class="pointer-events-none absolute inset-0 m-auto text-riwaaq-textMuted"
                     >
                         <path d="M12 3c-3.5 4-6.5 8-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 11 15.5 7 12 3Z" />
                     </svg>
                     <span
                         v-if="!isImage && isCustomHex"
-                        class="pointer-events-none absolute -inset-1 rounded-full border-2 border-converse-accent"
+                        class="pointer-events-none absolute -inset-1 rounded-full border-2 border-riwaaq-accent"
                     />
                 </button>
 
                 <div
                     v-if="showColorMenu"
-                    class="cv-animate-pop-in absolute right-0 z-20 w-[190px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-3 shadow-lg"
+                    class="chat-animate-pop-in absolute right-0 z-20 w-[190px] overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-3 shadow-lg"
                     :class="colorMenuOpenUp ? 'bottom-full mb-1' : 'top-full mt-1'"
                     :style="{ maxHeight: colorMenuMaxHeight + 'px' }"
                 >
                     <input
                         type="color"
                         :value="customBaseHex"
-                        class="h-9 w-full cursor-pointer rounded-lg border border-converse-border bg-transparent"
+                        class="h-9 w-full cursor-pointer rounded-lg border border-riwaaq-border bg-transparent"
                         @input="pickCustomColor"
                     />
                     <input
@@ -234,7 +234,7 @@ async function onImageChange(event) {
                         type="text"
                         maxlength="7"
                         placeholder="#rrggbb"
-                        class="mt-2 h-8 w-full rounded-lg border border-converse-border bg-converse-surfaceHover px-2 text-center text-xs uppercase tracking-wide text-converse-text outline-none focus:border-converse-accent"
+                        class="mt-2 h-8 w-full rounded-lg border border-riwaaq-border bg-riwaaq-surfaceHover px-2 text-center text-xs uppercase tracking-wide text-riwaaq-text outline-none focus:border-riwaaq-accent"
                         @input="onHexDraftInput"
                     />
                 </div>
@@ -243,7 +243,7 @@ async function onImageChange(event) {
                 type="button"
                 title="Upload photo"
                 class="relative flex h-8 w-8 items-center justify-center rounded-full border-2 disabled:opacity-50"
-                :class="isImage ? 'border-converse-accent' : 'border-converse-border'"
+                :class="isImage ? 'border-riwaaq-accent' : 'border-riwaaq-border'"
                 :disabled="uploadingImage"
                 @click="pickImage"
             >
@@ -256,7 +256,7 @@ async function onImageChange(event) {
                     stroke-width="2.25"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    class="text-converse-textMuted"
+                    class="text-riwaaq-textMuted"
                 >
                     <rect x="3" y="4" width="18" height="16" rx="4" />
                     <circle cx="8.5" cy="9.5" r="1.4" />

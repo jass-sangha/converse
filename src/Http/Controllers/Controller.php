@@ -1,6 +1,6 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;

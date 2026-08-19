@@ -250,7 +250,7 @@ async function submit() {
 </script>
 
 <template>
-    <div class="cv-composer relative shrink-0 bg-transparent px-3 pb-3 pt-2 sm:px-12">
+    <div class="chat-composer relative shrink-0 bg-transparent px-3 pb-3 pt-2 sm:px-12">
       <div class="mx-auto max-w-7xl">
         <ReplyPreview
             v-if="replyTo"
@@ -260,17 +260,17 @@ async function submit() {
             @dismiss="emit('dismiss-reply')"
         />
 
-        <div v-if="editing" class="cv-composer__editing mb-2 flex items-center gap-2 rounded-cv border-l-4 border-converse-accent bg-converse-surfaceHover px-3 py-1.5">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0 text-converse-accent"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
-            <span class="flex-1 truncate text-xs text-converse-textMuted">Editing message</span>
-            <button type="button" class="text-converse-textMuted hover:text-converse-text" @click="cancelEdit">✕</button>
+        <div v-if="editing" class="chat-composer__editing mb-2 flex items-center gap-2 rounded-chat border-l-4 border-riwaaq-accent bg-riwaaq-surfaceHover px-3 py-1.5">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0 text-riwaaq-accent"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
+            <span class="flex-1 truncate text-xs text-riwaaq-textMuted">Editing message</span>
+            <button type="button" class="text-riwaaq-textMuted hover:text-riwaaq-text" @click="cancelEdit">✕</button>
         </div>
 
-        <div v-if="linkPreview" class="cv-composer__link-preview mb-2 rounded-cv border border-converse-border p-2 text-xs text-converse-textMuted">
+        <div v-if="linkPreview" class="chat-composer__link-preview mb-2 rounded-chat border border-riwaaq-border p-2 text-xs text-riwaaq-textMuted">
             Link preview: {{ linkPreview.title || linkPreview.url }}
         </div>
 
-        <div v-if="hasStaged" class="cv-composer__staged mb-2 flex items-center gap-2 overflow-x-auto rounded-cv border border-converse-border bg-converse-surfaceHover p-2">
+        <div v-if="hasStaged" class="chat-composer__staged mb-2 flex items-center gap-2 overflow-x-auto rounded-chat border border-riwaaq-border bg-riwaaq-surfaceHover p-2">
             <div v-for="item in stagedAttachments" :key="item.attachment.id" class="relative shrink-0">
                 <img
                     v-if="item.type === 'image'"
@@ -278,14 +278,14 @@ async function submit() {
                     class="h-16 w-16 rounded object-cover"
                 >
                 <video v-else-if="item.type === 'video'" :src="item.attachment.url" class="h-16 w-16 rounded object-cover" muted />
-                <div v-else class="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded bg-converse-surface p-1 text-center">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="text-converse-textMuted"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"/></svg>
-                    <span class="w-full truncate text-[10px] text-converse-textMuted">{{ item.attachment.original_filename }}</span>
+                <div v-else class="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded bg-riwaaq-surface p-1 text-center">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="text-riwaaq-textMuted"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"/></svg>
+                    <span class="w-full truncate text-[10px] text-riwaaq-textMuted">{{ item.attachment.original_filename }}</span>
                 </div>
                 <button
                     type="button"
                     title="Remove"
-                    class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-converse-overlay/70 text-white"
+                    class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-riwaaq-overlay/70 text-white"
                     @click="removeStaged(item.attachment)"
                 >
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"/></svg>
@@ -293,7 +293,7 @@ async function submit() {
             </div>
         </div>
 
-        <form class="cv-composer__form flex items-center gap-2" @submit.prevent="submit">
+        <form class="chat-composer__form flex items-center gap-2" @submit.prevent="submit">
             <template v-if="!recording">
                 <AttachmentPicker
                     @uploaded="onAttachmentUploaded"
@@ -301,22 +301,22 @@ async function submit() {
                     @create-event="showEventModal = true"
                 />
 
-                <div ref="emojiWrap" class="cv-composer__emoji-wrap relative hidden shrink-0 sm:block">
-                    <button type="button" title="Emoji" class="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent" @click="toggleEmoji">
+                <div ref="emojiWrap" class="chat-composer__emoji-wrap relative hidden shrink-0 sm:block">
+                    <button type="button" title="Emoji" class="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-textMuted shadow-sm hover:text-riwaaq-accent" @click="toggleEmoji">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
                     </button>
-                    <div v-if="showEmoji" class="cv-animate-pop-in absolute bottom-14 left-0 z-10">
+                    <div v-if="showEmoji" class="chat-animate-pop-in absolute bottom-14 left-0 z-10">
                         <EmojiPicker @pick="onEmojiPick" />
                     </div>
                 </div>
 
-                <div class="flex h-[52px] min-w-0 flex-1 items-center rounded-full bg-converse-surface px-[22px] shadow-sm">
+                <div class="flex h-[52px] min-w-0 flex-1 items-center rounded-full bg-riwaaq-surface px-[22px] shadow-sm">
                     <input
                         ref="inputEl"
                         v-model="body"
                         type="text"
                         :placeholder="hasStaged ? 'Add a caption' : editing ? 'Edit message' : 'Type a message'"
-                        class="cv-composer__input w-full min-w-0 bg-transparent text-sm text-converse-text focus:outline-none"
+                        class="chat-composer__input w-full min-w-0 bg-transparent text-sm text-riwaaq-text focus:outline-none"
                         @keydown.escape="onInputEscape"
                     >
                 </div>
@@ -327,7 +327,7 @@ async function submit() {
                 @recorded="onVoiceRecorded"
                 @recording-change="recording = $event"
             />
-            <button v-else type="submit" class="cv-composer__send flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-converse-accent text-sm font-medium text-converse-accentContrast shadow-sm">
+            <button v-else type="submit" class="chat-composer__send flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-riwaaq-accent text-sm font-medium text-riwaaq-accentContrast shadow-sm">
                 <svg v-if="!editing" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
                 <span v-else>Save</span>
             </button>

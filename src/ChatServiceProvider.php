@@ -1,63 +1,63 @@
 <?php
 
-namespace Converse\Chat;
+namespace Riwaaq\Chat;
 
-use Converse\Chat\Console\Commands\InstallCommand;
-use Converse\Chat\Console\Commands\PruneExpiredMessagesCommand;
-use Converse\Chat\Console\Commands\SweepPresenceCommand;
-use Converse\Chat\Contracts\AttachmentServiceInterface;
-use Converse\Chat\Contracts\BlockedUserServiceInterface;
-use Converse\Chat\Contracts\ChatListServiceInterface;
-use Converse\Chat\Contracts\ConversationLimitServiceInterface;
-use Converse\Chat\Contracts\ConversationRepositoryInterface;
-use Converse\Chat\Contracts\ConversationServiceInterface;
-use Converse\Chat\Contracts\ConverseLimitsInterface;
-use Converse\Chat\Contracts\EventRsvpServiceInterface;
-use Converse\Chat\Contracts\LinkPreviewFetcher;
-use Converse\Chat\Contracts\MediaProcessor;
-use Converse\Chat\Contracts\MessageReactionServiceInterface;
-use Converse\Chat\Contracts\MessageReceiptServiceInterface;
-use Converse\Chat\Contracts\MessageRepositoryInterface;
-use Converse\Chat\Contracts\MessageServiceInterface;
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Contracts\ParticipantServiceInterface;
-use Converse\Chat\Contracts\PinnedMessageServiceInterface;
-use Converse\Chat\Contracts\PollVoteServiceInterface;
-use Converse\Chat\Contracts\PresenceServiceInterface;
-use Converse\Chat\Contracts\StarredMessageServiceInterface;
-use Converse\Chat\Contracts\UserSearchServiceInterface;
-use Converse\Chat\Contracts\UserSettingsServiceInterface;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Policies\ConversationPolicy;
-use Converse\Chat\Policies\MessagePolicy;
-use Converse\Chat\Repositories\ConversationRepository;
-use Converse\Chat\Repositories\MessageRepository;
-use Converse\Chat\Repositories\ParticipantRepository;
-use Converse\Chat\Services\AttachmentService;
-use Converse\Chat\Services\BlockedUserService;
-use Converse\Chat\Services\ChatListService;
-use Converse\Chat\Services\ConversationLimitService;
-use Converse\Chat\Services\ConversationService;
-use Converse\Chat\Services\ConverseLimits;
-use Converse\Chat\Services\EventRsvpService;
-use Converse\Chat\Services\MessageReactionService;
-use Converse\Chat\Services\MessageReceiptService;
-use Converse\Chat\Services\MessageService;
-use Converse\Chat\Services\NullMediaProcessor;
-use Converse\Chat\Services\OpenGraphLinkPreviewFetcher;
-use Converse\Chat\Services\ParticipantService;
-use Converse\Chat\Services\PinnedMessageService;
-use Converse\Chat\Services\PollVoteService;
-use Converse\Chat\Services\PresenceService;
-use Converse\Chat\Services\StarredMessageService;
-use Converse\Chat\Services\UserSearchService;
-use Converse\Chat\Services\UserSettingsService;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+use Riwaaq\Chat\Console\Commands\InstallCommand;
+use Riwaaq\Chat\Console\Commands\PruneExpiredMessagesCommand;
+use Riwaaq\Chat\Console\Commands\SweepPresenceCommand;
+use Riwaaq\Chat\Contracts\AttachmentServiceInterface;
+use Riwaaq\Chat\Contracts\BlockedUserServiceInterface;
+use Riwaaq\Chat\Contracts\ChatListServiceInterface;
+use Riwaaq\Chat\Contracts\ConversationLimitServiceInterface;
+use Riwaaq\Chat\Contracts\ConversationRepositoryInterface;
+use Riwaaq\Chat\Contracts\ConversationServiceInterface;
+use Riwaaq\Chat\Contracts\EventRsvpServiceInterface;
+use Riwaaq\Chat\Contracts\LinkPreviewFetcher;
+use Riwaaq\Chat\Contracts\MediaProcessor;
+use Riwaaq\Chat\Contracts\MessageReactionServiceInterface;
+use Riwaaq\Chat\Contracts\MessageReceiptServiceInterface;
+use Riwaaq\Chat\Contracts\MessageRepositoryInterface;
+use Riwaaq\Chat\Contracts\MessageServiceInterface;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Contracts\ParticipantServiceInterface;
+use Riwaaq\Chat\Contracts\PinnedMessageServiceInterface;
+use Riwaaq\Chat\Contracts\PollVoteServiceInterface;
+use Riwaaq\Chat\Contracts\PresenceServiceInterface;
+use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
+use Riwaaq\Chat\Contracts\StarredMessageServiceInterface;
+use Riwaaq\Chat\Contracts\UserSearchServiceInterface;
+use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Policies\ConversationPolicy;
+use Riwaaq\Chat\Policies\MessagePolicy;
+use Riwaaq\Chat\Repositories\ConversationRepository;
+use Riwaaq\Chat\Repositories\MessageRepository;
+use Riwaaq\Chat\Repositories\ParticipantRepository;
+use Riwaaq\Chat\Services\AttachmentService;
+use Riwaaq\Chat\Services\BlockedUserService;
+use Riwaaq\Chat\Services\ChatListService;
+use Riwaaq\Chat\Services\ConversationLimitService;
+use Riwaaq\Chat\Services\ConversationService;
+use Riwaaq\Chat\Services\EventRsvpService;
+use Riwaaq\Chat\Services\MessageReactionService;
+use Riwaaq\Chat\Services\MessageReceiptService;
+use Riwaaq\Chat\Services\MessageService;
+use Riwaaq\Chat\Services\NullMediaProcessor;
+use Riwaaq\Chat\Services\OpenGraphLinkPreviewFetcher;
+use Riwaaq\Chat\Services\ParticipantService;
+use Riwaaq\Chat\Services\PinnedMessageService;
+use Riwaaq\Chat\Services\PollVoteService;
+use Riwaaq\Chat\Services\PresenceService;
+use Riwaaq\Chat\Services\RiwaaqLimits;
+use Riwaaq\Chat\Services\StarredMessageService;
+use Riwaaq\Chat\Services\UserSearchService;
+use Riwaaq\Chat\Services\UserSettingsService;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -87,7 +87,7 @@ class ChatServiceProvider extends PackageServiceProvider
         ChatListServiceInterface::class => ChatListService::class,
         PollVoteServiceInterface::class => PollVoteService::class,
         EventRsvpServiceInterface::class => EventRsvpService::class,
-        ConverseLimitsInterface::class => ConverseLimits::class,
+        RiwaaqLimitsInterface::class => RiwaaqLimits::class,
         ConversationLimitServiceInterface::class => ConversationLimitService::class,
     ];
 
@@ -107,9 +107,9 @@ class ChatServiceProvider extends PackageServiceProvider
         // existing convention), not as a config()-read-site fallback — once merged, the config
         // key always exists, so a fallback given only at the read site would never be reached.
         $this->mergeConfigFrom(__DIR__.'/../config/chat.php', 'chat');
-        $this->mergeConfigFrom(__DIR__.'/../config/converse.php', 'converse');
+        $this->mergeConfigFrom(__DIR__.'/../config/riwaaq.php', 'riwaaq');
 
-        $package->name('chat')->hasConfigFile(['chat', 'converse']);
+        $package->name('chat')->hasConfigFile(['chat', 'riwaaq']);
 
         if ((bool) config('chat.run_migrations', true)) {
             // discoversMigrations() (not hasMigrations()) preserves the timestamp-prefixed

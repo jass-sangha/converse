@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Contracts;
+namespace Riwaaq\Chat\Contracts;
 
-use Converse\Chat\Models\Message;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Riwaaq\Chat\Models\Message;
 
 interface StarredMessageServiceInterface
 {

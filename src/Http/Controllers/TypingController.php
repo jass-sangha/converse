@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Events\UserStoppedTyping;
-use Converse\Chat\Events\UserTyping;
-use Converse\Chat\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Riwaaq\Chat\Events\UserStoppedTyping;
+use Riwaaq\Chat\Events\UserTyping;
+use Riwaaq\Chat\Models\Conversation;
 
 class TypingController extends Controller
 {

@@ -1,6 +1,6 @@
 <?php
 
-use Converse\Chat\Tests\Fixtures\User;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function privacyUser(string $email): User
 {

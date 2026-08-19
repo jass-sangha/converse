@@ -1,9 +1,9 @@
 <?php
 
-use Converse\Chat\Tests\Fixtures\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function mediaUser(string $email): User
 {

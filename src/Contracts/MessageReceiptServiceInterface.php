@@ -1,9 +1,9 @@
 <?php
 
-namespace Converse\Chat\Contracts;
+namespace Riwaaq\Chat\Contracts;
 
-use Converse\Chat\Models\Conversation;
 use Illuminate\Database\Eloquent\Model;
+use Riwaaq\Chat\Models\Conversation;
 
 interface MessageReceiptServiceInterface
 {

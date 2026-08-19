@@ -1,17 +1,17 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Contracts\ParticipantServiceInterface;
-use Converse\Chat\Http\Requests\AddParticipantsRequest;
-use Converse\Chat\Http\Requests\ChangeParticipantRoleRequest;
-use Converse\Chat\Http\Resources\MessageResource;
-use Converse\Chat\Http\Resources\ParticipantResource;
-use Converse\Chat\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Contracts\ParticipantServiceInterface;
+use Riwaaq\Chat\Http\Requests\AddParticipantsRequest;
+use Riwaaq\Chat\Http\Requests\ChangeParticipantRoleRequest;
+use Riwaaq\Chat\Http\Resources\MessageResource;
+use Riwaaq\Chat\Http\Resources\ParticipantResource;
+use Riwaaq\Chat\Models\Conversation;
 
 class ParticipantController extends Controller
 {

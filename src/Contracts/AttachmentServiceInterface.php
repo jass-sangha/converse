@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Contracts;
+namespace Riwaaq\Chat\Contracts;
 
-use Converse\Chat\Models\Message;
-use Converse\Chat\Models\MessageAttachment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\MessageAttachment;
 
 interface AttachmentServiceInterface
 {

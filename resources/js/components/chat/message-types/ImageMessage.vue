@@ -7,11 +7,11 @@ defineProps({
 </script>
 
 <template>
-    <div class="cv-image-message">
+    <div class="chat-image-message">
         <AlbumGrid :attachments="message.attachments" kind="image" />
         <p
             v-if="message.body"
-            class="cv-image-message__caption mt-1 whitespace-pre-wrap break-words text-sm"
+            class="chat-image-message__caption mt-1 whitespace-pre-wrap break-words text-sm"
         >
             {{ message.body }}
         </p>

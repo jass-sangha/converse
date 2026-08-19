@@ -16,12 +16,12 @@ const mapUrl = computed(() => {
         :href="mapUrl"
         target="_blank"
         rel="noopener noreferrer"
-        class="cv-location-message flex items-center gap-2 rounded border border-converse-border bg-converse-surface p-2 hover:bg-converse-surfaceHover"
+        class="chat-location-message flex items-center gap-2 rounded border border-riwaaq-border bg-riwaaq-surface p-2 hover:bg-riwaaq-surfaceHover"
     >
         <span class="text-2xl">📍</span>
-        <span class="cv-location-message__meta min-w-0">
+        <span class="chat-location-message__meta min-w-0">
             <span class="block truncate text-sm font-medium">{{ message.metadata?.name || 'Shared location' }}</span>
-            <span v-if="message.metadata?.address" class="block truncate text-xs text-converse-textMuted">{{ message.metadata.address }}</span>
+            <span v-if="message.metadata?.address" class="block truncate text-xs text-riwaaq-textMuted">{{ message.metadata.address }}</span>
         </span>
     </a>
 </template>

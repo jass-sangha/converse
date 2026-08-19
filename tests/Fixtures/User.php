@@ -1,6 +1,6 @@
 <?php
 
-namespace Converse\Chat\Tests\Fixtures;
+namespace Riwaaq\Chat\Tests\Fixtures;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 

@@ -87,9 +87,9 @@ return [
     */
     'register_ui_routes' => env('CHAT_REGISTER_UI_ROUTES', true),
     'web_middleware' => ['web', 'auth'],
-    'chat_route_prefix' => 'converse',
+    'chat_route_prefix' => 'riwaaq',
     'asset_middleware' => [],
-    'asset_route_prefix' => 'converse/assets',
+    'asset_route_prefix' => 'riwaaq/assets',
 
     /*
     |--------------------------------------------------------------------------
@@ -97,7 +97,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Controls the frame-ancestors policy sent with the full-page chat route
-    | (converse.chat.page) so a host can embed it in an <iframe>. Defaults to
+    | (riwaaq.chat.page) so a host can embed it in an <iframe>. Defaults to
     | same-origin only. Set to a space-separated origin list to allow specific
     | cross-origin hosts, or to null/false to disable the header entirely
     | (fully open embedding — opt-in only).
@@ -253,7 +253,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Quick, config-only color/border-radius tweaks — no CSS file required.
-    | Keys match the Tailwind token names in tailwind.config.js's "converse"
+    | Keys match the Tailwind token names in tailwind.config.js's "riwaaq"
     | color palette (accent, accentContrast, radius, etc.), values are raw
     | CSS custom-property values exactly as they'd appear in theme.css, e.g.:
     |   'overrides' => ['accent' => '198 113 57', 'radius' => '0.75rem'],

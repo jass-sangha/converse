@@ -1,4 +1,4 @@
-# Converse
+# Riwaaq
 
 A WhatsApp-style real-time chat package for Laravel. Ships conversations (private & group), rich message types, reactions, replies, forwarding, read receipts, typing indicators, presence, group admin roles, blocking, disappearing messages, search, and a push-notification extension point — as a REST API + Laravel Reverb broadcasting — **plus a fully self-contained Vue 3 chat widget** pre-built and served directly by the package. No frontend build tooling required on your side; use the JSON API standalone if you'd rather bring your own client.
 
@@ -8,12 +8,12 @@ A WhatsApp-style real-time chat package for Laravel. Ships conversations (privat
 - Laravel 11, 12, or 13
 - A broadcasting driver — [Laravel Reverb](https://reverb.laravel.com) is the first-class target, but anything built on Laravel's standard broadcasting contracts (Pusher, Ably) works too
 
-Laravel Sanctum ships as a direct dependency of this package (not something you add yourself), so `composer require jass-sangha/converse` is enough to get a working `auth:sanctum` guard — no `composer require laravel/sanctum` or `php artisan install:api` step, and no `bootstrap/app.php` edit either: the package's service provider pushes `EnsureFrontendRequestsAreStateful` onto the `api` middleware group itself, so same-origin cookie auth (what the bundled UI and any first-party SPA use) works out of the box. Set `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` in `.env` to match the domain you'll serve the chat page from. If you also want Bearer-token auth for non-browser clients, run `php artisan vendor:publish --tag=sanctum-migrations && php artisan migrate` once to get the `personal_access_tokens` table, then issue tokens the normal Sanctum way.
+Laravel Sanctum ships as a direct dependency of this package (not something you add yourself), so `composer require jass-sangha/riwaaq` is enough to get a working `auth:sanctum` guard — no `composer require laravel/sanctum` or `php artisan install:api` step, and no `bootstrap/app.php` edit either: the package's service provider pushes `EnsureFrontendRequestsAreStateful` onto the `api` middleware group itself, so same-origin cookie auth (what the bundled UI and any first-party SPA use) works out of the box. Set `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` in `.env` to match the domain you'll serve the chat page from. If you also want Bearer-token auth for non-browser clients, run `php artisan vendor:publish --tag=sanctum-migrations && php artisan migrate` once to get the `personal_access_tokens` table, then issue tokens the normal Sanctum way.
 
 ## Installation
 
 ```bash
-composer require jass-sangha/converse
+composer require jass-sangha/riwaaq
 php artisan migrate
 ```
 
@@ -116,7 +116,7 @@ The package ships a complete, pre-built Vue 3 + Tailwind chat widget — no `npm
 Once installed and migrated, visit:
 
 ```
-GET /converse/chat
+GET /riwaaq/chat
 ```
 
 behind your app's normal `web` + `auth` middleware (configurable via `chat.web_middleware`, default `['web', 'auth']`). The page authenticates via Sanctum's same-origin session-cookie flow (no token is ever embedded in the page) and talks to the JSON API described above over `axios` with `withCredentials`.
@@ -129,7 +129,7 @@ To disable the bundled UI entirely and expose only the JSON API (e.g. you're bui
 'register_ui_routes' => false,
 ```
 
-Relevant config: `chat.web_middleware`, `chat.chat_route_prefix` (default `converse`), `chat.asset_middleware`, `chat.asset_route_prefix` (default `converse/assets`).
+Relevant config: `chat.web_middleware`, `chat.chat_route_prefix` (default `riwaaq`), `chat.asset_middleware`, `chat.asset_route_prefix` (default `riwaaq/assets`).
 
 If you ever need to modify the widget's source, it lives in `resources/js/` (Vue SFCs) and `resources/css/` (Tailwind) inside the package, with its own `package.json`/`vite.config.js`/`tailwind.config.js`. Run `npm install && npm run build` inside the package directory to regenerate the committed `resources/dist/app.{js,css}` bundle the `AssetController` serves.
 
@@ -143,7 +143,7 @@ Drop the widget directly into any Blade view — no iframe, no separate page:
 </div>
 ```
 
-The widget fills its parent container's size (not the browser viewport), so the parent **must** have an explicit CSS height, or it collapses to zero. Its CSS is fully scoped to its own mount element (`#converse-chat-app`) — dropping it in won't affect the rest of your page's styling, and your page's own styles/Tailwind setup won't affect it either. Only one instance is supported per page. It shares the exact same compiled `resources/dist/app.{js,css}` bundle as the full-page route — no separate build.
+The widget fills its parent container's size (not the browser viewport), so the parent **must** have an explicit CSS height, or it collapses to zero. Its CSS is fully scoped to its own mount element (`#riwaaq-chat-app`) — dropping it in won't affect the rest of your page's styling, and your page's own styles/Tailwind setup won't affect it either. Only one instance is supported per page. It shares the exact same compiled `resources/dist/app.{js,css}` bundle as the full-page route — no separate build.
 
 ### Theming
 
@@ -165,10 +165,10 @@ Three levels of control, from lightest to heaviest:
 If you'd rather iframe the full-page route than use the native `<x-chat::widget />` embed above:
 
 ```blade
-<iframe src="{{ route('converse.chat.page') }}" style="width:100%;height:100%;border:0" title="Chat"></iframe>
+<iframe src="{{ route('riwaaq.chat.page') }}" style="width:100%;height:100%;border:0" title="Chat"></iframe>
 ```
 
-The `chat.frame_ancestors` config (default `"'self'"`) controls who's allowed to frame it — same-origin only by default. Set it to a space-separated list of origins for cross-origin embedding, or to `null`/`false` to disable the header entirely. The page also posts its content height to the parent window via `postMessage` (`{source: 'converse-chat', height}`) whenever it's actually running inside an iframe, so you can auto-size the iframe instead of hardcoding a height. Cross-_origin_ iframe embedding additionally needs `SESSION_SAME_SITE=none` and a secure-cookie setup in your own app's session config — same-origin embedding needs no session changes at all.
+The `chat.frame_ancestors` config (default `"'self'"`) controls who's allowed to frame it — same-origin only by default. Set it to a space-separated list of origins for cross-origin embedding, or to `null`/`false` to disable the header entirely. The page also posts its content height to the parent window via `postMessage` (`{source: 'riwaaq-chat', height}`) whenever it's actually running inside an iframe, so you can auto-size the iframe instead of hardcoding a height. Cross-_origin_ iframe embedding additionally needs `SESSION_SAME_SITE=none` and a secure-cookie setup in your own app's session config — same-origin embedding needs no session changes at all.
 
 #### Fixed-height container (no `postMessage` needed)
 
@@ -176,11 +176,11 @@ If the iframe already sits inside a container with a definite height — a dashb
 
 ```tsx
 // React example (Inertia page, Tailwind)
-export default function ConverseChat() {
+export default function RiwaaqChat() {
     return (
         <div className="flex h-full flex-1 flex-col p-4">
             <iframe
-                src="/converse/chat"
+                src="/riwaaq/chat"
                 title="Chat"
                 className="h-full w-full flex-1 rounded-xl border"
             />
@@ -193,21 +193,21 @@ This is simpler whenever you control the surrounding layout. Reach for the auto-
 
 #### Framework snippets (auto-resize via `postMessage`)
 
-There's no npm package to install for any of these — the widget stays entirely server-side, you're just pointing an `<iframe>` at `route('converse.chat.page')` and wiring up the auto-resize `postMessage` listener in whatever framework your host app uses. Each snippet below is the whole component.
+There's no npm package to install for any of these — the widget stays entirely server-side, you're just pointing an `<iframe>` at `route('riwaaq.chat.page')` and wiring up the auto-resize `postMessage` listener in whatever framework your host app uses. Each snippet below is the whole component.
 
 **Plain HTML / vanilla JS**
 
 ```html
 <iframe
-    id="converse-chat"
-    src="/converse/chat"
+    id="riwaaq-chat"
+    src="/riwaaq/chat"
     style="width:100%;border:0;height:100%"
     title="Chat"
 ></iframe>
 <script>
     window.addEventListener("message", (e) => {
-        if (e.data?.source === "converse-chat") {
-            document.getElementById("converse-chat").style.height =
+        if (e.data?.source === "riwaaq-chat") {
+            document.getElementById("riwaaq-chat").style.height =
                 e.data.height + "px";
         }
     });
@@ -219,17 +219,17 @@ There's no npm package to install for any of these — the widget stays entirely
 ```jsx
 import { useEffect, useRef } from "react";
 
-interface ConverseChatMessage {
-    source: "converse-chat";
+interface RiwaaqChatMessage {
+    source: "riwaaq-chat";
     height: number;
 }
 
-export default function ConverseChat({ src = "/converse/chat" }: { src?: string }) {
+export default function RiwaaqChat({ src = "/riwaaq/chat" }: { src?: string }) {
     const frameRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
-        function onMessage(e: MessageEvent<ConverseChatMessage>) {
-            if (e.data?.source === "converse-chat" && frameRef.current) {
+        function onMessage(e: MessageEvent<RiwaaqChatMessage>) {
+            if (e.data?.source === "riwaaq-chat" && frameRef.current) {
                 frameRef.current.style.height = `${e.data.height}px`;
             }
         }
@@ -263,11 +263,11 @@ export default function ConverseChat({ src = "/converse/chat" }: { src?: string 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 
-const props = defineProps({ src: { type: String, default: "/converse/chat" } });
+const props = defineProps({ src: { type: String, default: "/riwaaq/chat" } });
 const frame = ref(null);
 
 function onMessage(e) {
-    if (e.data?.source === "converse-chat" && frame.value) {
+    if (e.data?.source === "riwaaq-chat" && frame.value) {
         frame.value.style.height = `${e.data.height}px`;
     }
 }
@@ -289,7 +289,7 @@ import {
 } from "@angular/core";
 
 @Component({
-    selector: "converse-chat",
+    selector: "riwaaq-chat",
     template: `<iframe
         #frame
         [src]="src"
@@ -297,13 +297,13 @@ import {
         title="Chat"
     ></iframe>`,
 })
-export class ConverseChatComponent {
-    @Input() src = "/converse/chat";
+export class RiwaaqChatComponent {
+    @Input() src = "/riwaaq/chat";
     @ViewChild("frame") frame!: ElementRef<HTMLIFrameElement>;
 
     @HostListener("window:message", ["$event"])
     onMessage(e: MessageEvent) {
-        if (e.data?.source === "converse-chat") {
+        if (e.data?.source === "riwaaq-chat") {
             this.frame.nativeElement.style.height = `${e.data.height}px`;
         }
     }
@@ -314,11 +314,11 @@ export class ConverseChatComponent {
 
 ```svelte
 <script>
-    export let src = '/converse/chat';
+    export let src = '/riwaaq/chat';
     let frame;
 
     function onMessage(e) {
-        if (e.data?.source === 'converse-chat' && frame) {
+        if (e.data?.source === 'riwaaq-chat' && frame) {
             frame.style.height = `${e.data.height}px`;
         }
     }
@@ -328,7 +328,7 @@ export class ConverseChatComponent {
 <iframe bind:this={frame} {src} style="width:100%;border:0;height:100%" title="Chat" />
 ```
 
-All five assume the frontend is served from the **same origin** as the Laravel app (so the Sanctum session cookie authenticates the iframe for free) and that `src`/`route('converse.chat.page')` resolves to that same origin — swap in an absolute URL plus the cross-origin `frame_ancestors`/`SESSION_SAME_SITE` config above if it isn't.
+All five assume the frontend is served from the **same origin** as the Laravel app (so the Sanctum session cookie authenticates the iframe for free) and that `src`/`route('riwaaq.chat.page')` resolves to that same origin — swap in an absolute URL plus the cross-origin `frame_ancestors`/`SESSION_SAME_SITE` config above if it isn't.
 
 ## Scheduled commands
 
@@ -351,8 +351,8 @@ The package intentionally ships **zero dependency** on media-processing or push-
 ### Real thumbnails / durations
 
 ```php
-use Converse\Chat\Contracts\MediaProcessor;
-use Converse\Chat\Models\MessageAttachment;
+use Riwaaq\Chat\Contracts\MediaProcessor;
+use Riwaaq\Chat\Models\MessageAttachment;
 
 class FfmpegMediaProcessor implements MediaProcessor
 {
@@ -382,7 +382,7 @@ $this->app->bind(MediaProcessor::class, FfmpegMediaProcessor::class);
 ```php
 // Extend or replace the notification with your own toFcm()/toWebPush() method,
 // or just listen to the domain event directly for full control:
-use Converse\Chat\Events\MessageSent;
+use Riwaaq\Chat\Events\MessageSent;
 
 Event::listen(MessageSent::class, function (MessageSent $event) {
     // dispatch your own push notification however you like
@@ -391,11 +391,11 @@ Event::listen(MessageSent::class, function (MessageSent $event) {
 
 ### Link previews
 
-The default `OpenGraphLinkPreviewFetcher` does a simple OG-tag scrape. Bind `Converse\Chat\Contracts\LinkPreviewFetcher` to your own implementation (e.g. a dedicated unfurling service) if you need more than that.
+The default `OpenGraphLinkPreviewFetcher` does a simple OG-tag scrape. Bind `Riwaaq\Chat\Contracts\LinkPreviewFetcher` to your own implementation (e.g. a dedicated unfurling service) if you need more than that.
 
 ### Plan limits (for paid add-ons)
 
-This free/core package always runs with the limits in `config/converse.php`:
+This free/core package always runs with the limits in `config/riwaaq.php`:
 
 ```php
 'max_group_participants' => 10,   // direct-message only by default
@@ -403,14 +403,14 @@ This free/core package always runs with the limits in `config/converse.php`:
 'show_branding' => true,
 ```
 
-Everywhere a limit is checked (adding a participant, querying message history, rendering the widget's branding badge) reads through `Converse\Chat\Contracts\ConverseLimitsInterface`, resolved to the `ConverseLimits` service — never `config('converse.*')` directly. `ConverseLimits` itself does exactly one thing beyond reading that config: if a class named exactly `ConversePro\LimitsOverride` is present (i.e. autoloadable — installing a package that ships one is enough, no manual wiring), it defers to that instead.
+Everywhere a limit is checked (adding a participant, querying message history, rendering the widget's branding badge) reads through `Riwaaq\Chat\Contracts\RiwaaqLimitsInterface`, resolved to the `RiwaaqLimits` service — never `config('riwaaq.*')` directly. `RiwaaqLimits` itself does exactly one thing beyond reading that config: if a class named exactly `RiwaaqPro\LimitsOverride` is present (i.e. autoloadable — installing a package that ships one is enough, no manual wiring), it defers to that instead.
 
-A paid add-on hooks in by shipping a class implementing `Converse\Chat\Contracts\LimitsOverrideInterface`:
+A paid add-on hooks in by shipping a class implementing `Riwaaq\Chat\Contracts\LimitsOverrideInterface`:
 
 ```php
-namespace ConversePro;
+namespace RiwaaqPro;
 
-use Converse\Chat\Contracts\LimitsOverrideInterface;
+use Riwaaq\Chat\Contracts\LimitsOverrideInterface;
 
 class LimitsOverride implements LimitsOverrideInterface
 {
@@ -420,7 +420,7 @@ class LimitsOverride implements LimitsOverrideInterface
 }
 ```
 
-That's the entire contract — this package has no other concept of "plans," licenses, or tiers, and no hard dependency on any add-on being installed (the `class_exists()` check is the _only_ place this package ever references one). If you're building against this extension point, keep new limits on `LimitsOverrideInterface`/`ConverseLimitsInterface` rather than inventing a parallel mechanism, since every consumer of a limit depends on those two interfaces exclusively.
+That's the entire contract — this package has no other concept of "plans," licenses, or tiers, and no hard dependency on any add-on being installed (the `class_exists()` check is the _only_ place this package ever references one). If you're building against this extension point, keep new limits on `LimitsOverrideInterface`/`RiwaaqLimitsInterface` rather than inventing a parallel mechanism, since every consumer of a limit depends on those two interfaces exclusively.
 
 ## Testing
 

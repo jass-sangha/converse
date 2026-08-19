@@ -160,17 +160,17 @@ onBeforeUnmount(() => {
                 v-model="query"
                 type="text"
                 placeholder="Search for a place"
-                class="w-full rounded-cv border border-converse-border bg-transparent px-3 py-1.5 text-sm text-converse-text focus:border-converse-accent focus:outline-none"
+                class="w-full rounded-chat border border-riwaaq-border bg-transparent px-3 py-1.5 text-sm text-riwaaq-text focus:border-riwaaq-accent focus:outline-none"
             >
             <div
                 v-if="results.length"
-                class="absolute inset-x-0 top-full z-10 mt-1 max-h-48 overflow-y-auto rounded-cv border border-converse-border bg-converse-surface shadow-cv-lg"
+                class="absolute inset-x-0 top-full z-10 mt-1 max-h-48 overflow-y-auto rounded-chat border border-riwaaq-border bg-riwaaq-surface shadow-chat-lg"
             >
                 <button
                     v-for="result in results"
                     :key="result.place_id"
                     type="button"
-                    class="block w-full truncate px-3 py-2 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
+                    class="block w-full truncate px-3 py-2 text-left text-sm text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                     @click="pickResult(result)"
                 >
                     {{ result.display_name }}
@@ -178,19 +178,19 @@ onBeforeUnmount(() => {
             </div>
         </div>
 
-        <div ref="mapEl" class="cv-location-picker__map h-72 w-full overflow-hidden rounded-cv border border-converse-border" />
+        <div ref="mapEl" class="chat-location-picker__map h-72 w-full overflow-hidden rounded-chat border border-riwaaq-border" />
 
-        <p class="mt-2 text-xs text-converse-textMuted">Tap the map or drag the pin to fine-tune the spot.</p>
+        <p class="mt-2 text-xs text-riwaaq-textMuted">Tap the map or drag the pin to fine-tune the spot.</p>
 
-        <div v-if="selected" class="mt-3 rounded-cv bg-converse-surfaceHover p-2.5">
-            <p class="truncate text-sm font-medium text-converse-text">{{ selected.name }}</p>
-            <p class="truncate text-xs text-converse-textMuted">{{ selected.address }}</p>
+        <div v-if="selected" class="mt-3 rounded-chat bg-riwaaq-surfaceHover p-2.5">
+            <p class="truncate text-sm font-medium text-riwaaq-text">{{ selected.name }}</p>
+            <p class="truncate text-xs text-riwaaq-textMuted">{{ selected.address }}</p>
         </div>
 
         <template #footer>
             <button
                 type="button"
-                class="w-full rounded bg-converse-accent py-1.5 text-sm text-white disabled:opacity-50"
+                class="w-full rounded bg-riwaaq-accent py-1.5 text-sm text-white disabled:opacity-50"
                 :disabled="!selected"
                 @click="confirm"
             >

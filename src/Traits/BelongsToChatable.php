@@ -1,6 +1,6 @@
 <?php
 
-namespace Converse\Chat\Traits;
+namespace Riwaaq\Chat\Traits;
 
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 

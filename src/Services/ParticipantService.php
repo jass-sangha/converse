@@ -1,21 +1,21 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ConversationLimitServiceInterface;
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Contracts\ParticipantServiceInterface;
-use Converse\Chat\Enums\ParticipantRole;
-use Converse\Chat\Events\ParticipantAdded;
-use Converse\Chat\Events\ParticipantRemoved;
-use Converse\Chat\Events\ParticipantRoleChanged;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Traits\SendsSystemMessages;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ConversationLimitServiceInterface;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Contracts\ParticipantServiceInterface;
+use Riwaaq\Chat\Enums\ParticipantRole;
+use Riwaaq\Chat\Events\ParticipantAdded;
+use Riwaaq\Chat\Events\ParticipantRemoved;
+use Riwaaq\Chat\Events\ParticipantRoleChanged;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Traits\SendsSystemMessages;
 
 class ParticipantService implements ParticipantServiceInterface
 {

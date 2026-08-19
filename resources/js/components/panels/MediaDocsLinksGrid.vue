@@ -212,7 +212,7 @@ function formatSize(bytes) {
 </script>
 
 <template>
-    <div class="cv-media-docs-links flex min-h-0 flex-1 flex-col">
+    <div class="chat-media-docs-links flex min-h-0 flex-1 flex-col">
         <div class="px-4 pt-3">
             <div class="relative">
                 <svg
@@ -223,7 +223,7 @@ function formatSize(bytes) {
                     stroke="currentColor"
                     stroke-width="2.75"
                     stroke-linecap="round"
-                    class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-converse-textMuted"
+                    class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-riwaaq-textMuted"
                 >
                     <circle cx="11" cy="11" r="6.5" />
                     <path d="M16 16l4 4" />
@@ -236,14 +236,14 @@ function formatSize(bytes) {
                             ? 'Search by filename'
                             : 'Search by chat, contact, or filename'
                     "
-                    class="cv-media-docs-links__search h-11 w-full rounded-full border border-converse-border bg-converse-surfaceHover pl-10 pr-4 text-sm text-converse-text focus:outline-none"
+                    class="chat-media-docs-links__search h-11 w-full rounded-full border border-riwaaq-border bg-riwaaq-surfaceHover pl-10 pr-4 text-sm text-riwaaq-text focus:outline-none"
                 />
             </div>
         </div>
 
         <div class="flex items-center justify-center gap-1 px-4 pb-1 pt-3">
             <div
-                class="flex items-center w-full gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1 mb-2"
+                class="flex items-center w-full gap-1 rounded-full border border-riwaaq-border bg-riwaaq-surfaceHover p-1 mb-2"
             >
                 <button
                     v-for="t in TABS"
@@ -252,8 +252,8 @@ function formatSize(bytes) {
                     class="flex-1 rounded-full px-4 py-1.5 text-sm font-semibold"
                     :class="
                         state.tab === t.key
-                            ? 'bg-converse-accent text-converse-accentContrast'
-                            : 'text-converse-textMuted hover:text-converse-text'
+                            ? 'bg-riwaaq-accent text-riwaaq-accentContrast'
+                            : 'text-riwaaq-textMuted hover:text-riwaaq-text'
                     "
                     @click="state.tab = t.key"
                 >
@@ -270,7 +270,7 @@ function formatSize(bytes) {
                         :key="item.id"
                         type="button"
                         :title="item.original_filename"
-                        class="group relative aspect-square overflow-hidden rounded-xl bg-converse-surfaceHover"
+                        class="group relative aspect-square overflow-hidden rounded-xl bg-riwaaq-surfaceHover"
                         @click="viewerIndex = i"
                     >
                         <video
@@ -287,14 +287,14 @@ function formatSize(bytes) {
                         />
                         <span
                             v-if="item.original_filename"
-                            class="absolute bottom-1 right-1 max-w-[calc(100%-20px)] truncate rounded-md bg-converse-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-converse-textMuted"
+                            class="absolute bottom-1 right-1 max-w-[calc(100%-20px)] truncate rounded-md bg-riwaaq-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-riwaaq-textMuted"
                             >{{ item.original_filename }}</span
                         >
                     </button>
                 </div>
                 <p
                     v-else-if="!activeBucket.loading"
-                    class="p-4 text-center text-sm text-converse-textMuted"
+                    class="p-4 text-center text-sm text-riwaaq-textMuted"
                 >
                     {{ state.search ? "No matching media." : "No media yet." }}
                 </p>
@@ -305,7 +305,7 @@ function formatSize(bytes) {
                     <li v-for="(item, i) in docItems" :key="item.id">
                         <button
                             type="button"
-                            class="flex w-full items-center gap-2 rounded-2xl p-2 text-left hover:bg-converse-surfaceHover"
+                            class="flex w-full items-center gap-2 rounded-2xl p-2 text-left hover:bg-riwaaq-surfaceHover"
                             @click="viewerIndex = i"
                         >
                             <span
@@ -324,11 +324,11 @@ function formatSize(bytes) {
                             </span>
                             <span class="min-w-0 flex-1">
                                 <span
-                                    class="block truncate text-sm text-converse-text"
+                                    class="block truncate text-sm text-riwaaq-text"
                                     >{{ item.original_filename }}</span
                                 >
                                 <span
-                                    class="block text-xs text-converse-textMuted"
+                                    class="block text-xs text-riwaaq-textMuted"
                                     >{{ formatSize(item.size_bytes) }}</span
                                 >
                             </span>
@@ -337,7 +337,7 @@ function formatSize(bytes) {
                 </ul>
                 <p
                     v-else-if="!activeBucket.loading"
-                    class="p-4 text-center text-sm text-converse-textMuted"
+                    class="p-4 text-center text-sm text-riwaaq-textMuted"
                 >
                     {{
                         state.search
@@ -354,7 +354,7 @@ function formatSize(bytes) {
                             :href="link.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="flex items-center gap-2 rounded-2xl p-2 hover:bg-converse-surfaceHover"
+                            class="flex items-center gap-2 rounded-2xl p-2 hover:bg-riwaaq-surfaceHover"
                         >
                             <img
                                 v-if="link.image"
@@ -378,11 +378,11 @@ function formatSize(bytes) {
                             </span>
                             <span class="min-w-0 flex-1">
                                 <span
-                                    class="block truncate text-sm text-converse-text"
+                                    class="block truncate text-sm text-riwaaq-text"
                                     >{{ link.title || link.url }}</span
                                 >
                                 <span
-                                    class="block truncate text-xs text-converse-textMuted"
+                                    class="block truncate text-xs text-riwaaq-textMuted"
                                     >{{ link.url }}</span
                                 >
                             </span>
@@ -391,7 +391,7 @@ function formatSize(bytes) {
                 </ul>
                 <p
                     v-else-if="!activeBucket.loading"
-                    class="p-4 text-center text-sm text-converse-textMuted"
+                    class="p-4 text-center text-sm text-riwaaq-textMuted"
                 >
                     {{ state.search ? "No matching links." : "No links yet." }}
                 </p>
@@ -399,7 +399,7 @@ function formatSize(bytes) {
 
             <p
                 v-if="activeBucket.loading"
-                class="p-4 text-center text-sm text-converse-textMuted"
+                class="p-4 text-center text-sm text-riwaaq-textMuted"
             >
                 Loading…
             </p>
@@ -407,7 +407,7 @@ function formatSize(bytes) {
             <button
                 v-if="hasMore && !activeBucket.loading"
                 type="button"
-                class="mx-auto mt-2 block rounded px-3 py-1.5 text-sm text-converse-accent hover:bg-converse-surfaceHover"
+                class="mx-auto mt-2 block rounded px-3 py-1.5 text-sm text-riwaaq-accent hover:bg-riwaaq-surfaceHover"
                 @click="loadKind(state.tab)"
             >
                 Load more

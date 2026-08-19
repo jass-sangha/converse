@@ -12,27 +12,27 @@
  * Wrapped in @layer base so Tailwind places it before the utilities layer in
  * the compiled output no matter where it sits in this file. Without it, the
  * `button { background-color: transparent }` reset below ties in specificity
- * with `.bg-converse-*` utility classes and — being the later rule on an
+ * with `.bg-riwaaq-*` utility classes and — being the later rule on an
  * unlayered stylesheet — always wins, silently blanking every button's
  * background (switch tracks, the "+ New" button, etc).
  */
 @layer base {
-#converse-chat-app,
-#converse-chat-app *,
-#converse-chat-app *::before,
-#converse-chat-app *::after {
+#riwaaq-chat-app,
+#riwaaq-chat-app *,
+#riwaaq-chat-app *::before,
+#riwaaq-chat-app *::after {
     box-sizing: border-box;
     border-width: 0;
     border-style: solid;
     border-color: currentColor;
 }
 
-#converse-chat-app a {
+#riwaaq-chat-app a {
     color: inherit;
     text-decoration: inherit;
 }
 
-#converse-chat-app {
+#riwaaq-chat-app {
     line-height: 1.5;
     -webkit-text-size-adjust: 100%;
     tab-size: 4;
@@ -43,11 +43,11 @@
     height: 100%;
 }
 
-#converse-chat-app button,
-#converse-chat-app input,
-#converse-chat-app optgroup,
-#converse-chat-app select,
-#converse-chat-app textarea {
+#riwaaq-chat-app button,
+#riwaaq-chat-app input,
+#riwaaq-chat-app optgroup,
+#riwaaq-chat-app select,
+#riwaaq-chat-app textarea {
     font-family: inherit;
     font-size: 100%;
     font-weight: inherit;
@@ -57,146 +57,146 @@
     padding: 0;
 }
 
-#converse-chat-app button,
-#converse-chat-app select {
+#riwaaq-chat-app button,
+#riwaaq-chat-app select {
     text-transform: none;
 }
 
-#converse-chat-app button,
-#converse-chat-app [type='button'],
-#converse-chat-app [type='reset'],
-#converse-chat-app [type='submit'] {
+#riwaaq-chat-app button,
+#riwaaq-chat-app [type='button'],
+#riwaaq-chat-app [type='reset'],
+#riwaaq-chat-app [type='submit'] {
     -webkit-appearance: button;
     background-color: transparent;
     background-image: none;
 }
 
-#converse-chat-app button:not(:disabled),
-#converse-chat-app [type='button']:not(:disabled),
-#converse-chat-app [type='reset']:not(:disabled),
-#converse-chat-app [type='submit']:not(:disabled) {
+#riwaaq-chat-app button:not(:disabled),
+#riwaaq-chat-app [type='button']:not(:disabled),
+#riwaaq-chat-app [type='reset']:not(:disabled),
+#riwaaq-chat-app [type='submit']:not(:disabled) {
     cursor: pointer;
 }
 
-#converse-chat-app :is(h1, h2, h3, h4, h5, h6) {
+#riwaaq-chat-app :is(h1, h2, h3, h4, h5, h6) {
     font-size: inherit;
     font-weight: inherit;
 }
 
-#converse-chat-app p,
-#converse-chat-app h1,
-#converse-chat-app h2,
-#converse-chat-app h3,
-#converse-chat-app h4,
-#converse-chat-app h5,
-#converse-chat-app h6,
-#converse-chat-app blockquote,
-#converse-chat-app figure {
+#riwaaq-chat-app p,
+#riwaaq-chat-app h1,
+#riwaaq-chat-app h2,
+#riwaaq-chat-app h3,
+#riwaaq-chat-app h4,
+#riwaaq-chat-app h5,
+#riwaaq-chat-app h6,
+#riwaaq-chat-app blockquote,
+#riwaaq-chat-app figure {
     margin: 0;
 }
 
-#converse-chat-app ul,
-#converse-chat-app ol {
+#riwaaq-chat-app ul,
+#riwaaq-chat-app ol {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-#converse-chat-app img,
-#converse-chat-app svg,
-#converse-chat-app video,
-#converse-chat-app canvas {
+#riwaaq-chat-app img,
+#riwaaq-chat-app svg,
+#riwaaq-chat-app video,
+#riwaaq-chat-app canvas {
     display: block;
     vertical-align: middle;
 }
 
-#converse-chat-app img,
-#converse-chat-app video {
+#riwaaq-chat-app img,
+#riwaaq-chat-app video {
     max-width: 100%;
     height: auto;
 }
 }
 
-.cv-app-shell,
-.cv-app-shell * {
+.chat-app-shell,
+.chat-app-shell * {
     scrollbar-width: thin;
-    scrollbar-color: rgb(var(--cv-text-muted) / 0.35) transparent;
+    scrollbar-color: rgb(var(--chat-text-muted) / 0.35) transparent;
 }
 
-.cv-app-shell ::-webkit-scrollbar {
+.chat-app-shell ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
-.cv-app-shell ::-webkit-scrollbar-track {
+.chat-app-shell ::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.cv-app-shell ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--cv-text-muted) / 0.35);
+.chat-app-shell ::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--chat-text-muted) / 0.35);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: padding-box;
 }
 
-.cv-app-shell ::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(var(--cv-text-muted) / 0.55);
+.chat-app-shell ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--chat-text-muted) / 0.55);
 }
 
-.cv-message-bubble--highlight .cv-message-bubble__content {
-    animation: cv-message-highlight 1.6s ease-out;
+.chat-message-bubble--highlight .chat-message-bubble__content {
+    animation: chat-message-highlight 1.6s ease-out;
 }
 
-@keyframes cv-message-highlight {
+@keyframes chat-message-highlight {
     0%, 40% {
-        box-shadow: 0 0 0 4px rgb(var(--cv-accent) / 0.35);
+        box-shadow: 0 0 0 4px rgb(var(--chat-accent) / 0.35);
     }
     100% {
-        box-shadow: 0 0 0 0 rgb(var(--cv-accent) / 0);
+        box-shadow: 0 0 0 0 rgb(var(--chat-accent) / 0);
     }
 }
 
-@keyframes cv-fade-in {
+@keyframes chat-fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 
-@keyframes cv-scale-in {
+@keyframes chat-scale-in {
     from { opacity: 0; transform: scale(0.96) translateY(6px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-@keyframes cv-pop-in {
+@keyframes chat-pop-in {
     from { opacity: 0; transform: scale(0.96) translateY(-4px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.cv-animate-fade-in {
-    animation: cv-fade-in 0.15s ease-out;
+.chat-animate-fade-in {
+    animation: chat-fade-in 0.15s ease-out;
 }
 
-.cv-animate-scale-in {
-    animation: cv-scale-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+.chat-animate-scale-in {
+    animation: chat-scale-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.cv-animate-pop-in {
-    animation: cv-pop-in 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+.chat-animate-pop-in {
+    animation: chat-pop-in 0.14s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes cv-panel-in {
+@keyframes chat-panel-in {
     from { opacity: 0; transform: translateX(46px); }
     to { opacity: 1; transform: translateX(0); }
 }
 
-.cv-animate-panel-in {
-    animation: cv-panel-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+.chat-animate-panel-in {
+    animation: chat-panel-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes cv-call-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgb(var(--cv-accent) / 0.35); }
-    50% { box-shadow: 0 0 0 16px rgb(var(--cv-accent) / 0); }
+@keyframes chat-call-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgb(var(--chat-accent) / 0.35); }
+    50% { box-shadow: 0 0 0 16px rgb(var(--chat-accent) / 0); }
 }
 
-.cv-animate-call-pulse {
-    animation: cv-call-pulse 1.8s ease-out infinite;
+.chat-animate-call-pulse {
+    animation: chat-call-pulse 1.8s ease-out infinite;
 }

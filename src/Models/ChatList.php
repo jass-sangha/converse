@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Models;
+namespace Riwaaq\Chat\Models;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Traits\BelongsToChatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Traits\BelongsToChatable;
 
 class ChatList extends Model
 {

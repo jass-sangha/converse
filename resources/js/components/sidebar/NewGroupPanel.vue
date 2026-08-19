@@ -51,7 +51,7 @@ async function create() {
 </script>
 
 <template>
-    <div class="cv-new-group-panel flex h-full flex-col bg-converse-surface">
+    <div class="chat-new-group-panel flex h-full flex-col bg-riwaaq-surface">
         <SidebarScreenHeader title="New group" @back="setView('chats')">
             <GlobalMenu />
         </SidebarScreenHeader>
@@ -63,7 +63,7 @@ async function create() {
         />
 
         <div
-            class="cv-new-group-panel__details shrink-0 border-t border-converse-border p-3"
+            class="chat-new-group-panel__details shrink-0 border-t border-riwaaq-border p-3"
         >
             <div class="mb-3 flex items-center gap-3">
                 <label
@@ -75,7 +75,7 @@ async function create() {
                         :size="70"
                     />
                     <span
-                        class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-[9px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
+                        class="absolute inset-0 flex items-center justify-center rounded-full bg-riwaaq-overlay/0 text-[9px] font-medium text-white opacity-0 transition group-hover:bg-riwaaq-overlay/40 group-hover:opacity-100"
                     >
                         Add photo
                     </span>
@@ -92,20 +92,20 @@ async function create() {
                         v-model="name"
                         type="text"
                         placeholder="Group name"
-                        class="cv-new-group-panel__name-input h-9 w-full rounded-full border border-converse-border bg-converse-surfaceHover px-4 text-[13.5px] text-converse-text outline-none focus:border-converse-accent"
+                        class="chat-new-group-panel__name-input h-9 w-full rounded-full border border-riwaaq-border bg-riwaaq-surfaceHover px-4 text-[13.5px] text-riwaaq-text outline-none focus:border-riwaaq-accent"
                     />
                     <input
                         v-model="description"
                         type="text"
                         placeholder="Description (optional)"
-                        class="cv-new-group-panel__description-input h-9 w-full rounded-full border border-converse-border bg-converse-surfaceHover px-4 text-[13.5px] text-converse-text outline-none focus:border-converse-accent"
+                        class="chat-new-group-panel__description-input h-9 w-full rounded-full border border-riwaaq-border bg-riwaaq-surfaceHover px-4 text-[13.5px] text-riwaaq-text outline-none focus:border-riwaaq-accent"
                     />
                 </div>
             </div>
 
             <button
                 type="button"
-                class="cv-new-group-panel__submit w-full rounded-full bg-converse-accent py-2 text-sm font-semibold text-converse-accentContrast disabled:opacity-50"
+                class="chat-new-group-panel__submit w-full rounded-full bg-riwaaq-accent py-2 text-sm font-semibold text-riwaaq-accentContrast disabled:opacity-50"
                 :disabled="!name.trim() || !selected.length || creating"
                 @click="create"
             >

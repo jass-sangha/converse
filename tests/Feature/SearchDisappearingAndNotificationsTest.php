@@ -1,10 +1,10 @@
 <?php
 
-use Converse\Chat\Models\Message;
-use Converse\Chat\Notifications\NewChatMessageNotification;
-use Converse\Chat\Tests\Fixtures\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Notifications\NewChatMessageNotification;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function m6User(string $email): User
 {

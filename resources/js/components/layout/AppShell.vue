@@ -34,12 +34,12 @@ const showMobileTabBar = computed(
 
 <template>
     <div
-        class="cv-app-shell relative flex flex-col overflow-hidden bg-converse-chatBg text-converse-text"
+        class="chat-app-shell relative flex flex-col overflow-hidden bg-riwaaq-chatBg text-riwaaq-text"
         :class="isEmbedded ? 'h-full w-full' : 'h-screen w-screen'"
     >
         <div class="flex min-h-0 flex-1">
             <!-- Icon rail is desktop-only — mobile navigates via the bottom tab bar. -->
-            <div class="cv-app-shell__rail-wrap hidden shrink-0 sm:block">
+            <div class="chat-app-shell__rail-wrap hidden shrink-0 sm:block">
                 <IconRail />
             </div>
 
@@ -47,7 +47,7 @@ const showMobileTabBar = computed(
                  we're specifically in the chats view with a conversation open. Desktop: always
                  show both, side by side. -->
             <div
-                class="cv-app-shell__sidebar relative w-full border-r border-converse-border sm:w-[var(--sidebar-width)] sm:shrink-0"
+                class="chat-app-shell__sidebar relative w-full border-r border-riwaaq-border sm:w-[var(--sidebar-width)] sm:shrink-0"
                 :class="{
                     hidden: view === 'chats' && store.activeConversationId,
                     'sm:block': true,
@@ -64,13 +64,13 @@ const showMobileTabBar = computed(
                 <BlockedContactsPanel v-else-if="view === 'blocked'" />
                 <SettingsPanel v-else />
                 <div
-                    class="cv-app-shell__sidebar-resize-handle absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize sm:block"
+                    class="chat-app-shell__sidebar-resize-handle absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize sm:block"
                     @pointerdown="startDrag"
                 />
             </div>
 
             <div
-                class="cv-app-shell__main min-w-0 flex-1"
+                class="chat-app-shell__main min-w-0 flex-1"
                 :class="{
                     hidden: !(view === 'chats' && store.activeConversationId),
                     'sm:block': true,

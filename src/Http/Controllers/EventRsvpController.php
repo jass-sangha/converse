@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\EventRsvpServiceInterface;
-use Converse\Chat\Http\Requests\RespondToEventRequest;
-use Converse\Chat\Models\Message;
 use Illuminate\Support\Facades\Gate;
+use Riwaaq\Chat\Contracts\EventRsvpServiceInterface;
+use Riwaaq\Chat\Http\Requests\RespondToEventRequest;
+use Riwaaq\Chat\Models\Message;
 
 class EventRsvpController extends Controller
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Contracts\AttachmentServiceInterface;
-use Converse\Chat\Contracts\MediaProcessor;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Models\MessageAttachment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Riwaaq\Chat\Contracts\AttachmentServiceInterface;
+use Riwaaq\Chat\Contracts\MediaProcessor;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\MessageAttachment;
 
 class AttachmentService implements AttachmentServiceInterface
 {

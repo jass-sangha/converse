@@ -1,16 +1,16 @@
 <?php
 
-namespace Converse\Chat\Http\Resources;
+namespace Riwaaq\Chat\Http\Resources;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ConversationLimitServiceInterface;
-use Converse\Chat\Contracts\MessageServiceInterface;
-use Converse\Chat\Models\ConversationParticipant;
-use Converse\Chat\Models\Message;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ConversationLimitServiceInterface;
+use Riwaaq\Chat\Contracts\MessageServiceInterface;
+use Riwaaq\Chat\Models\ConversationParticipant;
+use Riwaaq\Chat\Models\Message;
 
 class ConversationResource extends JsonResource
 {

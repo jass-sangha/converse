@@ -47,7 +47,7 @@ const text = computed(() => {
 </script>
 
 <template>
-    <div class="cv-system-message flex justify-center py-1">
-        <p class="max-w-[85%] rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-center text-xs text-converse-textMuted shadow-sm">{{ text }}</p>
+    <div class="chat-system-message flex justify-center py-1">
+        <p class="max-w-[85%] rounded-lg bg-riwaaq-surfaceHover px-3 py-1.5 text-center text-xs text-riwaaq-textMuted shadow-sm">{{ text }}</p>
     </div>
 </template>

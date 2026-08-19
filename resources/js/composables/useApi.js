@@ -7,7 +7,7 @@ export function useApi() {
         return instance;
     }
 
-    const config = window.ConverseConfig ?? {};
+    const config = window.RiwaaqConfig ?? {};
 
     instance = axios.create({
         baseURL: config.apiBaseUrl ?? '/api/chat',

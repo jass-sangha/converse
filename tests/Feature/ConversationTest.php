@@ -1,6 +1,6 @@
 <?php
 
-use Converse\Chat\Tests\Fixtures\User;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function chatUser(): User
 {
@@ -31,7 +31,7 @@ it('creates a private conversation and dedupes on repeat', function () {
 });
 
 it('creates a group conversation with all participants admin-free except creator', function () {
-    config(['converse.max_group_participants' => null]); // 3-participant group — exceeds the free-tier limit
+    config(['riwaaq.max_group_participants' => null]); // 3-participant group — exceeds the free-tier limit
 
     $alice = chatUser();
     $bob = chatUser();

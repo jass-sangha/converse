@@ -4,12 +4,12 @@
     same page never duplicates the mount div or the asset tags.
 --}}
 @once('chat-widget-assets')
-    <link rel="stylesheet" href="{{ url(config('chat.asset_route_prefix', 'converse/assets').'/app.css') }}?v={{ $chatConfig['assetVersion'] }}">
+    <link rel="stylesheet" href="{{ url(config('chat.asset_route_prefix', 'riwaaq/assets').'/app.css') }}?v={{ $chatConfig['assetVersion'] }}">
     @if($themeOverrideVersion)
         <link rel="stylesheet" href="{{ asset('vendor/chat/theme.css') }}?v={{ $themeOverrideVersion }}">
     @endif
-    {!! \Converse\Chat\Support\ChatConfig::themeOverrideStyles() !!}
-    <div id="converse-chat-app"></div>
+    {!! \Riwaaq\Chat\Support\ChatConfig::themeOverrideStyles() !!}
+    <div id="riwaaq-chat-app"></div>
     <script>
         // Resolves and applies the theme synchronously, before the deferred app.js
         // bundle downloads/parses/executes. Without this, the widget briefly shows
@@ -19,15 +19,15 @@
         // keep both in sync if that logic changes.
         (function () {
             try {
-                var raw = localStorage.getItem('converse:theme');
+                var raw = localStorage.getItem('riwaaq:theme');
                 var theme = raw !== null ? JSON.parse(raw) : 'system';
                 var value = theme === 'system'
                     ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
                     : theme;
-                document.getElementById('converse-chat-app').setAttribute('data-theme', value);
+                document.getElementById('riwaaq-chat-app').setAttribute('data-theme', value);
             } catch (e) {}
         })();
     </script>
-    <script>window.ConverseConfig = @json($chatConfig);</script>
-    <script src="{{ url(config('chat.asset_route_prefix', 'converse/assets').'/app.js') }}?v={{ $chatConfig['assetVersion'] }}" defer></script>
+    <script>window.RiwaaqConfig = @json($chatConfig);</script>
+    <script src="{{ url(config('chat.asset_route_prefix', 'riwaaq/assets').'/app.js') }}?v={{ $chatConfig['assetVersion'] }}" defer></script>
 @endonce

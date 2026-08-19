@@ -18,12 +18,12 @@ const initials = computed(() => {
         v-if="avatarUrl"
         :src="avatarUrl"
         :alt="name"
-        class="cv-avatar rounded-full object-cover"
+        class="chat-avatar rounded-full object-cover"
         :style="{ width: size + 'px', height: size + 'px' }"
     >
     <div
         v-else
-        class="cv-avatar flex items-center justify-center rounded-full bg-converse-sage font-medium text-converse-sageContrast"
+        class="chat-avatar flex items-center justify-center rounded-full bg-riwaaq-sage font-medium text-riwaaq-sageContrast"
         :style="{ width: size + 'px', height: size + 'px', fontSize: Math.round(size / 2.5) + 'px' }"
     >
         {{ initials }}

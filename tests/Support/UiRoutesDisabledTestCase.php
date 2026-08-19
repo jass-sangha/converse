@@ -1,8 +1,8 @@
 <?php
 
-namespace Converse\Chat\Tests\Support;
+namespace Riwaaq\Chat\Tests\Support;
 
-use Converse\Chat\Tests\TestCase;
+use Riwaaq\Chat\Tests\TestCase;
 
 /**
  * Route/migration registration happens once, at provider-register time, which —

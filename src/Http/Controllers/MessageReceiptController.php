@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\MessageReceiptServiceInterface;
-use Converse\Chat\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Riwaaq\Chat\Contracts\MessageReceiptServiceInterface;
+use Riwaaq\Chat\Models\Conversation;
 
 class MessageReceiptController extends Controller
 {

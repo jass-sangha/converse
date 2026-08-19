@@ -43,7 +43,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
-    <div class="cv-media-viewer cv-animate-fade-in fixed inset-0 z-[60] flex flex-col bg-black/90" @click.self="close">
+    <div class="chat-media-viewer chat-animate-fade-in fixed inset-0 z-[60] flex flex-col bg-black/90" @click.self="close">
         <div class="flex items-center justify-between px-4 py-3 text-white/90" @click.self="close">
             <span class="truncate text-sm">{{ item?.original_filename }}</span>
             <div class="flex shrink-0 items-center gap-3">

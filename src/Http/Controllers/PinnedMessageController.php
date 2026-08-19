@@ -1,15 +1,15 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\PinnedMessageServiceInterface;
-use Converse\Chat\Events\MessagePinned;
-use Converse\Chat\Events\MessageUnpinned;
-use Converse\Chat\Http\Resources\MessageResource;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Riwaaq\Chat\Contracts\PinnedMessageServiceInterface;
+use Riwaaq\Chat\Events\MessagePinned;
+use Riwaaq\Chat\Events\MessageUnpinned;
+use Riwaaq\Chat\Http\Resources\MessageResource;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Message;
 
 class PinnedMessageController extends Controller
 {

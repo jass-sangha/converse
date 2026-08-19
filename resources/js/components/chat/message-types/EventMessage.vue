@@ -78,7 +78,7 @@ async function onRespond(status) {
 
 <template>
     <div
-        class="cv-event-message min-w-0 max-w-sm rounded-2xl border border-converse-border bg-converse-surface p-3"
+        class="chat-event-message min-w-0 max-w-sm rounded-2xl border border-riwaaq-border bg-riwaaq-surface p-3"
     >
         <div class="mb-2 flex items-center gap-2">
             <svg
@@ -86,31 +86,31 @@ async function onRespond(status) {
                 width="18"
                 height="18"
                 fill="currentColor"
-                class="shrink-0 text-converse-textMuted"
+                class="shrink-0 text-riwaaq-textMuted"
             >
                 <path
                     d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z"
                 />
             </svg>
-            <p class="text-sm font-medium text-converse-text">{{ title }}</p>
+            <p class="text-sm font-medium text-riwaaq-text">{{ title }}</p>
         </div>
 
-        <p class="text-xs text-converse-textMuted">{{ formattedStartsAt }}</p>
-        <p v-if="location" class="text-xs text-converse-textMuted">
+        <p class="text-xs text-riwaaq-textMuted">{{ formattedStartsAt }}</p>
+        <p v-if="location" class="text-xs text-riwaaq-textMuted">
             📍 {{ location }}
             <a
                 v-if="mapUrl"
                 :href="mapUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="ml-1 font-medium text-converse-accentText hover:underline"
+                class="ml-1 font-medium text-riwaaq-accentText hover:underline"
                 @click.stop
                 >View map</a
             >
         </p>
         <p
             v-if="description"
-            class="mt-1 whitespace-pre-wrap text-sm text-converse-text"
+            class="mt-1 whitespace-pre-wrap text-sm text-riwaaq-text"
         >
             {{ description }}
         </p>
@@ -123,16 +123,16 @@ async function onRespond(status) {
                 v-for="option in RSVP_OPTIONS"
                 :key="option.key"
                 type="button"
-                class="flex w-full items-center justify-between rounded-cv border px-3 py-1.5 text-left text-xs"
+                class="flex w-full items-center justify-between rounded-chat border px-3 py-1.5 text-left text-xs"
                 :class="
                     myStatus === option.key
-                        ? 'border-converse-accent bg-converse-accent/15 text-converse-accent'
-                        : 'border-converse-border text-converse-text hover:bg-converse-surfaceHover'
+                        ? 'border-riwaaq-accent bg-riwaaq-accent/15 text-riwaaq-accent'
+                        : 'border-riwaaq-border text-riwaaq-text hover:bg-riwaaq-surfaceHover'
                 "
                 @click="onRespond(option.key)"
             >
                 <span>{{ option.label }}</span>
-                <span class="text-[10px] text-converse-textMuted">{{
+                <span class="text-[10px] text-riwaaq-textMuted">{{
                     countFor(option.key)
                 }}</span>
             </button>

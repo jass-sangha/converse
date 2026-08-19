@@ -1,10 +1,10 @@
 <?php
 
-use Converse\Chat\Events\ConversationCreated;
-use Converse\Chat\Events\ParticipantAdded;
-use Converse\Chat\Tests\Fixtures\User;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Support\Facades\Event;
+use Riwaaq\Chat\Events\ConversationCreated;
+use Riwaaq\Chat\Events\ParticipantAdded;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function pushUser(string $email): User
 {
@@ -32,7 +32,7 @@ it('broadcasts ConversationCreated onto each participants private chatable chann
 
 it('broadcasts ParticipantAdded onto the conversation channel and each new participants private channel', function () {
     Event::fake([ParticipantAdded::class]);
-    config(['converse.max_group_participants' => null]); // grows past the free-tier 2-participant limit
+    config(['riwaaq.max_group_participants' => null]); // grows past the free-tier 2-participant limit
 
     $alice = pushUser('alice-push-grp@example.com');
     $bob = pushUser('bob-push-grp@example.com');

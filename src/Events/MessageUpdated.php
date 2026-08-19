@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Events;
+namespace Riwaaq\Chat\Events;
 
-use Converse\Chat\Models\Message;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Riwaaq\Chat\Models\Message;
 
 class MessageUpdated implements ShouldBroadcast
 {

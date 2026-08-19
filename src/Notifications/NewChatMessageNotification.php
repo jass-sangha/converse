@@ -1,12 +1,12 @@
 <?php
 
-namespace Converse\Chat\Notifications;
+namespace Riwaaq\Chat\Notifications;
 
-use Converse\Chat\Models\Message;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
+use Riwaaq\Chat\Models\Message;
 
 class NewChatMessageNotification extends Notification implements ShouldQueue
 {

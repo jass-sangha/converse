@@ -149,11 +149,11 @@ async function onChange(event) {
 </script>
 
 <template>
-    <div ref="root" class="cv-attachment-picker relative">
+    <div ref="root" class="chat-attachment-picker relative">
         <button
             type="button"
             title="Attach"
-            class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-converse-surface text-converse-textMuted shadow-sm hover:text-converse-accent disabled:opacity-50"
+            class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-textMuted shadow-sm hover:text-riwaaq-accent disabled:opacity-50"
             :disabled="uploading"
             @click="toggleMenu"
         >
@@ -175,13 +175,13 @@ async function onChange(event) {
 
         <div
             v-if="showMenu"
-            class="cv-attachment-picker__menu cv-animate-pop-in absolute bottom-14 left-0 z-20 w-52 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            class="chat-attachment-picker__menu chat-animate-pop-in absolute bottom-14 left-0 z-20 w-52 rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-lg"
         >
             <button
                 v-for="option in OPTIONS"
                 :key="option.key"
                 type="button"
-                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover disabled:cursor-not-allowed disabled:opacity-40"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover disabled:cursor-not-allowed disabled:opacity-40"
                 :disabled="option.disabled"
                 :title="option.disabled ? 'Not available yet' : option.label"
                 @click="pick(option)"
@@ -191,7 +191,7 @@ async function onChange(event) {
                     width="16"
                     height="16"
                     fill="currentColor"
-                    class="shrink-0 text-converse-textMuted"
+                    class="shrink-0 text-riwaaq-textMuted"
                 >
                     <path :d="option.path" />
                 </svg>

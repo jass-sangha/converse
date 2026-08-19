@@ -1,9 +1,9 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Contracts\LinkPreviewFetcher;
 use Illuminate\Support\Facades\Http;
+use Riwaaq\Chat\Contracts\LinkPreviewFetcher;
 
 /**
  * Default OG-tag scraper. Consuming apps can bind their own LinkPreviewFetcher

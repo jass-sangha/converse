@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Contracts\MessageReactionServiceInterface;
-use Converse\Chat\Events\MessageReacted;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Models\MessageReaction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Riwaaq\Chat\Contracts\MessageReactionServiceInterface;
+use Riwaaq\Chat\Events\MessageReacted;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\MessageReaction;
 
 class MessageReactionService implements MessageReactionServiceInterface
 {

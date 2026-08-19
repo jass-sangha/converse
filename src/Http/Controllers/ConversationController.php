@@ -1,16 +1,16 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ConversationServiceInterface;
-use Converse\Chat\Http\Requests\MuteConversationRequest;
-use Converse\Chat\Http\Requests\StoreConversationRequest;
-use Converse\Chat\Http\Requests\UpdateConversationRequest;
-use Converse\Chat\Http\Resources\ConversationResource;
-use Converse\Chat\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ConversationServiceInterface;
+use Riwaaq\Chat\Http\Requests\MuteConversationRequest;
+use Riwaaq\Chat\Http\Requests\StoreConversationRequest;
+use Riwaaq\Chat\Http\Requests\UpdateConversationRequest;
+use Riwaaq\Chat\Http\Resources\ConversationResource;
+use Riwaaq\Chat\Models\Conversation;
 
 class ConversationController extends Controller
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
 class AssetController extends Controller
 {

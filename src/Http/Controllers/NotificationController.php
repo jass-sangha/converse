@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\ConversationServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Riwaaq\Chat\Contracts\ConversationServiceInterface;
 
 class NotificationController extends Controller
 {

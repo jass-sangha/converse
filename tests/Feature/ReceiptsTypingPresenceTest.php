@@ -1,10 +1,10 @@
 <?php
 
-use Converse\Chat\Events\UserTyping;
-use Converse\Chat\Models\ConversationParticipant;
-use Converse\Chat\Tests\Fixtures\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Riwaaq\Chat\Events\UserTyping;
+use Riwaaq\Chat\Models\ConversationParticipant;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function presenceUser(string $email): User
 {

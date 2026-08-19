@@ -102,22 +102,22 @@ async function scrollToMessage(messageId, { conversationId = null } = {}) {
     const targetConversationId = conversationId ?? store.activeConversationId;
     if (!targetConversationId) return false;
 
-    let el = document.getElementById(`cv-message-${messageId}`);
+    let el = document.getElementById(`chat-message-${messageId}`);
     let guard = 0;
 
     while (!el && guard < 30) {
         const older = await loadOlder(targetConversationId);
         if (!older.length) break;
         await nextTick();
-        el = document.getElementById(`cv-message-${messageId}`);
+        el = document.getElementById(`chat-message-${messageId}`);
         guard += 1;
     }
 
     if (!el) return false;
 
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el.classList.add('cv-message-bubble--highlight');
-    setTimeout(() => el.classList.remove('cv-message-bubble--highlight'), 1600);
+    el.classList.add('chat-message-bubble--highlight');
+    setTimeout(() => el.classList.remove('chat-message-bubble--highlight'), 1600);
     return true;
 }
 
@@ -159,12 +159,12 @@ function onEdit(message) {
 </script>
 
 <template>
-    <div v-if="!conversation" class="cv-chat-window-empty flex h-full items-center justify-center bg-converse-chatBg text-converse-textMuted">
+    <div v-if="!conversation" class="chat-chat-window-empty flex h-full items-center justify-center bg-riwaaq-chatBg text-riwaaq-textMuted">
         <p>Select a conversation to start chatting.</p>
     </div>
 
-    <div v-else class="cv-chat-window relative flex h-full min-w-0">
-        <div class="cv-chat-window__main flex h-full min-w-0 flex-1 flex-col">
+    <div v-else class="chat-chat-window relative flex h-full min-w-0">
+        <div class="chat-chat-window__main flex h-full min-w-0 flex-1 flex-col">
             <ChatHeader
                 :conversation="conversation"
                 :search-open="chatSearchOpen"
@@ -173,44 +173,44 @@ function onEdit(message) {
                 @toggle-search="onToggleChatSearch"
             />
 
-            <div v-if="chatSearchOpen" class="cv-chat-window__inline-search flex items-center gap-2 border-b border-converse-border bg-converse-surface px-3 py-2">
+            <div v-if="chatSearchOpen" class="chat-chat-window__inline-search flex items-center gap-2 border-b border-riwaaq-border bg-riwaaq-surface px-3 py-2">
                 <input
                     v-model="chatSearchQuery"
                     type="text"
                     autofocus
                     placeholder="Search in this chat"
-                    class="flex-1 rounded-full bg-converse-surfaceHover px-4 py-1.5 text-sm text-converse-text focus:outline-none"
+                    class="flex-1 rounded-full bg-riwaaq-surfaceHover px-4 py-1.5 text-sm text-riwaaq-text focus:outline-none"
                     @keydown.escape="onToggleChatSearch"
                 >
                 <button
                     type="button"
                     title="Close search"
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                     @click="onToggleChatSearch"
                 >
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"/></svg>
                 </button>
             </div>
 
-            <div v-if="pinnedMessages.length" class="cv-chat-window__pinned-banner border-b border-converse-border bg-converse-surface">
+            <div v-if="pinnedMessages.length" class="chat-chat-window__pinned-banner border-b border-riwaaq-border bg-riwaaq-surface">
                 <div
                     v-for="pinned in pinnedMessages"
                     :key="pinned.id"
-                    class="cv-chat-window__pinned-item flex cursor-pointer items-center gap-2 border-b border-converse-border px-3 py-1.5 last:border-b-0 hover:bg-converse-surfaceHover"
+                    class="chat-chat-window__pinned-item flex cursor-pointer items-center gap-2 border-b border-riwaaq-border px-3 py-1.5 last:border-b-0 hover:bg-riwaaq-surfaceHover"
                     @click="scrollToMessage(pinned.id)"
                 >
-                    <span class="flex shrink-0 items-center text-converse-accent">
+                    <span class="flex shrink-0 items-center text-riwaaq-accent">
                         <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M16 3v6.5l2 3V15h-6v6l-1 1-1-1v-6H4v-2.5l2-3V3Z" /></svg>
                     </span>
-                    <span class="flex-1 truncate text-xs text-converse-textMuted">{{ pinned.deleted_for_everyone ? 'This message was deleted' : (pinned.type === 'text' ? pinned.body : `[${pinned.type}]`) }}</span>
-                    <button type="button" class="cv-chat-window__pinned-unpin text-xs text-converse-textMuted hover:text-converse-danger" @click.stop="onUnpinFromBanner(pinned)">✕</button>
+                    <span class="flex-1 truncate text-xs text-riwaaq-textMuted">{{ pinned.deleted_for_everyone ? 'This message was deleted' : (pinned.type === 'text' ? pinned.body : `[${pinned.type}]`) }}</span>
+                    <button type="button" class="chat-chat-window__pinned-unpin text-xs text-riwaaq-textMuted hover:text-riwaaq-danger" @click.stop="onUnpinFromBanner(pinned)">✕</button>
                 </div>
             </div>
 
             <div class="relative flex min-h-0 flex-1 flex-col">
                 <div class="pointer-events-none absolute inset-0 overflow-hidden">
                     <div
-                        class="absolute inset-0 bg-converse-chatBg"
+                        class="absolute inset-0 bg-riwaaq-chatBg"
                         :style="{
                             backgroundImage: wallpaper.backgroundImage ?? undefined,
                             backgroundSize: wallpaper.backgroundSize ?? undefined,
@@ -219,17 +219,17 @@ function onEdit(message) {
                         }"
                     />
                     <template v-if="wallpaper.isDefault">
-                        <div class="absolute -right-[60px] -top-[90px] h-[320px] w-[320px] rounded-full bg-converse-bubbleOut opacity-[.55]" />
-                        <div class="absolute -bottom-[120px] left-[40px] h-[380px] w-[380px] rounded-full bg-converse-sageTint opacity-50" />
+                        <div class="absolute -right-[60px] -top-[90px] h-[320px] w-[320px] rounded-full bg-riwaaq-bubbleOut opacity-[.55]" />
+                        <div class="absolute -bottom-[120px] left-[40px] h-[380px] w-[380px] rounded-full bg-riwaaq-sageTint opacity-50" />
                     </template>
                 </div>
 
-                <div v-if="activeSearchQuery" class="cv-chat-window__search-results relative min-h-0 flex-1 overflow-y-auto p-3">
-                    <p class="mb-2 text-xs text-converse-textMuted">Results for "{{ activeSearchQuery }}"</p>
+                <div v-if="activeSearchQuery" class="chat-chat-window__search-results relative min-h-0 flex-1 overflow-y-auto p-3">
+                    <p class="mb-2 text-xs text-riwaaq-textMuted">Results for "{{ activeSearchQuery }}"</p>
                     <div v-for="message in searchResults" :key="message.id" class="cursor-pointer" @click="jumpToResult(message)">
                         <MessageBubble :message="message" />
                     </div>
-                    <p v-if="!searchResults.length" class="text-sm text-converse-textMuted">No messages found.</p>
+                    <p v-if="!searchResults.length" class="text-sm text-riwaaq-textMuted">No messages found.</p>
                 </div>
 
                 <MessageList
@@ -239,9 +239,9 @@ function onEdit(message) {
                     @edit="onEdit"
                 />
 
-                <div v-if="isBlocked" class="cv-chat-window__blocked-bar relative flex shrink-0 items-center justify-between gap-2 border-t border-converse-border bg-converse-surface px-4 py-3">
-                    <span class="text-sm text-converse-textMuted">You blocked this contact. New messages won't be sent.</span>
-                    <button type="button" class="shrink-0 text-sm font-medium text-converse-accent" @click="onUnblock">Unblock</button>
+                <div v-if="isBlocked" class="chat-chat-window__blocked-bar relative flex shrink-0 items-center justify-between gap-2 border-t border-riwaaq-border bg-riwaaq-surface px-4 py-3">
+                    <span class="text-sm text-riwaaq-textMuted">You blocked this contact. New messages won't be sent.</span>
+                    <button type="button" class="shrink-0 text-sm font-medium text-riwaaq-accent" @click="onUnblock">Unblock</button>
                 </div>
 
                 <MessageComposer

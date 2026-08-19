@@ -1,12 +1,12 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\UserSearchServiceInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\UserSearchServiceInterface;
 
 class UserSearchService implements UserSearchServiceInterface
 {

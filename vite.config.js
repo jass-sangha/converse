@@ -15,7 +15,7 @@ export default defineConfig({
             input: path.resolve(__dirname, 'resources/js/app.js'),
             output: {
                 format: 'iife',
-                name: 'ConverseChatApp',
+                name: 'RiwaaqChatApp',
                 inlineDynamicImports: true,
                 entryFileNames: 'app.js',
                 assetFileNames: (asset) =>

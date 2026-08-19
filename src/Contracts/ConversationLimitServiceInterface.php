@@ -1,8 +1,8 @@
 <?php
 
-namespace Converse\Chat\Contracts;
+namespace Riwaaq\Chat\Contracts;
 
-use Converse\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Conversation;
 
 /**
  * Centralizes the "is this conversation allowed to grow" rule so it's checked in exactly

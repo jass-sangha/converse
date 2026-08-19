@@ -178,7 +178,7 @@ function openHit(hit) {
 </script>
 
 <template>
-    <div class="cv-conversation-list flex h-full flex-col bg-converse-surface">
+    <div class="chat-conversation-list flex h-full flex-col bg-riwaaq-surface">
         <SidebarScreenHeader
             v-if="showArchived"
             title="Archived chats"
@@ -189,20 +189,20 @@ function openHit(hit) {
 
         <div
             v-else
-            class="cv-conversation-list__header flex items-center justify-between px-4 py-3"
+            class="chat-conversation-list__header flex items-center justify-between px-4 py-3"
         >
-            <h1 class="font-display text-2xl font-normal text-converse-text">
-                Converse
+            <h1 class="font-display text-2xl font-normal text-riwaaq-text">
+                Riwaaq
             </h1>
 
             <div
-                class="cv-conversation-list__actions flex items-center gap-1.5"
+                class="chat-conversation-list__actions flex items-center gap-1.5"
             >
                 <button
                     v-if="view !== 'new-chat'"
                     type="button"
                     title="New chat"
-                    class="flex h-9 items-center gap-1.5 rounded-full bg-converse-accent px-4 text-sm font-semibold text-converse-accentContrast hover:opacity-90"
+                    class="flex h-9 items-center gap-1.5 rounded-full bg-riwaaq-accent px-4 text-sm font-semibold text-riwaaq-accentContrast hover:opacity-90"
                     @click="setView('new-chat')"
                 >
                     <svg
@@ -226,18 +226,18 @@ function openHit(hit) {
         <SearchBar :autofocus="false" @query="onSearchQuery" />
 
         <div
-            class="cv-conversation-list__filters flex items-center gap-2 overflow-x-auto overflow-y-visible px-3 pb-3.5 pt-0.5"
+            class="chat-conversation-list__filters flex items-center gap-2 overflow-x-auto overflow-y-visible px-3 pb-3.5 pt-0.5"
         >
             <button
                 v-for="f in FILTERS"
                 :key="f.key"
                 type="button"
-                class="relative h-8 shrink-0 rounded-full border border-converse-border px-[15px] text-[12.5px] font-semibold text-converse-textMuted"
+                class="relative h-8 shrink-0 rounded-full border border-riwaaq-border px-[15px] text-[12.5px] font-semibold text-riwaaq-textMuted"
                 @click="setFilter(f.key)"
             >
                 <span
                     v-if="filter === f.key"
-                    class="absolute -inset-px rounded-full border border-converse-sageLine bg-converse-sageTint"
+                    class="absolute -inset-px rounded-full border border-riwaaq-sageLine bg-riwaaq-sageTint"
                 />
                 <span class="relative">{{ f.label }}</span>
             </button>
@@ -245,11 +245,11 @@ function openHit(hit) {
 
         <div
             v-if="searchQuery"
-            class="cv-conversation-list__search-results flex-1 overflow-y-auto"
+            class="chat-conversation-list__search-results flex-1 overflow-y-auto"
         >
             <p
                 v-if="searching"
-                class="p-4 text-center text-sm text-converse-textMuted"
+                class="p-4 text-center text-sm text-riwaaq-textMuted"
             >
                 Searching&hellip;
             </p>
@@ -257,7 +257,7 @@ function openHit(hit) {
             <template v-else>
                 <h3
                     v-if="filteredConversations.length"
-                    class="px-4 pb-1 pt-3 text-xs font-medium uppercase text-converse-textMuted"
+                    class="px-4 pb-1 pt-3 text-xs font-medium uppercase text-riwaaq-textMuted"
                 >
                     Chats
                 </h3>
@@ -273,7 +273,7 @@ function openHit(hit) {
 
                 <h3
                     v-if="messageHits.length"
-                    class="px-4 pb-1 pt-3 text-xs font-medium uppercase text-converse-textMuted"
+                    class="px-4 pb-1 pt-3 text-xs font-medium uppercase text-riwaaq-textMuted"
                 >
                     Messages
                 </h3>
@@ -281,7 +281,7 @@ function openHit(hit) {
                     <li
                         v-for="hit in messageHits"
                         :key="hit.id"
-                        class="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-converse-surfaceHover"
+                        class="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-riwaaq-surfaceHover"
                         @click="openHit(hit)"
                     >
                         <Avatar
@@ -291,11 +291,11 @@ function openHit(hit) {
                         />
                         <div class="min-w-0 flex-1">
                             <span
-                                class="block truncate text-[15px] text-converse-text"
+                                class="block truncate text-[15px] text-riwaaq-text"
                                 >{{ hitLabel(hit) }}</span
                             >
                             <span
-                                class="block truncate text-sm text-converse-textMuted"
+                                class="block truncate text-sm text-riwaaq-textMuted"
                                 >{{ hitSnippet(hit) }}</span
                             >
                         </div>
@@ -304,7 +304,7 @@ function openHit(hit) {
 
                 <p
                     v-if="!filteredConversations.length && !messageHits.length"
-                    class="p-4 text-center text-sm text-converse-textMuted"
+                    class="p-4 text-center text-sm text-riwaaq-textMuted"
                 >
                     No results for "{{ searchQuery }}".
                 </p>
@@ -314,7 +314,7 @@ function openHit(hit) {
         <ul
             v-else
             ref="listRoot"
-            class="cv-conversation-list__items flex-1 overflow-y-auto px-2 py-1"
+            class="chat-conversation-list__items flex-1 overflow-y-auto px-2 py-1"
         >
             <ConversationListItem
                 v-for="conversation in filteredConversations"
@@ -325,7 +325,7 @@ function openHit(hit) {
             />
             <li
                 v-if="!filteredConversations.length"
-                class="cv-conversation-list__empty p-4 text-center text-sm text-converse-textMuted"
+                class="chat-conversation-list__empty p-4 text-center text-sm text-riwaaq-textMuted"
             >
                 No conversations here.
             </li>

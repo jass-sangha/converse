@@ -1,8 +1,8 @@
 <?php
 
-use Converse\Chat\Enums\MessageType;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Notifications\NewChatMessageNotification;
+use Riwaaq\Chat\Enums\MessageType;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Notifications\NewChatMessageNotification;
 
 it('always includes the broadcast channel and appends configured extra channels', function () {
     $message = new Message([

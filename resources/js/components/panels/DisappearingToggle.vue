@@ -78,7 +78,7 @@ function turnOff() {
 <template>
     <div
         ref="root"
-        class="cv-disappearing-toggle relative flex w-full cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-converse-surfaceHover"
+        class="chat-disappearing-toggle relative flex w-full cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-riwaaq-surfaceHover"
     >
         <svg
             viewBox="0 0 24 24"
@@ -86,7 +86,7 @@ function turnOff() {
             height="20"
             fill="currentColor"
             class="shrink-0"
-            :class="isOn ? 'text-converse-sage' : 'text-converse-textMuted'"
+            :class="isOn ? 'text-riwaaq-sage' : 'text-riwaaq-textMuted'"
         >
             <path
                 d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Zm0-18a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z"
@@ -94,17 +94,17 @@ function turnOff() {
             <path d="M13 7h-2v6l5.2 3.2 1-1.6-4.2-2.5V7Z" />
         </svg>
         <button type="button" class="flex-1 text-left" @click="toggleMenu">
-            <span class="block text-[15px] text-nowrap text-converse-text"
+            <span class="block text-[15px] text-nowrap text-riwaaq-text"
                 >Disappearing messages</span
             >
-            <span v-if="isOn" class="block text-xs text-converse-textMuted">{{
+            <span v-if="isOn" class="block text-xs text-riwaaq-textMuted">{{
                 currentLabel
             }}</span>
         </button>
         <button
             type="button"
-            class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
-            :class="isOn ? 'bg-converse-sage' : 'bg-converse-border'"
+            class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-riwaaq-accent focus-visible:ring-offset-2 focus-visible:ring-offset-riwaaq-surface"
+            :class="isOn ? 'bg-riwaaq-sage' : 'bg-riwaaq-border'"
             role="switch"
             :aria-checked="isOn"
             @click="toggleMenu"
@@ -117,15 +117,15 @@ function turnOff() {
 
         <div
             v-if="showMenu"
-            class="cv-animate-pop-in absolute right-4 z-20"
+            class="chat-animate-pop-in absolute right-4 z-20"
             :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
         >
             <div
-                class="w-48 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
+                class="w-48 overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 shadow-lg"
                 :style="{ maxHeight: maxHeight + 'px' }"
             >
                 <p
-                    class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-converse-textMuted"
+                    class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-riwaaq-textMuted"
                 >
                     Disappear after
                 </p>
@@ -133,7 +133,7 @@ function turnOff() {
                     v-for="option in OPTIONS"
                     :key="option.key"
                     type="button"
-                    class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
+                    class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                     @click="pick(option.seconds)"
                 >
                     {{ option.label }}

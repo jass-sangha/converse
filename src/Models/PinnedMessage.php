@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Models;
+namespace Riwaaq\Chat\Models;
 
-use Converse\Chat\Chat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Riwaaq\Chat\Chat;
 
 class PinnedMessage extends Model
 {

@@ -1,12 +1,12 @@
 <?php
 
-namespace Converse\Chat\Tests;
+namespace Riwaaq\Chat\Tests;
 
-use Converse\Chat\ChatServiceProvider;
-use Converse\Chat\Tests\Fixtures\Agent;
-use Converse\Chat\Tests\Fixtures\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Riwaaq\Chat\ChatServiceProvider;
+use Riwaaq\Chat\Tests\Fixtures\Agent;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 class TestCase extends Orchestra
 {
@@ -15,7 +15,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Converse\\Chat\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'Riwaaq\\Chat\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 

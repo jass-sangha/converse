@@ -1,9 +1,9 @@
 <?php
 
-namespace Converse\Chat\Console\Commands;
+namespace Riwaaq\Chat\Console\Commands;
 
-use Converse\Chat\Contracts\PresenceServiceInterface;
 use Illuminate\Console\Command;
+use Riwaaq\Chat\Contracts\PresenceServiceInterface;
 
 class SweepPresenceCommand extends Command
 {

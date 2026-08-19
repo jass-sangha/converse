@@ -1,8 +1,8 @@
 // Wallpaper "ink" for the tileable patterns: a tint of the theme's own foreground text color
-// (`--cv-text`), at an opacity high enough to actually read as a pattern rather than the
-// near-invisible `--cv-dots` token the app's default background used. It's still just a themed
+// (`--chat-text`), at an opacity high enough to actually read as a pattern rather than the
+// near-invisible `--chat-dots` token the app's default background used. It's still just a themed
 // token — never a hardcoded color — so it flips correctly between light and dark automatically.
-const INK = "rgb(var(--cv-text) / .16)";
+const INK = "rgb(var(--chat-text) / .16)";
 
 // Picker swatches are ~40px, far smaller than several of these patterns' real tile sizes (up to
 // 84px) — at full size a swatch would show at most a sliver of one repeat, making patterns look
@@ -52,14 +52,14 @@ export const WALLPAPER_PATTERNS = [
     },
 ];
 
-// Every color is a low-opacity tint of an existing theme token (`rgb(var(--cv-*) / alpha)`,
+// Every color is a low-opacity tint of an existing theme token (`rgb(var(--chat-*) / alpha)`,
 // the same pattern the app's own Tailwind config uses) so it re-tints automatically for
 // light/dark themes — never a fixed hex value.
 export const WALLPAPER_COLORS = [
     { key: "default", label: "Default", css: null },
-    { key: "info", label: "Sky", css: "rgb(var(--cv-info) / .16)" },
-    { key: "danger", label: "Blush", css: "rgb(var(--cv-danger) / .12)" },
-    { key: "text", label: "Slate", css: "rgb(var(--cv-text) / .07)" },
+    { key: "info", label: "Sky", css: "rgb(var(--chat-info) / .16)" },
+    { key: "danger", label: "Blush", css: "rgb(var(--chat-danger) / .12)" },
+    { key: "text", label: "Slate", css: "rgb(var(--chat-text) / .07)" },
 ];
 
 export function encodeWallpaper(patternKey, colorKeyOrHex) {
@@ -114,7 +114,7 @@ export function resolveWallpaper(value) {
 
     // The tint is layered as a solid-color gradient alongside the pattern, not returned as a
     // plain `background-color` — a `background-color` would replace the app's own
-    // `bg-converse-chatBg` base entirely rather than composite on top of it, and at these low
+    // `bg-riwaaq-chatBg` base entirely rather than composite on top of it, and at these low
     // opacities that leaves the page's raw background showing through instead of a tinted surface.
     const layers = [];
     const sizes = [];

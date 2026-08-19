@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Contracts;
+namespace Riwaaq\Chat\Contracts;
 
-use Converse\Chat\Models\Conversation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Riwaaq\Chat\Models\Conversation;
 
 interface ConversationServiceInterface
 {

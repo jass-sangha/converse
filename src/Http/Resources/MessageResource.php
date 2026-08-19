@@ -1,17 +1,17 @@
 <?php
 
-namespace Converse\Chat\Http\Resources;
+namespace Riwaaq\Chat\Http\Resources;
 
-use Converse\Chat\Contracts\UserSettingsServiceInterface;
-use Converse\Chat\Enums\MessageType;
-use Converse\Chat\Models\EventRsvp;
-use Converse\Chat\Models\MessageReaction;
-use Converse\Chat\Models\MessageReceipt;
-use Converse\Chat\Models\PollVote;
-use Converse\Chat\Models\StarredMessage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
+use Riwaaq\Chat\Enums\MessageType;
+use Riwaaq\Chat\Models\EventRsvp;
+use Riwaaq\Chat\Models\MessageReaction;
+use Riwaaq\Chat\Models\MessageReceipt;
+use Riwaaq\Chat\Models\PollVote;
+use Riwaaq\Chat\Models\StarredMessage;
 
 class MessageResource extends JsonResource
 {

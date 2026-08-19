@@ -1,8 +1,8 @@
 <?php
 
-use Converse\Chat\Tests\TestCase;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Riwaaq\Chat\Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class)->in('Feature', 'Unit');
 

@@ -33,22 +33,22 @@ function openProfile() {
 
 <template>
     <nav
-        class="cv-icon-rail flex h-full w-[72px] shrink-0 flex-col items-center gap-1.5 border-r border-converse-border bg-converse-railBg pb-4 pt-[18px]"
+        class="chat-icon-rail flex h-full w-[72px] shrink-0 flex-col items-center gap-1.5 border-r border-riwaaq-border bg-riwaaq-railBg pb-4 pt-[18px]"
     >
         <button
             type="button"
             title="Chats"
-            class="cv-icon-rail__button relative flex h-[46px] w-[46px] items-center justify-center rounded-2xl"
+            class="chat-icon-rail__button relative flex h-[46px] w-[46px] items-center justify-center rounded-2xl"
             :class="
                 isChats
-                    ? 'text-converse-accentContrast'
-                    : 'text-converse-textMuted hover:bg-converse-sageTint hover:text-converse-sageText'
+                    ? 'text-riwaaq-accentContrast'
+                    : 'text-riwaaq-textMuted hover:bg-riwaaq-sageTint hover:text-riwaaq-sageText'
             "
             @click="openChats"
         >
             <div
                 v-if="isChats"
-                class="absolute inset-0 rounded-2xl bg-converse-accent"
+                class="absolute inset-0 rounded-2xl bg-riwaaq-accent"
             />
             <svg
                 viewBox="0 0 24 24"
@@ -67,7 +67,7 @@ function openProfile() {
             </svg>
             <span
                 v-if="unreadCount > 0"
-                class="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-converse-sage px-[5px] text-[10.5px] font-bold text-white"
+                class="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-riwaaq-sage px-[5px] text-[10.5px] font-bold text-white"
                 >{{ unreadCount }}</span
             >
         </button>
@@ -75,12 +75,12 @@ function openProfile() {
         <button
             type="button"
             title="Media"
-            class="cv-icon-rail__button relative flex h-[46px] w-[46px] items-center justify-center rounded-2xl text-converse-textMuted hover:bg-converse-sageTint hover:text-converse-sageText"
+            class="chat-icon-rail__button relative flex h-[46px] w-[46px] items-center justify-center rounded-2xl text-riwaaq-textMuted hover:bg-riwaaq-sageTint hover:text-riwaaq-sageText"
             @click="openMedia"
         >
             <div
                 v-if="isMedia"
-                class="absolute inset-0 rounded-2xl bg-converse-bubbleOut"
+                class="absolute inset-0 rounded-2xl bg-riwaaq-bubbleOut"
             />
             <svg
                 viewBox="0 0 24 24"
@@ -102,12 +102,12 @@ function openProfile() {
         <button
             type="button"
             title="You"
-            class="cv-icon-rail__button relative mt-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
+            class="chat-icon-rail__button relative mt-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
             @click="openProfile"
         >
             <div
                 v-if="isProfile"
-                class="absolute inset-0 rounded-full border-[2.5px] border-converse-accent"
+                class="absolute inset-0 rounded-full border-[2.5px] border-riwaaq-accent"
             />
             <Avatar
                 :name="me?.name ?? ''"

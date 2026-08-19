@@ -196,17 +196,17 @@ watch(
 </script>
 
 <template>
-    <div class="cv-message-list-wrap relative min-h-0 flex-1 overflow-hidden">
+    <div class="chat-message-list-wrap relative min-h-0 flex-1 overflow-hidden">
         <div
             ref="scrollEl"
-            class="cv-message-list relative h-full overflow-y-auto px-3 pb-3 pt-10 sm:px-12"
+            class="chat-message-list relative h-full overflow-y-auto px-3 pb-3 pt-10 sm:px-12"
             @scroll="onScroll"
         >
-            <div ref="sentinelEl" class="cv-message-list__sentinel h-1" />
+            <div ref="sentinelEl" class="chat-message-list__sentinel h-1" />
 
             <div
                 ref="contentEl"
-                class="cv-message-list__messages mx-auto flex max-w-7xl flex-col gap-2"
+                class="chat-message-list__messages mx-auto flex max-w-7xl flex-col gap-2"
             >
                 <template v-for="item in timeline" :key="item.key">
                     <div
@@ -214,13 +214,13 @@ watch(
                         class="flex justify-center py-1"
                     >
                         <span
-                            class="rounded-lg bg-converse-surfaceHover px-3 py-1.5 text-xs font-medium text-converse-textMuted shadow-sm"
+                            class="rounded-lg bg-riwaaq-surfaceHover px-3 py-1.5 text-xs font-medium text-riwaaq-textMuted shadow-sm"
                             >{{ item.label }}</span
                         >
                     </div>
                     <MessageBubble
                         v-else
-                        :id="`cv-message-${item.message.id}`"
+                        :id="`chat-message-${item.message.id}`"
                         :message="item.message"
                         @reply="(m) => emit('reply', m)"
                         @edit="(m) => emit('edit', m)"
@@ -233,7 +233,7 @@ watch(
             v-if="showScrollToBottom"
             type="button"
             title="Scroll to bottom"
-            class="cv-animate-pop-in absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full border border-converse-border bg-converse-surface text-converse-textMuted shadow-cv-lg hover:text-converse-accentText sm:right-12 z-20"
+            class="chat-animate-pop-in absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full border border-riwaaq-border bg-riwaaq-surface text-riwaaq-textMuted shadow-chat-lg hover:text-riwaaq-accentText sm:right-12 z-20"
             @click="onScrollToBottomClick"
         >
             <svg

@@ -8,7 +8,7 @@ const { setView } = useSidebarUi();
 </script>
 
 <template>
-    <div class="cv-media-panel flex h-full flex-col bg-converse-surface">
+    <div class="chat-media-panel flex h-full flex-col bg-riwaaq-surface">
         <SidebarScreenHeader title="Media" @back="setView('chats')">
             <GlobalMenu />
         </SidebarScreenHeader>

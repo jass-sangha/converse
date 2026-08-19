@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\AttachmentServiceInterface;
-use Converse\Chat\Http\Requests\StoreAttachmentRequest;
-use Converse\Chat\Http\Resources\AttachmentResource;
+use Riwaaq\Chat\Contracts\AttachmentServiceInterface;
+use Riwaaq\Chat\Http\Requests\StoreAttachmentRequest;
+use Riwaaq\Chat\Http\Resources\AttachmentResource;
 
 class AttachmentController extends Controller
 {

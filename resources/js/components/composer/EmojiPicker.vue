@@ -66,7 +66,7 @@ const KEYWORDS = {
 
 const emit = defineEmits(['pick']);
 
-const RECENT_KEY = 'converse:recent-emojis';
+const RECENT_KEY = 'riwaaq:recent-emojis';
 const recent = ref(readRecent());
 const activeCategory = ref('recent');
 const query = ref('');
@@ -108,13 +108,13 @@ const activeEmojis = computed(() => {
 </script>
 
 <template>
-    <div class="cv-emoji-picker w-80 rounded-cv border border-converse-border bg-converse-surface shadow-lg">
-        <div class="cv-emoji-picker__tabs flex items-center gap-1 border-b border-converse-border p-1.5">
+    <div class="chat-emoji-picker w-80 rounded-chat border border-riwaaq-border bg-riwaaq-surface shadow-lg">
+        <div class="chat-emoji-picker__tabs flex items-center gap-1 border-b border-riwaaq-border p-1.5">
             <button
                 type="button"
                 title="Recent"
                 class="flex h-8 w-8 items-center justify-center rounded-full"
-                :class="activeCategory === 'recent' && !query ? 'bg-converse-accent/15 text-converse-accent' : 'text-converse-textMuted hover:bg-converse-surfaceHover'"
+                :class="activeCategory === 'recent' && !query ? 'bg-riwaaq-accent/15 text-riwaaq-accent' : 'text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover'"
                 @click="activeCategory = 'recent'; query = ''"
             >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 1a11 11 0 1 0 0 22 11 11 0 0 0 0-22Zm1 11h5v2h-7V6h2Z"/></svg>
@@ -125,7 +125,7 @@ const activeEmojis = computed(() => {
                 type="button"
                 :title="cat.label"
                 class="flex h-8 w-8 items-center justify-center rounded-full"
-                :class="activeCategory === cat.key && !query ? 'bg-converse-accent/15 text-converse-accent' : 'text-converse-textMuted hover:bg-converse-surfaceHover'"
+                :class="activeCategory === cat.key && !query ? 'bg-riwaaq-accent/15 text-riwaaq-accent' : 'text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover'"
                 @click="activeCategory = cat.key; query = ''"
             >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path :d="cat.icon"/></svg>
@@ -134,31 +134,31 @@ const activeEmojis = computed(() => {
 
         <div class="p-2">
             <div class="relative">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-converse-textMuted"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-riwaaq-textMuted"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
                 <input
                     v-model="query"
                     type="text"
                     placeholder="Search emoji"
-                    class="w-full rounded bg-converse-surfaceHover py-1.5 pl-7 pr-2 text-sm text-converse-text focus:outline-none"
+                    class="w-full rounded bg-riwaaq-surfaceHover py-1.5 pl-7 pr-2 text-sm text-riwaaq-text focus:outline-none"
                 >
             </div>
         </div>
 
-        <div class="cv-emoji-picker__grid max-h-56 overflow-y-auto px-2 pb-2">
+        <div class="chat-emoji-picker__grid max-h-56 overflow-y-auto px-2 pb-2">
             <template v-if="searchResults">
                 <div class="grid grid-cols-8 gap-1">
                     <button v-for="emoji in searchResults" :key="emoji" type="button" class="text-lg hover:scale-125" @click="pick(emoji)">{{ emoji }}</button>
                 </div>
-                <p v-if="!searchResults.length" class="py-4 text-center text-xs text-converse-textMuted">No matches.</p>
+                <p v-if="!searchResults.length" class="py-4 text-center text-xs text-riwaaq-textMuted">No matches.</p>
             </template>
             <template v-else>
-                <p class="mb-1 text-xs font-medium uppercase text-converse-textMuted">
+                <p class="mb-1 text-xs font-medium uppercase text-riwaaq-textMuted">
                     {{ activeCategory === 'recent' ? 'Recent' : CATEGORIES.find((c) => c.key === activeCategory)?.label }}
                 </p>
                 <div class="grid grid-cols-8 gap-1">
                     <button v-for="emoji in activeEmojis" :key="emoji" type="button" class="text-lg hover:scale-125" @click="pick(emoji)">{{ emoji }}</button>
                 </div>
-                <p v-if="activeCategory === 'recent' && !activeEmojis.length" class="py-4 text-center text-xs text-converse-textMuted">No recent emoji yet.</p>
+                <p v-if="activeCategory === 'recent' && !activeEmojis.length" class="py-4 text-center text-xs text-riwaaq-textMuted">No recent emoji yet.</p>
             </template>
         </div>
     </div>

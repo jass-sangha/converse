@@ -188,18 +188,18 @@ async function onUnstar(message) {
 </script>
 
 <template>
-    <div class="cv-starred-messages-panel flex h-full flex-col bg-converse-surface">
+    <div class="chat-starred-messages-panel flex h-full flex-col bg-riwaaq-surface">
         <SidebarScreenHeader title="Starred messages" @back="onBack">
             <GlobalMenu v-if="!conversationId" />
         </SidebarScreenHeader>
 
-        <div class="cv-scroll flex-1 overflow-y-auto px-2 pb-5">
-            <p v-if="loading" class="px-3 py-4 text-sm text-converse-textMuted">
+        <div class="chat-scroll flex-1 overflow-y-auto px-2 pb-5">
+            <p v-if="loading" class="px-3 py-4 text-sm text-riwaaq-textMuted">
                 Loading&hellip;
             </p>
             <p
                 v-else-if="!messages.length"
-                class="px-3 py-4 text-sm text-converse-textMuted"
+                class="px-3 py-4 text-sm text-riwaaq-textMuted"
             >
                 No starred messages yet.
             </p>
@@ -208,7 +208,7 @@ async function onUnstar(message) {
                 <div
                     v-for="message in messages"
                     :key="message.id"
-                    class="flex cursor-pointer items-center gap-3 rounded-[20px] px-3 py-2.5 hover:bg-converse-surfaceHover"
+                    class="flex cursor-pointer items-center gap-3 rounded-[20px] px-3 py-2.5 hover:bg-riwaaq-surfaceHover"
                     @click="jumpTo(message)"
                 >
                     <img
@@ -224,10 +224,10 @@ async function onUnstar(message) {
                         :size="44"
                     />
                     <div class="min-w-0 flex-1">
-                        <p class="truncate text-[14px] font-semibold text-converse-text">
+                        <p class="truncate text-[14px] font-semibold text-riwaaq-text">
                             {{ conversationLabel(message) }}
                         </p>
-                        <p class="truncate text-xs text-converse-textMuted">
+                        <p class="truncate text-xs text-riwaaq-textMuted">
                             <span
                                 v-if="message.conversation?.type === 'group'"
                                 >{{ sender(message).name }}: </span
@@ -235,7 +235,7 @@ async function onUnstar(message) {
                         </p>
                     </div>
                     <div class="flex shrink-0 flex-col items-end gap-1.5">
-                        <span class="text-[11px] text-converse-textMuted">{{
+                        <span class="text-[11px] text-riwaaq-textMuted">{{
                             new Date(message.created_at).toLocaleTimeString([], {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -244,7 +244,7 @@ async function onUnstar(message) {
                         <button
                             type="button"
                             title="Unstar"
-                            class="flex h-6 w-6 items-center justify-center rounded-full text-converse-accent hover:bg-converse-surface"
+                            class="flex h-6 w-6 items-center justify-center rounded-full text-riwaaq-accent hover:bg-riwaaq-surface"
                             @click.stop="onUnstar(message)"
                         >
                             <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
@@ -259,7 +259,7 @@ async function onUnstar(message) {
                 <button
                     v-if="hasMore"
                     type="button"
-                    class="mx-auto mt-2 block rounded px-3 py-1.5 text-sm text-converse-accent hover:bg-converse-surfaceHover"
+                    class="mx-auto mt-2 block rounded px-3 py-1.5 text-sm text-riwaaq-accent hover:bg-riwaaq-surfaceHover"
                     @click="loadMore"
                 >
                     Load more

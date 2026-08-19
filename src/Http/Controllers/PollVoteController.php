@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\PollVoteServiceInterface;
-use Converse\Chat\Http\Requests\VoteOnPollRequest;
-use Converse\Chat\Models\Message;
 use Illuminate\Support\Facades\Gate;
+use Riwaaq\Chat\Contracts\PollVoteServiceInterface;
+use Riwaaq\Chat\Http\Requests\VoteOnPollRequest;
+use Riwaaq\Chat\Models\Message;
 
 class PollVoteController extends Controller
 {

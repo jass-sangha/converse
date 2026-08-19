@@ -85,7 +85,7 @@ function pickView() {
 </script>
 
 <template>
-    <span ref="root" class="cv-avatar-photo-control group relative inline-flex shrink-0">
+    <span ref="root" class="chat-avatar-photo-control group relative inline-flex shrink-0">
         <button
             type="button"
             class="relative block shrink-0 overflow-hidden rounded-full disabled:cursor-default"
@@ -98,8 +98,8 @@ function pickView() {
 
             <span
                 v-if="editable || avatarUrl"
-                class="absolute inset-0 flex items-center justify-center rounded-full bg-converse-overlay/0 text-[10px] font-medium text-white opacity-0 transition group-hover:bg-converse-overlay/40 group-hover:opacity-100"
-                :class="{ 'pointer-events-none': uploading, 'bg-converse-overlay/40 opacity-100': menuOpen }"
+                class="absolute inset-0 flex items-center justify-center rounded-full bg-riwaaq-overlay/0 text-[10px] font-medium text-white opacity-0 transition group-hover:bg-riwaaq-overlay/40 group-hover:opacity-100"
+                :class="{ 'pointer-events-none': uploading, 'bg-riwaaq-overlay/40 opacity-100': menuOpen }"
             >
                 {{ editable ? (uploading ? "…" : "Edit") : "View" }}
             </span>
@@ -107,39 +107,39 @@ function pickView() {
 
         <div
             v-if="menuOpen"
-            class="cv-animate-pop-in absolute z-20 w-52 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            class="chat-animate-pop-in absolute z-20 w-52 overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-lg"
             :class="[menuAlign === 'left' ? 'left-0' : 'right-0', openUp ? 'bottom-full mb-2' : 'top-full mt-2']"
             :style="{ maxHeight: maxHeight + 'px' }"
         >
             <button
                 v-if="avatarUrl"
                 type="button"
-                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="pickView"
             >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-converse-textMuted"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-riwaaq-textMuted"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
                 <span>View photo</span>
             </button>
             <button
                 type="button"
-                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="pickCamera"
             >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0 text-converse-textMuted"><path d="M9 4 7.5 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.5L15 4Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" /></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0 text-riwaaq-textMuted"><path d="M9 4 7.5 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.5L15 4Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" /></svg>
                 <span>Take a photo</span>
             </button>
             <button
                 type="button"
-                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="pickUpload"
             >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-converse-textMuted"><path d="M12 20V9" /><path d="M7.5 13.5 12 9l4.5 4.5" /><path d="M5 4h14" /></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-riwaaq-textMuted"><path d="M12 20V9" /><path d="M7.5 13.5 12 9l4.5 4.5" /><path d="M5 4h14" /></svg>
                 <span>Upload photo</span>
             </button>
             <button
                 v-if="avatarUrl"
                 type="button"
-                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-converse-danger hover:bg-converse-surfaceHover"
+                class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-danger hover:bg-riwaaq-surfaceHover"
                 @click="pickRemove"
             >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0"><path d="M15 4V3H9v1H4v2h16V4h-5ZM6 8l1 12h10l1-12H6Z" /></svg>

@@ -1,15 +1,15 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Contracts\ConversationLimitServiceInterface;
-use Converse\Chat\Contracts\ConverseLimitsInterface;
-use Converse\Chat\Models\Conversation;
+use Riwaaq\Chat\Contracts\ConversationLimitServiceInterface;
+use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
+use Riwaaq\Chat\Models\Conversation;
 
 class ConversationLimitService implements ConversationLimitServiceInterface
 {
     public function __construct(
-        protected ConverseLimitsInterface $limits,
+        protected RiwaaqLimitsInterface $limits,
     ) {}
 
     public function maxGroupParticipants(): ?int

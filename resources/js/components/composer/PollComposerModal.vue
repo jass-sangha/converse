@@ -39,16 +39,16 @@ async function submit() {
 
 <template>
     <Modal title="Create poll" @close="emit('close')">
-        <label class="mb-1 block text-xs font-medium uppercase text-converse-textMuted">Question</label>
+        <label class="mb-1 block text-xs font-medium uppercase text-riwaaq-textMuted">Question</label>
         <input
             v-model="question"
             type="text"
             maxlength="255"
             placeholder="Ask a question"
-            class="mb-4 w-full border-b border-converse-border bg-transparent pb-2 text-[15px] text-converse-text focus:border-converse-accent focus:outline-none"
+            class="mb-4 w-full border-b border-riwaaq-border bg-transparent pb-2 text-[15px] text-riwaaq-text focus:border-riwaaq-accent focus:outline-none"
         >
 
-        <label class="mb-1 block text-xs font-medium uppercase text-converse-textMuted">Options</label>
+        <label class="mb-1 block text-xs font-medium uppercase text-riwaaq-textMuted">Options</label>
         <div class="flex flex-col gap-2">
             <div v-for="(option, index) in options" :key="index" class="flex items-center gap-2">
                 <input
@@ -56,12 +56,12 @@ async function submit() {
                     type="text"
                     maxlength="100"
                     :placeholder="`Option ${index + 1}`"
-                    class="flex-1 rounded-cv border border-converse-border bg-transparent px-3 py-1.5 text-sm text-converse-text focus:border-converse-accent focus:outline-none"
+                    class="flex-1 rounded-chat border border-riwaaq-border bg-transparent px-3 py-1.5 text-sm text-riwaaq-text focus:border-riwaaq-accent focus:outline-none"
                 >
                 <button
                     v-if="options.length > 2"
                     type="button"
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                     @click="removeOption(index)"
                 >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"/></svg>
@@ -72,18 +72,18 @@ async function submit() {
         <button
             v-if="canAddOption"
             type="button"
-            class="mt-2 text-sm text-converse-accent"
+            class="mt-2 text-sm text-riwaaq-accent"
             @click="addOption"
         >
             + Add option
         </button>
 
         <label class="mt-4 flex items-center justify-between">
-            <span class="text-sm text-converse-text">Allow multiple answers</span>
+            <span class="text-sm text-riwaaq-text">Allow multiple answers</span>
             <button
                 type="button"
-                class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
-                :class="multiple ? 'bg-converse-sage' : 'bg-converse-border'"
+                class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-riwaaq-accent focus-visible:ring-offset-2 focus-visible:ring-offset-riwaaq-surface"
+                :class="multiple ? 'bg-riwaaq-sage' : 'bg-riwaaq-border'"
                 role="switch"
                 :aria-checked="multiple"
                 @click="multiple = !multiple"
@@ -98,7 +98,7 @@ async function submit() {
         <template #footer>
             <button
                 type="button"
-                class="w-full rounded bg-converse-accent py-1.5 text-sm text-white disabled:opacity-50"
+                class="w-full rounded bg-riwaaq-accent py-1.5 text-sm text-white disabled:opacity-50"
                 :disabled="!canSubmit || submitting"
                 @click="submit"
             >

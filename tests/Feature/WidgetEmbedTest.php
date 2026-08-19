@@ -1,7 +1,7 @@
 <?php
 
-use Converse\Chat\Tests\Fixtures\User;
 use Illuminate\Support\Facades\Blade;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function widgetEmbedUser(string $email): User
 {
@@ -23,8 +23,8 @@ it('renders <x-chat::widget /> as a bare fragment, not a full html document', fu
 
     expect($html)->not->toContain('<html')
         ->not->toContain('<body')
-        ->toContain('id="converse-chat-app"')
-        ->toContain('window.ConverseConfig')
+        ->toContain('id="riwaaq-chat-app"')
+        ->toContain('window.RiwaaqConfig')
         ->toContain('"embed":true');
 });
 
@@ -33,6 +33,6 @@ it('does not duplicate the asset script tag when the widget is included more tha
 
     $html = Blade::render('<x-chat::widget /><x-chat::widget />');
 
-    expect(substr_count($html, 'id="converse-chat-app"'))->toBe(1)
+    expect(substr_count($html, 'id="riwaaq-chat-app"'))->toBe(1)
         ->and(substr_count($html, '/app.js'))->toBe(1);
 });

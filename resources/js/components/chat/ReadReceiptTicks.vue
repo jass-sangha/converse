@@ -5,7 +5,7 @@ defineProps({
 </script>
 
 <template>
-    <span class="cv-read-receipt-ticks ml-1 inline-flex shrink-0 items-center" :class="status === 'read' ? 'text-converse-info' : 'text-converse-tick'">
+    <span class="chat-read-receipt-ticks ml-1 inline-flex shrink-0 items-center" :class="status === 'read' ? 'text-riwaaq-info' : 'text-riwaaq-tick'">
         <svg v-if="status === 'sending'" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="8.5" />
             <path d="M12 7.5V12l3 2" />

@@ -1,12 +1,12 @@
 <?php
 
-namespace Converse\Chat\Http\Resources;
+namespace Riwaaq\Chat\Http\Resources;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\UserSettingsServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
 
 class ChatUserResource extends JsonResource
 {

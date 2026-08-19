@@ -1,26 +1,26 @@
 <?php
 
-use Converse\Chat\Http\Controllers\AttachmentController;
-use Converse\Chat\Http\Controllers\BlockedUserController;
-use Converse\Chat\Http\Controllers\CallController;
-use Converse\Chat\Http\Controllers\ChatListController;
-use Converse\Chat\Http\Controllers\ConversationController;
-use Converse\Chat\Http\Controllers\EventRsvpController;
-use Converse\Chat\Http\Controllers\LinkPreviewController;
-use Converse\Chat\Http\Controllers\MessageController;
-use Converse\Chat\Http\Controllers\MessageReactionController;
-use Converse\Chat\Http\Controllers\MessageReceiptController;
-use Converse\Chat\Http\Controllers\NotificationController;
-use Converse\Chat\Http\Controllers\ParticipantController;
-use Converse\Chat\Http\Controllers\PinnedMessageController;
-use Converse\Chat\Http\Controllers\PollVoteController;
-use Converse\Chat\Http\Controllers\PresenceController;
-use Converse\Chat\Http\Controllers\ProfileController;
-use Converse\Chat\Http\Controllers\StarredMessageController;
-use Converse\Chat\Http\Controllers\TypingController;
-use Converse\Chat\Http\Controllers\UserSearchController;
 use Illuminate\Broadcasting\BroadcastController;
 use Illuminate\Support\Facades\Route;
+use Riwaaq\Chat\Http\Controllers\AttachmentController;
+use Riwaaq\Chat\Http\Controllers\BlockedUserController;
+use Riwaaq\Chat\Http\Controllers\CallController;
+use Riwaaq\Chat\Http\Controllers\ChatListController;
+use Riwaaq\Chat\Http\Controllers\ConversationController;
+use Riwaaq\Chat\Http\Controllers\EventRsvpController;
+use Riwaaq\Chat\Http\Controllers\LinkPreviewController;
+use Riwaaq\Chat\Http\Controllers\MessageController;
+use Riwaaq\Chat\Http\Controllers\MessageReactionController;
+use Riwaaq\Chat\Http\Controllers\MessageReceiptController;
+use Riwaaq\Chat\Http\Controllers\NotificationController;
+use Riwaaq\Chat\Http\Controllers\ParticipantController;
+use Riwaaq\Chat\Http\Controllers\PinnedMessageController;
+use Riwaaq\Chat\Http\Controllers\PollVoteController;
+use Riwaaq\Chat\Http\Controllers\PresenceController;
+use Riwaaq\Chat\Http\Controllers\ProfileController;
+use Riwaaq\Chat\Http\Controllers\StarredMessageController;
+use Riwaaq\Chat\Http\Controllers\TypingController;
+use Riwaaq\Chat\Http\Controllers\UserSearchController;
 
 Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
     ->prefix(config('chat.route_prefix', 'api/chat'))

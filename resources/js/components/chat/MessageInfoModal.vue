@@ -58,79 +58,79 @@ function formatTime(at) {
 </script>
 
 <template>
-    <Modal class="cv-message-info-modal" title="Message info" @close="emit('close')">
-        <p class="mb-3 text-xs text-converse-textMuted">
+    <Modal class="chat-message-info-modal" title="Message info" @close="emit('close')">
+        <p class="mb-3 text-xs text-riwaaq-textMuted">
             Sent {{ formatTime(message.created_at) }}
         </p>
 
-        <p v-if="loading" class="text-sm text-converse-textMuted">Loading&hellip;</p>
+        <p v-if="loading" class="text-sm text-riwaaq-textMuted">Loading&hellip;</p>
 
         <template v-else-if="isCall">
-            <h3 class="mb-1 text-xs font-medium uppercase text-converse-textMuted">
+            <h3 class="mb-1 text-xs font-medium uppercase text-riwaaq-textMuted">
                 Joined the call ({{ callParticipants.length }})
             </h3>
             <ul class="flex flex-col gap-1">
                 <li v-for="p in callParticipants" :key="`${p.type}-${p.id}`" class="flex items-center gap-3 py-1">
                     <Avatar :name="get(p).name" :avatar-url="get(p).avatar_url" :size="36" />
-                    <span class="min-w-0 flex-1 truncate text-sm text-converse-text">{{ get(p).name }}</span>
+                    <span class="min-w-0 flex-1 truncate text-sm text-riwaaq-text">{{ get(p).name }}</span>
                 </li>
             </ul>
-            <p v-if="!callParticipants.length" class="text-sm text-converse-textMuted">No one else joined.</p>
+            <p v-if="!callParticipants.length" class="text-sm text-riwaaq-textMuted">No one else joined.</p>
         </template>
 
         <template v-else>
             <template v-if="isGroup">
                 <div v-if="readRows.length" class="mb-3">
-                    <h3 class="mb-1 flex items-center gap-1 text-xs font-medium uppercase text-converse-textMuted">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="text-converse-accent"><path d="M18 7 9.5 15.5 5 11l1.4-1.4 3.1 3.1L16.6 5.6Zm-5 0L8.5 11.5 5 8l1.4-1.4L8.5 8.7l3.1-3.1Z"/></svg>
+                    <h3 class="mb-1 flex items-center gap-1 text-xs font-medium uppercase text-riwaaq-textMuted">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="text-riwaaq-accent"><path d="M18 7 9.5 15.5 5 11l1.4-1.4 3.1 3.1L16.6 5.6Zm-5 0L8.5 11.5 5 8l1.4-1.4L8.5 8.7l3.1-3.1Z"/></svg>
                         Read by
                     </h3>
                     <ul class="flex flex-col gap-1">
                         <li v-for="row in readRows" :key="`read-${row.chatable_type}-${row.chatable_id}`" class="flex items-center gap-3 py-1">
                             <Avatar :name="name(row)" :avatar-url="avatarUrl(row)" :size="36" />
-                            <span class="min-w-0 flex-1 truncate text-sm text-converse-text">{{ name(row) }}</span>
-                            <span class="shrink-0 text-xs text-converse-textMuted">{{ formatTime(row.read_at) }}</span>
+                            <span class="min-w-0 flex-1 truncate text-sm text-riwaaq-text">{{ name(row) }}</span>
+                            <span class="shrink-0 text-xs text-riwaaq-textMuted">{{ formatTime(row.read_at) }}</span>
                         </li>
                     </ul>
                 </div>
 
                 <div v-if="deliveredRows.length" class="mb-3">
-                    <h3 class="mb-1 flex items-center gap-1 text-xs font-medium uppercase text-converse-textMuted">
+                    <h3 class="mb-1 flex items-center gap-1 text-xs font-medium uppercase text-riwaaq-textMuted">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 7 9.5 15.5 5 11l1.4-1.4 3.1 3.1L16.6 5.6Zm-5 0L8.5 11.5 5 8l1.4-1.4L8.5 8.7l3.1-3.1Z"/></svg>
                         Delivered to
                     </h3>
                     <ul class="flex flex-col gap-1">
                         <li v-for="row in deliveredRows" :key="`delivered-${row.chatable_type}-${row.chatable_id}`" class="flex items-center gap-3 py-1">
                             <Avatar :name="name(row)" :avatar-url="avatarUrl(row)" :size="36" />
-                            <span class="min-w-0 flex-1 truncate text-sm text-converse-text">{{ name(row) }}</span>
-                            <span class="shrink-0 text-xs text-converse-textMuted">{{ formatTime(row.delivered_at) }}</span>
+                            <span class="min-w-0 flex-1 truncate text-sm text-riwaaq-text">{{ name(row) }}</span>
+                            <span class="shrink-0 text-xs text-riwaaq-textMuted">{{ formatTime(row.delivered_at) }}</span>
                         </li>
                     </ul>
                 </div>
 
                 <div v-if="pendingRows.length">
-                    <h3 class="mb-1 text-xs font-medium uppercase text-converse-textMuted">Pending</h3>
+                    <h3 class="mb-1 text-xs font-medium uppercase text-riwaaq-textMuted">Pending</h3>
                     <ul class="flex flex-col gap-1">
                         <li v-for="row in pendingRows" :key="`pending-${row.chatable_type}-${row.chatable_id}`" class="flex items-center gap-3 py-1">
                             <Avatar :name="name(row)" :avatar-url="avatarUrl(row)" :size="36" />
-                            <span class="min-w-0 flex-1 truncate text-sm text-converse-text">{{ name(row) }}</span>
+                            <span class="min-w-0 flex-1 truncate text-sm text-riwaaq-text">{{ name(row) }}</span>
                         </li>
                     </ul>
                 </div>
 
-                <p v-if="!details.length" class="text-sm text-converse-textMuted">No other participants yet.</p>
+                <p v-if="!details.length" class="text-sm text-riwaaq-textMuted">No other participants yet.</p>
             </template>
 
             <template v-else>
                 <p v-if="readRows.length" class="flex items-center justify-between py-1 text-sm">
-                    <span class="text-converse-text">Read</span>
-                    <span class="text-converse-textMuted">{{ formatTime(readRows[0].read_at) }}</span>
+                    <span class="text-riwaaq-text">Read</span>
+                    <span class="text-riwaaq-textMuted">{{ formatTime(readRows[0].read_at) }}</span>
                 </p>
                 <p v-if="deliveredRows.length || readRows.length" class="flex items-center justify-between py-1 text-sm">
-                    <span class="text-converse-text">Delivered</span>
-                    <span class="text-converse-textMuted">{{ formatTime((deliveredRows[0] ?? readRows[0])?.delivered_at ?? readRows[0]?.read_at) }}</span>
+                    <span class="text-riwaaq-text">Delivered</span>
+                    <span class="text-riwaaq-textMuted">{{ formatTime((deliveredRows[0] ?? readRows[0])?.delivered_at ?? readRows[0]?.read_at) }}</span>
                 </p>
-                <p v-if="!details.length" class="text-sm text-converse-textMuted">Not delivered yet.</p>
+                <p v-if="!details.length" class="text-sm text-riwaaq-textMuted">Not delivered yet.</p>
             </template>
         </template>
     </Modal>

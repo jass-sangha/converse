@@ -1,15 +1,15 @@
 <?php
 
-namespace Converse\Chat\Repositories;
+namespace Riwaaq\Chat\Repositories;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ConverseLimitsInterface;
-use Converse\Chat\Contracts\MessageRepositoryInterface;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Models\MessageDeletion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\MessageRepositoryInterface;
+use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\MessageDeletion;
 
 class MessageRepository implements MessageRepositoryInterface
 {
@@ -115,7 +115,7 @@ class MessageRepository implements MessageRepositoryInterface
      */
     public function hiddenByPlanCount(Conversation $conversation): int
     {
-        $days = app(ConverseLimitsInterface::class)->historyDays();
+        $days = app(RiwaaqLimitsInterface::class)->historyDays();
 
         if ($days === null) {
             return 0;

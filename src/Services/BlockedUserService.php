@@ -1,12 +1,12 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\BlockedUserServiceInterface;
-use Converse\Chat\Models\BlockedUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\BlockedUserServiceInterface;
+use Riwaaq\Chat\Models\BlockedUser;
 
 class BlockedUserService implements BlockedUserServiceInterface
 {

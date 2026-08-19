@@ -8,8 +8,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | Defaults for this package on its own. `null` means unlimited. These are
-    | always what's in effect unless the `converse-pro` add-on is installed —
-    | see ConverseLimitsInterface / ConverseLimits for the extension point
+    | always what's in effect unless the `riwaaq-pro` add-on is installed —
+    | see RiwaaqLimitsInterface / RiwaaqLimits for the extension point
     | that lets it override these values, and the "Extension point" section
     | of the README for how to build against it.
     |

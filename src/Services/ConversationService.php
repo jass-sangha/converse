@@ -1,21 +1,21 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ConversationLimitServiceInterface;
-use Converse\Chat\Contracts\ConversationRepositoryInterface;
-use Converse\Chat\Contracts\ConversationServiceInterface;
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Events\ConversationCreated;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\ConversationParticipant;
-use Converse\Chat\Traits\SendsSystemMessages;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ConversationLimitServiceInterface;
+use Riwaaq\Chat\Contracts\ConversationRepositoryInterface;
+use Riwaaq\Chat\Contracts\ConversationServiceInterface;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Events\ConversationCreated;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\ConversationParticipant;
+use Riwaaq\Chat\Traits\SendsSystemMessages;
 
 class ConversationService implements ConversationServiceInterface
 {

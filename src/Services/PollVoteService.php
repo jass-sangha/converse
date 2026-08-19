@@ -1,14 +1,14 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Contracts\PollVoteServiceInterface;
-use Converse\Chat\Events\PollVoted;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Models\PollVote;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Riwaaq\Chat\Contracts\PollVoteServiceInterface;
+use Riwaaq\Chat\Events\PollVoted;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\PollVote;
 
 class PollVoteService implements PollVoteServiceInterface
 {

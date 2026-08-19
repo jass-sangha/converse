@@ -47,22 +47,22 @@ const statusLabel = computed(() => {
         v-if="visible"
         type="button"
         title="Return to call"
-        class="cv-animate-pop-in fixed left-1/2 z-[70] flex -translate-x-1/2 items-center gap-3 rounded-full border border-converse-border bg-converse-surface py-2.5 pl-3.5 pr-2.5 shadow-lg top-[calc(max(env(safe-area-inset-top),8px)+52px)] sm:left-24 sm:top-auto sm:bottom-6 sm:translate-x-0"
+        class="chat-animate-pop-in fixed left-1/2 z-[70] flex -translate-x-1/2 items-center gap-3 rounded-full border border-riwaaq-border bg-riwaaq-surface py-2.5 pl-3.5 pr-2.5 shadow-lg top-[calc(max(env(safe-area-inset-top),8px)+52px)] sm:left-24 sm:top-auto sm:bottom-6 sm:translate-x-0"
         @click="restore"
     >
-        <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-converse-accent" />
+        <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-riwaaq-accent" />
         <span class="flex min-w-0 items-baseline gap-2">
-            <span class="truncate text-sm font-bold text-converse-text">{{
+            <span class="truncate text-sm font-bold text-riwaaq-text">{{
                 label
             }}</span>
             <span
-                class="shrink-0 text-xs font-medium tabular-nums text-converse-textMuted"
+                class="shrink-0 text-xs font-medium tabular-nums text-riwaaq-textMuted"
                 >{{ statusLabel }}</span
             >
         </span>
         <span
             title="End call"
-            class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-converse-danger text-white"
+            class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-riwaaq-danger text-white"
             @click.stop="endCall()"
         >
             <svg

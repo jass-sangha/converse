@@ -30,9 +30,9 @@ const detailLabel = computed(() =>
 </script>
 
 <template>
-    <div class="cv-call-message flex items-center gap-2.5 py-0.5">
+    <div class="chat-call-message flex items-center gap-2.5 py-0.5">
         <span
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-converse-surfaceHover text-converse-sage"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-riwaaq-surfaceHover text-riwaaq-sage"
         >
             <svg
                 v-if="isVideo"
@@ -65,10 +65,10 @@ const detailLabel = computed(() =>
             </svg>
         </span>
         <span class="min-w-0">
-            <span class="block text-sm font-medium text-converse-text pr-4">{{
+            <span class="block text-sm font-medium text-riwaaq-text pr-4">{{
                 label
             }}</span>
-            <span class="block text-xs text-converse-textMuted">{{
+            <span class="block text-xs text-riwaaq-textMuted">{{
                 detailLabel
             }}</span>
         </span>

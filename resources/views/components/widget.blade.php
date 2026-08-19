@@ -7,10 +7,10 @@
       explicit CSS height (e.g. `<div style="height: 640px">`), otherwise it
       collapses to zero height.
     - Only one instance is supported per page (it mounts to a fixed element id).
-      For a full standalone page instead, use the converse.chat.page route.
+      For a full standalone page instead, use the riwaaq.chat.page route.
 --}}
 @php
-    $chatConfig = \Converse\Chat\Support\ChatConfig::build(auth()->user(), embed: true);
-    $themeOverrideVersion = \Converse\Chat\Support\ChatConfig::themeOverrideVersion();
+    $chatConfig = \Riwaaq\Chat\Support\ChatConfig::build(auth()->user(), embed: true);
+    $themeOverrideVersion = \Riwaaq\Chat\Support\ChatConfig::themeOverrideVersion();
 @endphp
 @include('chat::partials.assets', ['chatConfig' => $chatConfig, 'themeOverrideVersion' => $themeOverrideVersion])

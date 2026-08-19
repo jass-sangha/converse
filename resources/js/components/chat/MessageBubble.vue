@@ -210,7 +210,7 @@ function onBubblePointerDown(event) {
     if (props.message.deleted_for_everyone) return;
     if (
         event.target.closest(
-            "button, input, a, .cv-message-bubble__reaction-picker, .cv-message-bubble__menu",
+            "button, input, a, .chat-message-bubble__reaction-picker, .chat-message-bubble__menu",
         )
     )
         return;
@@ -463,7 +463,7 @@ function onMenuAction(key) {
     <div
         v-else
         ref="root"
-        class="cv-message-bubble group flex items-center gap-1.5"
+        class="chat-message-bubble group flex items-center gap-1.5"
         :class="isOwn ? 'justify-end' : 'justify-start'"
         style="touch-action: pan-y"
         :style="
@@ -483,13 +483,13 @@ function onMenuAction(key) {
         <div
             v-if="!message.deleted_for_everyone && isOwn"
             ref="actionsEl"
-            class="cv-message-bubble__actions relative flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            class="chat-message-bubble__actions relative flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
             :class="{ 'opacity-100': showMenu || showReactionPicker }"
         >
             <button
                 type="button"
                 title="React"
-                class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
+                class="flex h-7 w-7 items-center justify-center rounded-full text-riwaaq-textDim hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
                 @click.stop="toggleReactionPicker"
             >
                 <svg
@@ -510,7 +510,7 @@ function onMenuAction(key) {
             <button
                 type="button"
                 title="More"
-                class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
+                class="flex h-7 w-7 items-center justify-center rounded-full text-riwaaq-textDim hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
                 @click.stop="toggleMenu"
             >
                 <svg
@@ -527,14 +527,14 @@ function onMenuAction(key) {
 
             <div
                 v-if="showReactionPicker && !showFullEmojiPicker"
-                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute right-0 z-20 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-cv-lg"
+                class="chat-message-bubble__reaction-picker chat-animate-pop-in absolute right-0 z-20 flex items-center gap-0.5 rounded-full border border-riwaaq-border bg-riwaaq-surface p-1.5 shadow-chat-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
             >
                 <button
                     v-for="emoji in QUICK_REACTIONS"
                     :key="emoji"
                     type="button"
-                    class="flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-converse-surfaceHover"
+                    class="flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-riwaaq-surfaceHover"
                     @click.stop="onPickReaction(emoji)"
                 >
                     {{ emoji }}
@@ -542,7 +542,7 @@ function onMenuAction(key) {
                 <button
                     type="button"
                     title="More reactions"
-                    class="flex h-8 w-8 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    class="flex h-8 w-8 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                     @click.stop="showFullEmojiPicker = true"
                 >
                     <svg
@@ -558,7 +558,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showReactionPicker && showFullEmojiPicker"
-                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute right-0 z-20"
+                class="chat-message-bubble__reaction-picker chat-animate-pop-in absolute right-0 z-20"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 @click.stop
             >
@@ -567,7 +567,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="cv-message-bubble__menu cv-animate-pop-in absolute right-0 z-20 w-[220px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-cv-lg"
+                class="chat-message-bubble__menu chat-animate-pop-in absolute right-0 z-20 w-[220px] overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 :style="{ maxHeight: popMax + 'px' }"
             >
@@ -575,11 +575,11 @@ function onMenuAction(key) {
                     v-for="item in visibleMenuItems"
                     :key="item.key"
                     type="button"
-                    class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left hover:bg-converse-surfaceHover"
+                    class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left hover:bg-riwaaq-surfaceHover"
                     :class="
                         item.danger
-                            ? 'text-converse-danger'
-                            : 'text-converse-text'
+                            ? 'text-riwaaq-danger'
+                            : 'text-riwaaq-text'
                     "
                     @click.stop="onMenuAction(item.key)"
                 >
@@ -607,21 +607,21 @@ function onMenuAction(key) {
         />
 
         <div
-            class="cv-message-bubble__content relative max-w-[min(55%,380px)] rounded-[20px] p-2 shadow-cv"
+            class="chat-message-bubble__content relative max-w-[min(55%,380px)] rounded-[20px] p-2 shadow-chat"
             :class="[
                 isOwn
-                    ? 'rounded-br-[8px] bg-converse-bubbleOut'
-                    : 'rounded-bl-[8px] bg-converse-bubbleIn',
+                    ? 'rounded-br-[8px] bg-riwaaq-bubbleOut'
+                    : 'rounded-bl-[8px] bg-riwaaq-bubbleIn',
                 message.reactions?.length ? 'mb-3' : '',
             ]"
         >
             <div
                 v-if="message.is_pinned || message.is_starred_by_me"
-                class="cv-message-bubble__badges absolute -top-2 -left-2 flex items-center gap-1"
+                class="chat-message-bubble__badges absolute -top-2 -left-2 flex items-center gap-1"
             >
                 <span
                     v-if="message.is_pinned"
-                    class="cv-message-bubble__pin-indicator flex h-5 w-5 items-center justify-center rounded-full bg-converse-surface text-converse-accent shadow-cv"
+                    class="chat-message-bubble__pin-indicator flex h-5 w-5 items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-accent shadow-chat"
                     title="Pinned"
                 >
                     <svg
@@ -637,7 +637,7 @@ function onMenuAction(key) {
                 </span>
                 <span
                     v-if="message.is_starred_by_me"
-                    class="cv-message-bubble__star-indicator flex h-5 w-5 items-center justify-center rounded-full bg-converse-surface text-converse-accent shadow-cv"
+                    class="chat-message-bubble__star-indicator flex h-5 w-5 items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-accent shadow-chat"
                     title="Starred"
                 >
                     <svg
@@ -662,7 +662,7 @@ function onMenuAction(key) {
 
             <p
                 v-if="message.deleted_for_everyone"
-                class="text-sm italic text-converse-textMuted"
+                class="text-sm italic text-riwaaq-textMuted"
             >
                 This message was deleted
             </p>
@@ -674,12 +674,12 @@ function onMenuAction(key) {
             />
 
             <div
-                class="cv-message-bubble__meta mt-1 flex items-center gap-2 text-[10px] text-converse-textMuted"
+                class="chat-message-bubble__meta mt-1 flex items-center gap-2 text-[10px] text-riwaaq-textMuted"
                 :class="showSenderInfo ? 'justify-between' : 'justify-end'"
             >
                 <span
                     v-if="showSenderInfo"
-                    class="truncate font-bold text-converse-sageText"
+                    class="truncate font-bold text-riwaaq-sageText"
                     >{{ sender.name }}</span
                 >
                 <span class="flex shrink-0 items-center gap-1">
@@ -692,7 +692,7 @@ function onMenuAction(key) {
                     <button
                         v-if="message.edited_at"
                         type="button"
-                        class="hover:text-converse-text"
+                        class="hover:text-riwaaq-text"
                         @click.stop="showEditHistory = true"
                     >
                         (edited)
@@ -711,13 +711,13 @@ function onMenuAction(key) {
 
             <p
                 v-if="copied"
-                class="absolute -bottom-8 right-1 rounded bg-converse-overlay/70 px-2 py-0.5 text-[10px] text-white"
+                class="absolute -bottom-8 right-1 rounded bg-riwaaq-overlay/70 px-2 py-0.5 text-[10px] text-white"
             >
                 Copied
             </p>
             <p
                 v-if="pinError"
-                class="cv-message-bubble__pin-error mt-1 text-xs text-converse-danger"
+                class="chat-message-bubble__pin-error mt-1 text-xs text-riwaaq-danger"
             >
                 {{ pinError }}
             </p>
@@ -726,13 +726,13 @@ function onMenuAction(key) {
         <div
             v-if="!message.deleted_for_everyone && !isOwn"
             ref="actionsEl"
-            class="cv-message-bubble__actions relative flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            class="chat-message-bubble__actions relative flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
             :class="{ 'opacity-100': showMenu || showReactionPicker }"
         >
             <button
                 type="button"
                 title="React"
-                class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
+                class="flex h-7 w-7 items-center justify-center rounded-full text-riwaaq-textDim hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
                 @click.stop="toggleReactionPicker"
             >
                 <svg
@@ -753,7 +753,7 @@ function onMenuAction(key) {
             <button
                 type="button"
                 title="More"
-                class="flex h-7 w-7 items-center justify-center rounded-full text-converse-textDim hover:bg-converse-surfaceHover hover:text-converse-accentText"
+                class="flex h-7 w-7 items-center justify-center rounded-full text-riwaaq-textDim hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
                 @click.stop="toggleMenu"
             >
                 <svg
@@ -770,14 +770,14 @@ function onMenuAction(key) {
 
             <div
                 v-if="showReactionPicker && !showFullEmojiPicker"
-                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute left-0 z-20 flex items-center gap-0.5 rounded-full border border-converse-border bg-converse-surface p-1.5 shadow-cv-lg"
+                class="chat-message-bubble__reaction-picker chat-animate-pop-in absolute left-0 z-20 flex items-center gap-0.5 rounded-full border border-riwaaq-border bg-riwaaq-surface p-1.5 shadow-chat-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
             >
                 <button
                     v-for="emoji in QUICK_REACTIONS"
                     :key="emoji"
                     type="button"
-                    class="flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-converse-surfaceHover"
+                    class="flex h-8 w-8 items-center justify-center rounded-full text-lg hover:bg-riwaaq-surfaceHover"
                     @click.stop="onPickReaction(emoji)"
                 >
                     {{ emoji }}
@@ -785,7 +785,7 @@ function onMenuAction(key) {
                 <button
                     type="button"
                     title="More reactions"
-                    class="flex h-8 w-8 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+                    class="flex h-8 w-8 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                     @click.stop="showFullEmojiPicker = true"
                 >
                     <svg
@@ -801,7 +801,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showReactionPicker && showFullEmojiPicker"
-                class="cv-message-bubble__reaction-picker cv-animate-pop-in absolute left-0 z-20"
+                class="chat-message-bubble__reaction-picker chat-animate-pop-in absolute left-0 z-20"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 @click.stop
             >
@@ -810,7 +810,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="cv-message-bubble__menu cv-animate-pop-in absolute left-0 z-20 w-[220px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-cv-lg"
+                class="chat-message-bubble__menu chat-animate-pop-in absolute left-0 z-20 w-[220px] overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 :style="{ maxHeight: popMax + 'px' }"
             >
@@ -818,11 +818,11 @@ function onMenuAction(key) {
                     v-for="item in visibleMenuItems"
                     :key="item.key"
                     type="button"
-                    class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left hover:bg-converse-surfaceHover"
+                    class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left hover:bg-riwaaq-surfaceHover"
                     :class="
                         item.danger
-                            ? 'text-converse-danger'
-                            : 'text-converse-text'
+                            ? 'text-riwaaq-danger'
+                            : 'text-riwaaq-text'
                     "
                     @click.stop="onMenuAction(item.key)"
                 >

@@ -52,12 +52,12 @@ async function removeMyReaction() {
 </script>
 
 <template>
-    <Modal class="cv-reaction-details-modal" title="Reactions" @close="emit('close')">
-        <div class="cv-reaction-details-modal__tabs mb-3 flex items-center gap-2 overflow-x-auto pb-1">
+    <Modal class="chat-reaction-details-modal" title="Reactions" @close="emit('close')">
+        <div class="chat-reaction-details-modal__tabs mb-3 flex items-center gap-2 overflow-x-auto pb-1">
             <button
                 type="button"
                 class="shrink-0 rounded-full px-3 py-1 text-sm font-medium"
-                :class="activeEmoji === 'all' ? 'bg-converse-accent/15 text-converse-accent' : 'bg-converse-surfaceHover text-converse-text'"
+                :class="activeEmoji === 'all' ? 'bg-riwaaq-accent/15 text-riwaaq-accent' : 'bg-riwaaq-surfaceHover text-riwaaq-text'"
                 @click="activeEmoji = 'all'"
             >
                 All {{ totalCount }}
@@ -67,19 +67,19 @@ async function removeMyReaction() {
                 :key="reaction.emoji"
                 type="button"
                 class="shrink-0 rounded-full px-3 py-1 text-sm font-medium"
-                :class="activeEmoji === reaction.emoji ? 'bg-converse-accent/15 text-converse-accent' : 'bg-converse-surfaceHover text-converse-text'"
+                :class="activeEmoji === reaction.emoji ? 'bg-riwaaq-accent/15 text-riwaaq-accent' : 'bg-riwaaq-surfaceHover text-riwaaq-text'"
                 @click="activeEmoji = reaction.emoji"
             >
                 {{ reaction.emoji }} {{ reaction.count }}
             </button>
         </div>
 
-        <p v-if="loading" class="text-sm text-converse-textMuted">Loading&hellip;</p>
+        <p v-if="loading" class="text-sm text-riwaaq-textMuted">Loading&hellip;</p>
 
-        <ul v-else class="cv-reaction-details-modal__list flex flex-col gap-1">
+        <ul v-else class="chat-reaction-details-modal__list flex flex-col gap-1">
             <li v-for="row in visibleRows" :key="`${row.emoji}-${row.chatable.type}-${row.chatable.id}`" class="flex items-center gap-3 py-1.5">
                 <Avatar :name="get(row.chatable).name" :avatar-url="get(row.chatable).avatar_url" :size="36" />
-                <span class="flex-1 truncate text-sm text-converse-text">{{ displayName(row.chatable) }}</span>
+                <span class="flex-1 truncate text-sm text-riwaaq-text">{{ displayName(row.chatable) }}</span>
                 <span class="text-lg">{{ row.emoji }}</span>
             </li>
         </ul>
@@ -87,7 +87,7 @@ async function removeMyReaction() {
         <template v-if="myReaction" #footer>
             <button
                 type="button"
-                class="w-full rounded py-2 text-sm font-medium text-converse-danger disabled:opacity-50"
+                class="w-full rounded py-2 text-sm font-medium text-riwaaq-danger disabled:opacity-50"
                 :disabled="removing"
                 @click="removeMyReaction"
             >

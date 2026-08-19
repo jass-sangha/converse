@@ -40,13 +40,13 @@ async function send() {
 </script>
 
 <template>
-    <Modal class="cv-forward-modal" title="Forward message" @close="emit('close')">
-        <ul class="cv-forward-modal__list max-h-72 overflow-y-auto">
+    <Modal class="chat-forward-modal" title="Forward message" @close="emit('close')">
+        <ul class="chat-forward-modal__list max-h-72 overflow-y-auto">
             <li
                 v-for="conversation in store.conversations"
                 :key="conversation.id"
-                class="cv-forward-modal__item flex cursor-pointer items-center gap-3 rounded px-2 py-2 hover:bg-converse-surfaceHover"
-                :class="{ 'bg-converse-bubbleOut': selected.includes(conversation.id) }"
+                class="chat-forward-modal__item flex cursor-pointer items-center gap-3 rounded px-2 py-2 hover:bg-riwaaq-surfaceHover"
+                :class="{ 'bg-riwaaq-bubbleOut': selected.includes(conversation.id) }"
                 @click="toggle(conversation.id)"
             >
                 <Avatar :name="displayName(conversation)" :avatar-url="conversation.avatar_url" :size="32" />
@@ -57,7 +57,7 @@ async function send() {
         <template #footer>
             <button
                 type="button"
-                class="cv-forward-modal__submit w-full rounded bg-converse-accent py-2 text-sm font-medium text-white disabled:opacity-50"
+                class="chat-forward-modal__submit w-full rounded bg-riwaaq-accent py-2 text-sm font-medium text-white disabled:opacity-50"
                 :disabled="!selected.length"
                 @click="send"
             >

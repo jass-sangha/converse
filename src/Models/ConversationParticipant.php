@@ -1,12 +1,12 @@
 <?php
 
-namespace Converse\Chat\Models;
+namespace Riwaaq\Chat\Models;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Enums\ParticipantRole;
-use Converse\Chat\Traits\BelongsToChatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Enums\ParticipantRole;
+use Riwaaq\Chat\Traits\BelongsToChatable;
 
 class ConversationParticipant extends Model
 {

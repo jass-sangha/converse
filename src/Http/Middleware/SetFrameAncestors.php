@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Http\Middleware;
+namespace Riwaaq\Chat\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Applied only to the full-page chat route (converse.chat.page) so it can be
+ * Applied only to the full-page chat route (riwaaq.chat.page) so it can be
  * deliberately embedded in an <iframe> — nothing else in the app sets a frame
  * policy today, so without this the route's embeddability is an accident of
  * absent headers rather than a guarantee.

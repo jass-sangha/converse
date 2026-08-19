@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Traits;
+namespace Riwaaq\Chat\Traits;
 
-use Converse\Chat\Enums\MessageType;
-use Converse\Chat\Events\MessageSent;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\Message;
+use Riwaaq\Chat\Enums\MessageType;
+use Riwaaq\Chat\Events\MessageSent;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Message;
 
 trait SendsSystemMessages
 {

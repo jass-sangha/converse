@@ -153,7 +153,7 @@ function onTouchEnd(event) {
 <template>
     <li
         :data-conversation-id="conversation.id"
-        class="cv-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3 hover:bg-converse-surfaceHover"
+        class="chat-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3 hover:bg-riwaaq-surfaceHover"
         @click="$emit('select', conversation.id)"
         @touchstart="onTouchStart"
         @touchend="onTouchEnd"
@@ -161,7 +161,7 @@ function onTouchEnd(event) {
     >
         <div
             v-if="active"
-            class="pointer-events-none absolute inset-0 rounded-[20px] bg-converse-accentTint"
+            class="pointer-events-none absolute inset-0 rounded-[20px] bg-riwaaq-accentTint"
         />
 
         <Avatar
@@ -172,14 +172,14 @@ function onTouchEnd(event) {
         />
         <span
             v-if="isOnline"
-            class="pointer-events-none absolute left-[33px] top-[33px] h-[13px] w-[13px] rounded-full border-[2.5px] border-converse-surface bg-converse-sage"
+            class="pointer-events-none absolute left-[33px] top-[33px] h-[13px] w-[13px] rounded-full border-[2.5px] border-riwaaq-surface bg-riwaaq-sage"
         />
 
         <div class="relative min-w-0 flex-1">
             <div class="flex items-baseline justify-between gap-2">
                 <span class="flex min-w-0 items-center gap-1">
                     <span
-                        class="truncate text-[14.5px] font-semibold text-converse-text"
+                        class="truncate text-[14.5px] font-semibold text-riwaaq-text"
                         >{{ displayName }}</span
                     >
                     <svg
@@ -188,7 +188,7 @@ function onTouchEnd(event) {
                         width="11"
                         height="11"
                         fill="currentColor"
-                        class="shrink-0 text-converse-danger"
+                        class="shrink-0 text-riwaaq-danger"
                         title="Blocked"
                     >
                         <path
@@ -198,13 +198,13 @@ function onTouchEnd(event) {
                 </span>
                 <span
                     v-if="lastActivityLabel"
-                    class="shrink-0 text-[11px] text-converse-textDim"
+                    class="shrink-0 text-[11px] text-riwaaq-textDim"
                     >{{ lastActivityLabel }}</span
                 >
             </div>
             <div class="mt-[3px] flex items-center justify-between gap-2">
                 <span
-                    class="flex min-w-0 items-center truncate text-[12.5px] text-converse-textMuted"
+                    class="flex min-w-0 items-center truncate text-[12.5px] text-riwaaq-textMuted"
                 >
                     <ReadReceiptTicks
                         v-if="
@@ -216,7 +216,7 @@ function onTouchEnd(event) {
                     <span class="truncate">{{ lastMessagePreview }}</span>
                 </span>
                 <span class="flex shrink-0 items-center gap-1">
-                    <span v-if="isMuted || isFavourited || isPinned" class="flex items-center gap-1 text-converse-textMuted">
+                    <span v-if="isMuted || isFavourited || isPinned" class="flex items-center gap-1 text-riwaaq-textMuted">
                         <svg
                             v-if="isMuted"
                             viewBox="0 0 24 24"
@@ -260,7 +260,7 @@ function onTouchEnd(event) {
 
                     <span
                         v-if="conversation.unread_count > 0"
-                        class="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-converse-accent px-1.5 text-[11px] font-bold text-converse-accentContrast"
+                        class="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-riwaaq-accent px-1.5 text-[11px] font-bold text-riwaaq-accentContrast"
                     >
                         {{ conversation.unread_count }}
                     </span>

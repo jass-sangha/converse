@@ -10,7 +10,7 @@ import { usePresence } from './composables/usePresence';
 import { useProfile } from './composables/useProfile';
 import { useBlockedUsers } from './composables/useBlockedUsers';
 
-const config = window.ConverseConfig ?? {};
+const config = window.RiwaaqConfig ?? {};
 
 setCurrentChatable(config.chatableType ?? null, config.chatableId ?? null);
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Contracts;
+namespace Riwaaq\Chat\Contracts;
 
-use Converse\Chat\Models\ChatList;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Riwaaq\Chat\Models\ChatList;
 
 interface ChatListServiceInterface
 {

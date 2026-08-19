@@ -1,9 +1,9 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Contracts\MediaProcessor;
-use Converse\Chat\Models\MessageAttachment;
+use Riwaaq\Chat\Contracts\MediaProcessor;
+use Riwaaq\Chat\Models\MessageAttachment;
 
 /**
  * No-op default binding. The package ships zero dependency on ffmpeg/getid3/image

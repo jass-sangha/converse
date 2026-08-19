@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Policies;
+namespace Riwaaq\Chat\Policies;
 
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Enums\ConversationType;
-use Converse\Chat\Enums\MessageType;
-use Converse\Chat\Enums\ParticipantRole;
-use Converse\Chat\Models\Message;
 use Illuminate\Database\Eloquent\Model;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Enums\ConversationType;
+use Riwaaq\Chat\Enums\MessageType;
+use Riwaaq\Chat\Enums\ParticipantRole;
+use Riwaaq\Chat\Models\Message;
 
 class MessagePolicy
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Contracts\EventRsvpServiceInterface;
-use Converse\Chat\Events\EventRsvped;
-use Converse\Chat\Models\EventRsvp;
-use Converse\Chat\Models\Message;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Riwaaq\Chat\Contracts\EventRsvpServiceInterface;
+use Riwaaq\Chat\Events\EventRsvped;
+use Riwaaq\Chat\Models\EventRsvp;
+use Riwaaq\Chat\Models\Message;
 
 class EventRsvpService implements EventRsvpServiceInterface
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Converse\Chat\Events;
+namespace Riwaaq\Chat\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;

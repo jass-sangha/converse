@@ -16,7 +16,7 @@ const viewerItems = props.message.attachments.map((attachment) => ({
 </script>
 
 <template>
-    <div class="cv-sticker-message flex flex-wrap gap-1">
+    <div class="chat-sticker-message flex flex-wrap gap-1">
         <button
             v-for="(attachment, index) in message.attachments"
             :key="attachment.id"

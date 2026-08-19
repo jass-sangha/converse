@@ -5,7 +5,7 @@ defineProps({
 </script>
 
 <template>
-    <div class="cv-audio-message">
+    <div class="chat-audio-message">
         <audio
             v-for="attachment in message.attachments"
             :key="attachment.id"

@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Contracts\UserSettingsServiceInterface;
-use Converse\Chat\Models\UserSetting;
 use Illuminate\Database\Eloquent\Model;
+use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
+use Riwaaq\Chat\Models\UserSetting;
 
 class UserSettingsService implements UserSettingsServiceInterface
 {

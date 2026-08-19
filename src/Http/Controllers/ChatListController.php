@@ -1,12 +1,12 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\ChatListServiceInterface;
-use Converse\Chat\Http\Requests\StoreChatListRequest;
-use Converse\Chat\Http\Resources\ChatListResource;
-use Converse\Chat\Models\ChatList;
 use Illuminate\Http\Request;
+use Riwaaq\Chat\Contracts\ChatListServiceInterface;
+use Riwaaq\Chat\Http\Requests\StoreChatListRequest;
+use Riwaaq\Chat\Http\Resources\ChatListResource;
+use Riwaaq\Chat\Models\ChatList;
 
 class ChatListController extends Controller
 {

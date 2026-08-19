@@ -18,16 +18,16 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
-    <div class="cv-modal-backdrop cv-animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-converse-overlay/50" @click.self="emit('close')">
-        <div class="cv-modal-panel cv-animate-scale-in flex max-h-[85vh] w-full max-w-md flex-col rounded-cv bg-converse-surface shadow-xl">
-            <div class="cv-modal-header flex items-center justify-between border-b border-converse-border px-4 py-3">
-                <h2 class="font-medium text-converse-text">{{ title }}</h2>
-                <button type="button" class="cv-modal-close text-converse-textMuted hover:text-converse-text" @click="emit('close')">×</button>
+    <div class="chat-modal-backdrop chat-animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-riwaaq-overlay/50" @click.self="emit('close')">
+        <div class="chat-modal-panel chat-animate-scale-in flex max-h-[85vh] w-full max-w-md flex-col rounded-chat bg-riwaaq-surface shadow-xl">
+            <div class="chat-modal-header flex items-center justify-between border-b border-riwaaq-border px-4 py-3">
+                <h2 class="font-medium text-riwaaq-text">{{ title }}</h2>
+                <button type="button" class="chat-modal-close text-riwaaq-textMuted hover:text-riwaaq-text" @click="emit('close')">×</button>
             </div>
-            <div class="cv-modal-body flex-1 overflow-y-auto p-4">
+            <div class="chat-modal-body flex-1 overflow-y-auto p-4">
                 <slot />
             </div>
-            <div v-if="$slots.footer" class="cv-modal-footer border-t border-converse-border px-4 py-3">
+            <div v-if="$slots.footer" class="chat-modal-footer border-t border-riwaaq-border px-4 py-3">
                 <slot name="footer" />
             </div>
         </div>

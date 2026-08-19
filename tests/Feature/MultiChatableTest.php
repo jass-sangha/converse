@@ -1,7 +1,7 @@
 <?php
 
-use Converse\Chat\Tests\Fixtures\Agent;
-use Converse\Chat\Tests\Fixtures\User;
+use Riwaaq\Chat\Tests\Fixtures\Agent;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 it('lets a User and an Agent share a private conversation, even when their ids collide', function () {
     // Deliberately force id collisions between the two tables: User #1 and Agent #1

@@ -1,17 +1,17 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\MessageServiceInterface;
-use Converse\Chat\Http\Requests\ForwardMessageRequest;
-use Converse\Chat\Http\Requests\StoreMessageRequest;
-use Converse\Chat\Http\Requests\UpdateMessageRequest;
-use Converse\Chat\Http\Resources\MessageEditResource;
-use Converse\Chat\Http\Resources\MessageResource;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Riwaaq\Chat\Contracts\MessageServiceInterface;
+use Riwaaq\Chat\Http\Requests\ForwardMessageRequest;
+use Riwaaq\Chat\Http\Requests\StoreMessageRequest;
+use Riwaaq\Chat\Http\Requests\UpdateMessageRequest;
+use Riwaaq\Chat\Http\Resources\MessageEditResource;
+use Riwaaq\Chat\Http\Resources\MessageResource;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Message;
 
 class MessageController extends Controller
 {

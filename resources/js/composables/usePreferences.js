@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue';
 
-const PREFIX = 'converse:';
+const PREFIX = 'riwaaq:';
 
 function read(key, fallback) {
     try {
@@ -34,7 +34,7 @@ function applyTheme(value) {
     // toggling theme never touches the host page's own <html> element when the
     // widget is embedded via <x-chat::widget /> — see theme.css's matching scope.
     if (typeof document !== 'undefined') {
-        document.getElementById('converse-chat-app')?.setAttribute('data-theme', value);
+        document.getElementById('riwaaq-chat-app')?.setAttribute('data-theme', value);
     }
 }
 

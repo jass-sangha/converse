@@ -1,5 +1,5 @@
 {
-    "name": "jass-sangha/converse",
+    "name": "jass-sangha/riwaaq",
     "description": "A WhatsApp-style real-time chat backend package for Laravel — conversations, groups, media, reactions, receipts, typing, presence, and more.",
     "type": "library",
     "license": "MIT",
@@ -27,19 +27,19 @@
     },
     "autoload": {
         "psr-4": {
-            "Converse\\Chat\\": "src/",
-            "Converse\\Chat\\Database\\Factories\\": "database/factories/"
+            "Riwaaq\\Chat\\": "src/",
+            "Riwaaq\\Chat\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Converse\\Chat\\Tests\\": "tests/"
+            "Riwaaq\\Chat\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Converse\\Chat\\ChatServiceProvider"
+                "Riwaaq\\Chat\\ChatServiceProvider"
             ]
         }
     },

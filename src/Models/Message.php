@@ -1,16 +1,16 @@
 <?php
 
-namespace Converse\Chat\Models;
+namespace Riwaaq\Chat\Models;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ConverseLimitsInterface;
-use Converse\Chat\Enums\MessageType;
-use Converse\Chat\Traits\BelongsToChatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
+use Riwaaq\Chat\Enums\MessageType;
+use Riwaaq\Chat\Traits\BelongsToChatable;
 
 class Message extends Model
 {
@@ -122,7 +122,7 @@ class Message extends Model
      */
     public function scopeVisibleWithinPlan(Builder $query): Builder
     {
-        $days = app(ConverseLimitsInterface::class)->historyDays();
+        $days = app(RiwaaqLimitsInterface::class)->historyDays();
 
         if ($days === null) {
             return $query;

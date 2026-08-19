@@ -1,9 +1,9 @@
 <?php
 
-namespace Converse\Chat\Console\Commands;
+namespace Riwaaq\Chat\Console\Commands;
 
-use Converse\Chat\Models\Message;
 use Illuminate\Console\Command;
+use Riwaaq\Chat\Models\Message;
 
 class PruneExpiredMessagesCommand extends Command
 {

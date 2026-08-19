@@ -1,6 +1,6 @@
 <?php
 
-namespace Converse\Chat\Enums;
+namespace Riwaaq\Chat\Enums;
 
 enum ParticipantRole: string
 {

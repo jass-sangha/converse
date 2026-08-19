@@ -63,9 +63,9 @@ function pick(option) {
 </script>
 
 <template>
-    <div ref="root" data-menu-root="1" class="cv-setting-row relative">
+    <div ref="root" data-menu-root="1" class="chat-setting-row relative">
         <div
-            class="flex w-full cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-converse-surfaceHover"
+            class="flex w-full cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-riwaaq-surfaceHover"
             role="switch"
             :aria-checked="isOn"
             @click="onRowClick"
@@ -76,24 +76,24 @@ function pick(option) {
                 width="20"
                 height="20"
                 fill="currentColor"
-                class="shrink-0 text-converse-textMuted"
+                class="shrink-0 text-riwaaq-textMuted"
             >
                 <path :d="icon" />
             </svg>
             <span class="min-w-0 flex-1">
                 <span
-                    class="block text-[14px] font-semibold text-converse-text"
+                    class="block text-[14px] font-semibold text-riwaaq-text"
                     >{{ label }}</span
                 >
                 <span
                     v-if="hint"
-                    class="mt-0.5 block text-xs text-converse-textMuted"
+                    class="mt-0.5 block text-xs text-riwaaq-textMuted"
                     >{{ hint }}</span
                 >
             </span>
             <span
                 class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors"
-                :class="isOn ? 'bg-converse-sage' : 'bg-converse-border'"
+                :class="isOn ? 'bg-riwaaq-sage' : 'bg-riwaaq-border'"
             >
                 <span
                     class="absolute top-[3px] h-[21px] w-[21px] rounded-full bg-white shadow transition-[left] duration-150 ease-out"
@@ -104,13 +104,13 @@ function pick(option) {
 
         <div
             v-if="isOn && showMenu"
-            class="cv-animate-pop-in absolute right-4 z-20 w-[180px] overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
+            class="chat-animate-pop-in absolute right-4 z-20 w-[180px] overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 shadow-lg"
             :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
             :style="{ maxHeight: maxHeight + 'px' }"
         >
             <p
                 v-if="menuTitle"
-                class="px-3 pb-2 pt-1.5 text-[10.5px] font-bold uppercase tracking-wide text-converse-textDim"
+                class="px-3 pb-2 pt-1.5 text-[10.5px] font-bold uppercase tracking-wide text-riwaaq-textDim"
             >
                 {{ menuTitle }}
             </p>
@@ -118,7 +118,7 @@ function pick(option) {
                 v-for="option in options"
                 :key="option.key"
                 type="button"
-                class="block w-full rounded-full px-3 py-2.5 text-left text-[13px] font-medium text-converse-text hover:bg-converse-surfaceHover"
+                class="block w-full rounded-full px-3 py-2.5 text-left text-[13px] font-medium text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="pick(option)"
             >
                 {{ option.label }}

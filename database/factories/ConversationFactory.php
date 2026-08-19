@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Database\Factories;
+namespace Riwaaq\Chat\Database\Factories;
 
-use Converse\Chat\Enums\ConversationType;
-use Converse\Chat\Models\Conversation;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Riwaaq\Chat\Enums\ConversationType;
+use Riwaaq\Chat\Models\Conversation;
 
 class ConversationFactory extends Factory
 {

@@ -1,4 +1,4 @@
-# Installing `jass-sangha/converse` via Composer
+# Installing `jass-sangha/riwaaq` via Composer
 
 Private repo — Composer needs a repository entry plus credentials.
 
@@ -9,18 +9,18 @@ Private repo — Composer needs a repository entry plus credentials.
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/jass-sangha/converse.git"
+            "url": "https://github.com/jass-sangha/riwaaq.git"
         }
     ]
 }
 ```
 
-Use an SSH URL instead (`git@github.com:jass-sangha/converse.git`) if you'd rather authenticate via your existing SSH key — skip to step 3 if so.
+Use an SSH URL instead (`git@github.com:jass-sangha/riwaaq.git`) if you'd rather authenticate via your existing SSH key — skip to step 3 if so.
 
 ## 2. Authenticate (HTTPS + token)
 
 1. Create a token at github.com/settings/tokens.
-    - **Fine-grained (recommended):** scope to `jass-sangha` → `converse` only, Contents: Read-only.
+    - **Fine-grained (recommended):** scope to `jass-sangha` → `riwaaq` only, Contents: Read-only.
     - **Classic:** check `repo` scope (broader — grants access to all your private repos).
 2. Give it to Composer:
 
@@ -41,7 +41,7 @@ Use an SSH URL instead (`git@github.com:jass-sangha/converse.git`) if you'd rath
 ## 3. Require the package
 
 ```bash
-composer require jass-sangha/converse:dev-main
+composer require jass-sangha/riwaaq:dev-main
 ```
 
 `dev-main` tracks the main branch since there's no tagged release yet. Once you tag one (`git tag v1.0.0 && git push origin v1.0.0`), consumers can use `^1.0`.

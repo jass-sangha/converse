@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Contracts\PinnedMessageServiceInterface;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Models\PinnedMessage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Riwaaq\Chat\Contracts\PinnedMessageServiceInterface;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\PinnedMessage;
 
 class PinnedMessageService implements PinnedMessageServiceInterface
 {

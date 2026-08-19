@@ -25,9 +25,9 @@ const segments = computed(() => {
 </script>
 
 <template>
-    <div class="cv-text-message">
+    <div class="chat-text-message">
         <p
-            class="cv-text-message__body whitespace-pre-wrap break-words text-sm"
+            class="chat-text-message__body whitespace-pre-wrap break-words text-sm"
         >
             <template v-for="segment in segments" :key="segment.key">
                 <a

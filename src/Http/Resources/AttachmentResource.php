@@ -1,6 +1,6 @@
 <?php
 
-namespace Converse\Chat\Http\Resources;
+namespace Riwaaq\Chat\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

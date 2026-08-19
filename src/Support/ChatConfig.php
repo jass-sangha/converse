@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Support;
+namespace Riwaaq\Chat\Support;
 
-use Converse\Chat\Contracts\ConverseLimitsInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Str;
+use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
 
 /**
- * Builds the window.ConverseConfig payload and the theme-override inline
+ * Builds the window.RiwaaqConfig payload and the theme-override inline
  * <style> block, shared by both the full-page route (ChatPageController) and
  * the embeddable <x-chat::widget /> component so neither duplicates the other.
  */
@@ -50,10 +50,10 @@ class ChatConfig
             ],
             'assetVersion' => is_file($assetPath) ? filemtime($assetPath) : time(),
             'embed' => $embed,
-            // Server-resolved (free default, or converse-pro's override if installed) —
+            // Server-resolved (free default, or riwaaq-pro's override if installed) —
             // never a query param, so an embedding site can't strip its own branding
             // requirement by tampering with the URL.
-            'showBranding' => app(ConverseLimitsInterface::class)->showBranding(),
+            'showBranding' => app(RiwaaqLimitsInterface::class)->showBranding(),
         ];
     }
 
@@ -78,11 +78,11 @@ class ChatConfig
         }
 
         $vars = collect($overrides)
-            ->map(fn ($value, $token) => '--cv-'.Str::kebab($token).': '.$value.';')
+            ->map(fn ($value, $token) => '--chat-'.Str::kebab($token).': '.$value.';')
             ->implode('');
 
         // Not user input — values come from config/chat.php, which only the host
         // app itself controls, so raw (unescaped) output into a <style> tag is safe.
-        return '<style>#converse-chat-app{'.$vars.'}</style>';
+        return '<style>#riwaaq-chat-app{'.$vars.'}</style>';
     }
 }

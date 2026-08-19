@@ -60,12 +60,12 @@ function cycleRate() {
 </script>
 
 <template>
-    <div class="cv-voice-message flex w-full items-center gap-3 py-0.5 pb-1">
+    <div class="chat-voice-message flex w-full items-center gap-3 py-0.5 pb-1">
         <button
             type="button"
             :title="playing ? 'Pause' : 'Play'"
-            class="cv-voice-message__toggle flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full"
-            :class="isOwn ? 'bg-converse-accent text-converse-accentContrast hover:opacity-90' : 'bg-converse-sage text-converse-sageContrast hover:opacity-90'"
+            class="chat-voice-message__toggle flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full"
+            :class="isOwn ? 'bg-riwaaq-accent text-riwaaq-accentContrast hover:opacity-90' : 'bg-riwaaq-sage text-riwaaq-sageContrast hover:opacity-90'"
             @click="toggle"
         >
             <svg v-if="playing" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.4" /><rect x="13.5" y="5" width="4" height="14" rx="1.4" /></svg>
@@ -74,28 +74,28 @@ function cycleRate() {
 
         <div class="min-w-0 flex-1">
             <div class="relative flex h-[22px] cursor-pointer items-center" @pointerdown="seek">
-                <div class="absolute inset-x-0 h-1 rounded-full bg-converse-border" />
+                <div class="absolute inset-x-0 h-1 rounded-full bg-riwaaq-border" />
                 <div
                     class="absolute h-1 rounded-full"
-                    :class="isOwn ? 'bg-converse-accent' : 'bg-converse-sage'"
+                    :class="isOwn ? 'bg-riwaaq-accent' : 'bg-riwaaq-sage'"
                     :style="{ width: progressPct + '%' }"
                 />
                 <div
                     class="absolute h-[13px] w-[13px] -ml-1.5 rounded-full shadow"
-                    :class="isOwn ? 'bg-converse-accent' : 'bg-converse-sage'"
+                    :class="isOwn ? 'bg-riwaaq-accent' : 'bg-riwaaq-sage'"
                     :style="{ left: progressPct + '%' }"
                 />
             </div>
             <div class="mt-px flex items-center justify-between gap-2">
-                <span class="text-[11px] tabular-nums text-converse-textDim">{{ fmt(currentTime) }}</span>
-                <span class="text-[11px] tabular-nums text-converse-textDim">{{ fmt(duration) }}</span>
+                <span class="text-[11px] tabular-nums text-riwaaq-textDim">{{ fmt(currentTime) }}</span>
+                <span class="text-[11px] tabular-nums text-riwaaq-textDim">{{ fmt(duration) }}</span>
             </div>
         </div>
 
         <button
             type="button"
             title="Playback speed"
-            class="flex h-[26px] min-w-[38px] shrink-0 items-center justify-center rounded-full bg-converse-surfaceHover px-[9px] text-[11.5px] font-bold text-converse-textMuted hover:text-converse-accentText"
+            class="flex h-[26px] min-w-[38px] shrink-0 items-center justify-center rounded-full bg-riwaaq-surfaceHover px-[9px] text-[11.5px] font-bold text-riwaaq-textMuted hover:text-riwaaq-accentText"
             @click="cycleRate"
         >
             {{ rate }}&times;

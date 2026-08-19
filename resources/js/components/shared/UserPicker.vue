@@ -114,7 +114,7 @@ function toggle(user) {
 </script>
 
 <template>
-    <div class="cv-user-picker flex h-full min-h-0 flex-col">
+    <div class="chat-user-picker flex h-full min-h-0 flex-col">
         <SearchBar
             :autofocus="false"
             placeholder="Search people…"
@@ -123,17 +123,17 @@ function toggle(user) {
 
         <div
             v-if="modelValue.length && multiple"
-            class="cv-user-picker__selected mb-2 flex shrink-0 flex-wrap gap-2 px-4"
+            class="chat-user-picker__selected mb-2 flex shrink-0 flex-wrap gap-2 px-4"
         >
             <span
                 v-for="user in modelValue"
                 :key="user.id"
-                class="cv-user-picker__chip flex items-center gap-1.5 rounded-full bg-converse-accentTint px-3 py-1.5 text-xs font-medium text-converse-accentText"
+                class="chat-user-picker__chip flex items-center gap-1.5 rounded-full bg-riwaaq-accentTint px-3 py-1.5 text-xs font-medium text-riwaaq-accentText"
             >
                 {{ user.name }}
                 <button
                     type="button"
-                    class="text-converse-accentText hover:text-converse-danger"
+                    class="text-riwaaq-accentText hover:text-riwaaq-danger"
                     @click="toggle(user)"
                 >
                     ×
@@ -141,16 +141,16 @@ function toggle(user) {
             </span>
         </div>
 
-        <ul ref="scrollEl" class="cv-user-picker__results min-h-0 flex-1 overflow-y-auto px-2 py-1">
+        <ul ref="scrollEl" class="chat-user-picker__results min-h-0 flex-1 overflow-y-auto px-2 py-1">
             <li
                 v-for="user in results"
                 :key="user.id"
-                class="cv-user-picker__result-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3 hover:bg-converse-surfaceHover"
+                class="chat-user-picker__result-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3 hover:bg-riwaaq-surfaceHover"
                 @click="toggle(user)"
             >
                 <div
                     v-if="isSelected(user)"
-                    class="pointer-events-none absolute inset-0 rounded-[20px] bg-converse-accentTint"
+                    class="pointer-events-none absolute inset-0 rounded-[20px] bg-riwaaq-accentTint"
                 />
 
                 <Avatar
@@ -160,7 +160,7 @@ function toggle(user) {
                     :size="46"
                 />
                 <span
-                    class="relative min-w-0 flex-1 truncate text-[14.5px] font-semibold text-converse-text"
+                    class="relative min-w-0 flex-1 truncate text-[14.5px] font-semibold text-riwaaq-text"
                     >{{ user.name }}</span
                 >
                 <span
@@ -168,8 +168,8 @@ function toggle(user) {
                     class="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2"
                     :class="
                         isSelected(user)
-                            ? 'border-converse-accent bg-converse-accent text-white'
-                            : 'border-converse-border'
+                            ? 'border-riwaaq-accent bg-riwaaq-accent text-white'
+                            : 'border-riwaaq-border'
                     "
                 >
                     <svg
@@ -185,16 +185,16 @@ function toggle(user) {
                     </svg>
                 </span>
             </li>
-            <li v-if="hasMore" ref="sentinelEl" class="cv-user-picker__sentinel h-1" />
+            <li v-if="hasMore" ref="sentinelEl" class="chat-user-picker__sentinel h-1" />
             <li
                 v-if="state.loading"
-                class="p-4 text-center text-sm text-converse-textMuted"
+                class="p-4 text-center text-sm text-riwaaq-textMuted"
             >
                 Loading…
             </li>
             <li
                 v-if="!results.length && !state.loading"
-                class="cv-user-picker__empty p-4 text-center text-sm text-converse-textMuted"
+                class="chat-user-picker__empty p-4 text-center text-sm text-riwaaq-textMuted"
             >
                 No people found.
             </li>

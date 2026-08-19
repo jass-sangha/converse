@@ -1,12 +1,12 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\StarredMessageServiceInterface;
-use Converse\Chat\Http\Resources\MessageResource;
-use Converse\Chat\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Riwaaq\Chat\Contracts\StarredMessageServiceInterface;
+use Riwaaq\Chat\Http\Resources\MessageResource;
+use Riwaaq\Chat\Models\Message;
 
 class StarredMessageController extends Controller
 {

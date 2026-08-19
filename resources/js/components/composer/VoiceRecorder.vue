@@ -169,7 +169,7 @@ onBeforeUnmount(() => {
         v-if="phase === 'idle'"
         type="button"
         title="Record a voice message"
-        class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-converse-accent text-converse-accentContrast shadow-sm"
+        class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-riwaaq-accent text-riwaaq-accentContrast shadow-sm"
         @click="start"
     >
         <svg
@@ -189,12 +189,12 @@ onBeforeUnmount(() => {
 
     <div
         v-else-if="phase === 'recording'"
-        class="cv-voice-recorder flex h-[52px] flex-1 items-center gap-3 rounded-full bg-converse-surface px-[14px] shadow-sm"
+        class="chat-voice-recorder flex h-[52px] flex-1 items-center gap-3 rounded-full bg-riwaaq-surface px-[14px] shadow-sm"
     >
         <button
             type="button"
             title="Cancel"
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-danger hover:bg-converse-surfaceHover"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-riwaaq-danger hover:bg-riwaaq-surfaceHover"
             @click="cancelRecording"
         >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -203,21 +203,21 @@ onBeforeUnmount(() => {
         </button>
 
         <span
-            class="flex shrink-0 items-center gap-1.5 text-sm text-converse-danger"
+            class="flex shrink-0 items-center gap-1.5 text-sm text-riwaaq-danger"
         >
             <span
-                class="h-2 w-2 animate-pulse rounded-full bg-converse-danger"
+                class="h-2 w-2 animate-pulse rounded-full bg-riwaaq-danger"
             />
             {{ formatTime(seconds) }}
         </span>
 
         <div
-            class="flex h-6 flex-1 items-center gap-[2px] overflow-hidden rounded-full bg-converse-surfaceHover px-2"
+            class="flex h-6 flex-1 items-center gap-[2px] overflow-hidden rounded-full bg-riwaaq-surfaceHover px-2"
         >
             <span
                 v-for="(height, index) in bars"
                 :key="index"
-                class="w-[2px] shrink-0 rounded-full bg-converse-accent"
+                class="w-[2px] shrink-0 rounded-full bg-riwaaq-accent"
                 :style="{ height: height + '%' }"
             />
         </div>
@@ -225,7 +225,7 @@ onBeforeUnmount(() => {
         <button
             type="button"
             title="Stop recording"
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-converse-accent text-converse-accentContrast"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-riwaaq-accent text-riwaaq-accentContrast"
             @click="stopRecording"
         >
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
@@ -236,24 +236,24 @@ onBeforeUnmount(() => {
 
     <div
         v-else
-        class="cv-voice-recorder-preview flex h-[52px] flex-1 items-center gap-2.5 rounded-full bg-converse-surface px-[14px] shadow-sm"
+        class="chat-voice-recorder-preview flex h-[52px] flex-1 items-center gap-2.5 rounded-full bg-riwaaq-surface px-[14px] shadow-sm"
     >
-        <span class="h-2 w-2 shrink-0 rounded-full bg-converse-accent" />
+        <span class="h-2 w-2 shrink-0 rounded-full bg-riwaaq-accent" />
 
-        <span class="shrink-0 text-sm tabular-nums text-converse-textMuted">{{
+        <span class="shrink-0 text-sm tabular-nums text-riwaaq-textMuted">{{
             formatTime(playing ? currentTime : duration)
         }}</span>
 
         <div class="relative h-6 flex-1 cursor-pointer" @pointerdown="seek">
             <div
-                class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-t-2 border-dashed border-converse-border"
+                class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-t-2 border-dashed border-riwaaq-border"
             />
             <div
-                class="absolute top-1/2 -translate-y-1/2 border-t-2 border-solid border-converse-accent"
+                class="absolute top-1/2 -translate-y-1/2 border-t-2 border-solid border-riwaaq-accent"
                 :style="{ width: progressPct + '%' }"
             />
             <div
-                class="absolute top-1/2 h-2.5 w-2.5 -ml-1.5 -translate-y-1/2 rounded-full bg-converse-accent shadow"
+                class="absolute top-1/2 h-2.5 w-2.5 -ml-1.5 -translate-y-1/2 rounded-full bg-riwaaq-accent shadow"
                 :style="{ left: progressPct + '%' }"
             />
         </div>
@@ -261,7 +261,7 @@ onBeforeUnmount(() => {
         <button
             type="button"
             title="Discard"
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-danger"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover hover:text-riwaaq-danger"
             @click="discardPreview"
         >
             <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
@@ -272,7 +272,7 @@ onBeforeUnmount(() => {
         <button
             type="button"
             :title="playing ? 'Pause' : 'Play'"
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover hover:text-converse-accentText"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
             @click="togglePlay"
         >
             <svg
@@ -299,7 +299,7 @@ onBeforeUnmount(() => {
         <button
             type="button"
             title="Send"
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-converse-accent text-converse-accentContrast disabled:opacity-60"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-riwaaq-accent text-riwaaq-accentContrast disabled:opacity-60"
             :disabled="sending"
             @click="send"
         >

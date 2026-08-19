@@ -1,6 +1,6 @@
 <?php
 
-namespace Converse\Chat\Http\Requests;
+namespace Riwaaq\Chat\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

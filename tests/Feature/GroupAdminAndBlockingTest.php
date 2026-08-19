@@ -1,6 +1,6 @@
 <?php
 
-use Converse\Chat\Tests\Fixtures\User;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function groupUser(string $email): User
 {
@@ -8,7 +8,7 @@ function groupUser(string $email): User
 }
 
 it('lets the group admin add and remove members but rejects a non-admin', function () {
-    config(['converse.max_group_participants' => null]); // grows past the free-tier 2-participant limit
+    config(['riwaaq.max_group_participants' => null]); // grows past the free-tier 2-participant limit
 
     $alice = groupUser('alice-grp@example.com');
     $bob = groupUser('bob-grp@example.com');

@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ChatListServiceInterface;
-use Converse\Chat\Models\ChatList;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ChatListServiceInterface;
+use Riwaaq\Chat\Models\ChatList;
 
 class ChatListService implements ChatListServiceInterface
 {

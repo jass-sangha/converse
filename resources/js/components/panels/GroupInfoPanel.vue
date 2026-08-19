@@ -388,16 +388,16 @@ async function onDeleteChat() {
 
 <template>
     <div
-        class="cv-group-info-panel cv-animate-panel-in fixed inset-0 z-40 flex w-full flex-col bg-converse-surface md:absolute md:inset-y-0 md:left-auto md:right-0 md:w-[330px] md:shadow-2xl md:border-l md:border-converse-border lg:relative lg:z-auto lg:shrink-0 lg:shadow-none"
+        class="chat-group-info-panel chat-animate-panel-in fixed inset-0 z-40 flex w-full flex-col bg-riwaaq-surface md:absolute md:inset-y-0 md:left-auto md:right-0 md:w-[330px] md:shadow-2xl md:border-l md:border-riwaaq-border lg:relative lg:z-auto lg:shrink-0 lg:shadow-none"
     >
         <SidebarScreenHeader
             :title="isGroup ? 'Group info' : 'Contact info'"
             @back="emit('close')"
         />
 
-        <div class="cv-scroll min-h-0 flex-1 overflow-y-auto pb-8">
+        <div class="chat-scroll min-h-0 flex-1 overflow-y-auto pb-8">
             <div
-                class="cv-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-converse-border px-[22px] py-[26px] text-center"
+                class="chat-group-info-panel__avatar flex flex-col items-center gap-3 border-b border-riwaaq-border px-[22px] py-[26px] text-center"
             >
                 <AvatarPhotoControl
                     :name="displayName ?? ''"
@@ -412,40 +412,40 @@ async function onDeleteChat() {
                     @upload="onAvatarUpload"
                     @remove="onAvatarRemove"
                 />
-                <p v-if="avatarError" class="text-xs text-converse-danger">
+                <p v-if="avatarError" class="text-xs text-riwaaq-danger">
                     {{ avatarError }}
                 </p>
                 <div>
                     <p
-                        class="font-display text-[21px] font-normal text-converse-text"
+                        class="font-display text-[21px] font-normal text-riwaaq-text"
                     >
                         {{ displayName }}
                     </p>
                     <p
                         v-if="subLabel"
-                        class="mt-1 text-[12.5px] text-converse-textMuted"
+                        class="mt-1 text-[12.5px] text-riwaaq-textMuted"
                     >
                         {{ subLabel }}
                     </p>
                     <p
                         v-if="conversation.description"
-                        class="mt-1 px-4 text-center text-sm text-converse-textMuted"
+                        class="mt-1 px-4 text-center text-sm text-riwaaq-textMuted"
                     >
                         {{ conversation.description }}
                     </p>
                 </div>
             </div>
 
-            <div class="border-b border-converse-border px-[22px] py-5">
+            <div class="border-b border-riwaaq-border px-[22px] py-5">
                 <div class="mb-3 flex items-baseline justify-between gap-2.5">
                     <h3
-                        class="text-[11.5px] font-bold uppercase tracking-[.08em] text-converse-textDim"
+                        class="text-[11.5px] font-bold uppercase tracking-[.08em] text-riwaaq-textDim"
                     >
                         Shared media
                     </h3>
                     <button
                         type="button"
-                        class="text-[12.5px] font-semibold text-converse-accentText hover:underline"
+                        class="text-[12.5px] font-semibold text-riwaaq-accentText hover:underline"
                         @click="showMedia = true"
                     >
                         See all
@@ -460,7 +460,7 @@ async function onDeleteChat() {
                         :key="item.id"
                         type="button"
                         :title="item.original_filename"
-                        class="group relative aspect-square overflow-hidden rounded-[14px] bg-converse-surfaceHover"
+                        class="group relative aspect-square overflow-hidden rounded-[14px] bg-riwaaq-surfaceHover"
                         @click="openMediaTile(i)"
                     >
                         <video
@@ -477,19 +477,19 @@ async function onDeleteChat() {
                         />
                         <span
                             v-if="item.original_filename"
-                            class="absolute bottom-1 right-1 max-w-[calc(100%-20px)] truncate rounded-md bg-converse-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-converse-textMuted"
+                            class="absolute bottom-1 right-1 max-w-[calc(100%-20px)] truncate rounded-md bg-riwaaq-surface/85 px-1.5 py-0.5 text-[9px] font-medium text-riwaaq-textMuted"
                             >{{ item.original_filename }}</span
                         >
                     </button>
                 </div>
-                <p v-else class="text-xs text-converse-textMuted">
+                <p v-else class="text-xs text-riwaaq-textMuted">
                     No media yet.
                 </p>
             </div>
 
-            <div class="border-b border-converse-border px-[22px] py-5">
+            <div class="border-b border-riwaaq-border px-[22px] py-5">
                 <h3
-                    class="mb-3 text-[11.5px] font-bold uppercase tracking-[.08em] text-converse-textDim"
+                    class="mb-3 text-[11.5px] font-bold uppercase tracking-[.08em] text-riwaaq-textDim"
                 >
                     Chat wallpaper
                 </h3>
@@ -500,12 +500,12 @@ async function onDeleteChat() {
             </div>
 
             <template v-if="isGroup">
-                <div class="border-b border-converse-border px-[10px] py-5">
+                <div class="border-b border-riwaaq-border px-[10px] py-5">
                     <div
                         class="mb-2.5 mx-3 flex items-baseline justify-between gap-2.5"
                     >
                         <h3
-                            class="text-[11.5px] font-bold uppercase tracking-[.08em] text-converse-textDim"
+                            class="text-[11.5px] font-bold uppercase tracking-[.08em] text-riwaaq-textDim"
                         >
                             {{ conversation.participants?.length ?? 0 }}
                             participants
@@ -513,7 +513,7 @@ async function onDeleteChat() {
                         <button
                             v-if="isAdmin"
                             type="button"
-                            class="text-[12.5px] font-semibold text-converse-accentText hover:underline"
+                            class="text-[12.5px] font-semibold text-riwaaq-accentText hover:underline"
                             @click="showAddMember = true"
                         >
                             Add
@@ -524,7 +524,7 @@ async function onDeleteChat() {
                         <div
                             v-for="participant in visibleParticipants"
                             :key="chatableKeyOf(participant)"
-                            class="group flex items-center gap-[11px] rounded-2xl pl-3 pr-5 py-2 hover:bg-converse-surfaceHover"
+                            class="group flex items-center gap-[11px] rounded-2xl pl-3 pr-5 py-2 hover:bg-riwaaq-surfaceHover"
                         >
                             <Avatar
                                 :name="
@@ -543,7 +543,7 @@ async function onDeleteChat() {
                             />
                             <div class="min-w-0 flex-1">
                                 <p
-                                    class="truncate text-[13.5px] font-medium text-converse-text"
+                                    class="truncate text-[13.5px] font-medium text-riwaaq-text"
                                 >
                                     {{
                                         get({
@@ -554,7 +554,7 @@ async function onDeleteChat() {
                                 </p>
                                 <p
                                     v-if="participant.role === 'admin'"
-                                    class="text-[11px] text-converse-textDim"
+                                    class="text-[11px] text-riwaaq-textDim"
                                 >
                                     Admin
                                 </p>
@@ -565,7 +565,7 @@ async function onDeleteChat() {
                             >
                                 <button
                                     type="button"
-                                    class="text-[11.5px] font-semibold text-converse-sage hover:underline"
+                                    class="text-[11.5px] font-semibold text-riwaaq-sage hover:underline"
                                     @click="toggleAdmin(participant)"
                                 >
                                     {{
@@ -576,7 +576,7 @@ async function onDeleteChat() {
                                 </button>
                                 <button
                                     type="button"
-                                    class="text-[11.5px] font-semibold text-converse-accentText hover:underline"
+                                    class="text-[11.5px] font-semibold text-riwaaq-accentText hover:underline"
                                     @click="removeMember(participant)"
                                 >
                                     Remove
@@ -586,7 +586,7 @@ async function onDeleteChat() {
                         <button
                             v-if="hasMoreParticipants"
                             type="button"
-                            class="mt-1 rounded-2xl px-3 py-2 text-left text-[13px] font-semibold text-converse-accentText hover:bg-converse-surfaceHover"
+                            class="mt-1 rounded-2xl px-3 py-2 text-left text-[13px] font-semibold text-riwaaq-accentText hover:bg-riwaaq-surfaceHover"
                             @click="revealMoreParticipants"
                         >
                             Show more
@@ -597,7 +597,7 @@ async function onDeleteChat() {
 
             <p
                 v-if="error"
-                class="cv-group-info-panel__error mx-[10px] mt-3 rounded bg-converse-danger/10 p-2 text-xs text-converse-danger"
+                class="chat-group-info-panel__error mx-[10px] mt-3 rounded bg-riwaaq-danger/10 p-2 text-xs text-riwaaq-danger"
             >
                 {{ error }}
             </p>
@@ -605,7 +605,7 @@ async function onDeleteChat() {
             <div class="flex flex-col gap-0.5 px-[10px] py-5">
                 <button
                     type="button"
-                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                     @click="toggleFavourite"
                 >
                     <svg
@@ -613,7 +613,7 @@ async function onDeleteChat() {
                         width="20"
                         height="20"
                         fill="currentColor"
-                        class="shrink-0 text-converse-textMuted"
+                        class="shrink-0 text-riwaaq-textMuted"
                     >
                         <path
                             d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.02 6.02 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z"
@@ -628,7 +628,7 @@ async function onDeleteChat() {
 
                 <button
                     type="button"
-                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-text hover:bg-converse-surfaceHover"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                     @click="showStarred = true"
                 >
                     <svg
@@ -636,7 +636,7 @@ async function onDeleteChat() {
                         width="20"
                         height="20"
                         fill="currentColor"
-                        class="shrink-0 text-converse-textMuted"
+                        class="shrink-0 text-riwaaq-textMuted"
                     >
                         <path
                             d="M12 2 15 9l7 .6-5.3 4.6L18.2 21 12 17.3 5.8 21l1.5-6.8L2 9.6 9 9Z"
@@ -647,7 +647,7 @@ async function onDeleteChat() {
 
                 <button
                     type="button"
-                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover disabled:opacity-50"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-accentText hover:bg-riwaaq-surfaceHover disabled:opacity-50"
                     :disabled="clearing"
                     @click="onClearChat"
                 >
@@ -656,7 +656,7 @@ async function onDeleteChat() {
                         width="20"
                         height="20"
                         fill="currentColor"
-                        class="shrink-0 text-converse-accentText"
+                        class="shrink-0 text-riwaaq-accentText"
                     >
                         <path
                             d="M15 4V3H9v1H4v2h16V4h-5ZM6 8l1 12h10l1-12H6Z"
@@ -668,7 +668,7 @@ async function onDeleteChat() {
                 <button
                     v-if="!isGroup"
                     type="button"
-                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-accentText hover:bg-riwaaq-surfaceHover"
                     @click="toggleBlockOther"
                 >
                     <svg
@@ -676,7 +676,7 @@ async function onDeleteChat() {
                         width="20"
                         height="20"
                         fill="currentColor"
-                        class="shrink-0 text-converse-accentText"
+                        class="shrink-0 text-riwaaq-accentText"
                     >
                         <path
                             d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.94 7.94 0 0 1 4 12a8 8 0 0 1 8-8Zm0 16c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.94 7.94 0 0 1 20 12a8 8 0 0 1-8 8Z"
@@ -690,7 +690,7 @@ async function onDeleteChat() {
                 <button
                     v-else
                     type="button"
-                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-accentText hover:bg-riwaaq-surfaceHover"
                     @click="leaveGroup"
                 >
                     <svg
@@ -698,7 +698,7 @@ async function onDeleteChat() {
                         width="20"
                         height="20"
                         fill="currentColor"
-                        class="shrink-0 text-converse-accentText"
+                        class="shrink-0 text-riwaaq-accentText"
                     >
                         <path
                             d="M10 3v2H5v14h5v2H3V3h7Zm5.29 3.71L18.59 10H8v2h10.59l-3.3 3.29 1.42 1.42L22 11.41l-5.29-5.3-1.42 1.6Z"
@@ -709,7 +709,7 @@ async function onDeleteChat() {
 
                 <button
                     type="button"
-                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-converse-accentText hover:bg-converse-surfaceHover"
+                    class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-accentText hover:bg-riwaaq-surfaceHover"
                     @click="onDeleteChat"
                 >
                     <svg
@@ -717,7 +717,7 @@ async function onDeleteChat() {
                         width="20"
                         height="20"
                         fill="currentColor"
-                        class="shrink-0 text-converse-accentText"
+                        class="shrink-0 text-riwaaq-accentText"
                     >
                         <path
                             d="M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z"
@@ -729,10 +729,10 @@ async function onDeleteChat() {
 
             <div
                 ref="muteMenuRoot"
-                class="relative mx-[10px] flex flex-col gap-0.5 border-t border-converse-border py-3.5"
+                class="relative mx-[10px] flex flex-col gap-0.5 border-t border-riwaaq-border py-3.5"
             >
                 <div
-                    class="flex cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-converse-surfaceHover"
+                    class="flex cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-riwaaq-surfaceHover"
                 >
                     <svg
                         viewBox="0 0 24 24"
@@ -742,8 +742,8 @@ async function onDeleteChat() {
                         class="shrink-0"
                         :class="
                             isMuted
-                                ? 'text-converse-sage'
-                                : 'text-converse-textMuted'
+                                ? 'text-riwaaq-sage'
+                                : 'text-riwaaq-textMuted'
                         "
                     >
                         <path
@@ -764,20 +764,20 @@ async function onDeleteChat() {
                         @click="toggleMuteMenu"
                     >
                         <span
-                            class="block text-[13.5px] font-medium text-converse-text"
+                            class="block text-[13.5px] font-medium text-riwaaq-text"
                             >Mute notifications</span
                         >
                         <span
                             v-if="muteHint"
-                            class="mt-0.5 block text-xs text-converse-textMuted"
+                            class="mt-0.5 block text-xs text-riwaaq-textMuted"
                             >{{ muteHint }}</span
                         >
                     </button>
                     <button
                         type="button"
-                        class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-converse-accent focus-visible:ring-offset-2 focus-visible:ring-offset-converse-surface"
+                        class="relative h-[27px] w-[46px] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-riwaaq-accent focus-visible:ring-offset-2 focus-visible:ring-offset-riwaaq-surface"
                         :class="
-                            isMuted ? 'bg-converse-sage' : 'bg-converse-border'
+                            isMuted ? 'bg-riwaaq-sage' : 'bg-riwaaq-border'
                         "
                         role="switch"
                         :aria-checked="isMuted"
@@ -792,15 +792,15 @@ async function onDeleteChat() {
 
                 <div
                     v-if="showMuteMenu"
-                    class="cv-animate-pop-in absolute right-4 z-20"
+                    class="chat-animate-pop-in absolute right-4 z-20"
                     :class="muteMenuUp ? 'bottom-full mb-1' : 'top-full mt-1'"
                 >
                     <div
-                        class="w-48 overflow-y-auto rounded-[22px] border border-converse-border bg-converse-surface p-2 shadow-lg"
+                        class="w-48 overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 shadow-lg"
                         :style="{ maxHeight: muteMenuMaxHeight + 'px' }"
                     >
                         <p
-                            class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-converse-textMuted"
+                            class="px-3.5 pb-1 pt-2 text-xs font-medium uppercase text-riwaaq-textMuted"
                         >
                             Mute for
                         </p>
@@ -808,7 +808,7 @@ async function onDeleteChat() {
                             v-for="option in MUTE_DURATIONS"
                             :key="option.key"
                             type="button"
-                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-converse-text hover:bg-converse-surfaceHover"
+                            class="block w-full rounded-full px-3.5 py-2.5 text-left text-sm text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                             @click="onPickMuteDuration(option.key)"
                         >
                             {{ option.label }}
@@ -822,7 +822,7 @@ async function onDeleteChat() {
 
         <div
             v-if="showAddMember"
-            class="absolute inset-0 z-10 flex flex-col bg-converse-surface"
+            class="absolute inset-0 z-10 flex flex-col bg-riwaaq-surface"
         >
             <SidebarScreenHeader
                 title="Add participants"
@@ -837,15 +837,15 @@ async function onDeleteChat() {
                 />
                 <p
                     v-if="error"
-                    class="shrink-0 px-4 pb-2 text-xs text-converse-danger"
+                    class="shrink-0 px-4 pb-2 text-xs text-riwaaq-danger"
                 >
                     {{ error }}
                 </p>
             </div>
-            <div class="border-t border-converse-border p-3">
+            <div class="border-t border-riwaaq-border p-3">
                 <button
                     type="button"
-                    class="w-full rounded-full bg-converse-accent py-2 text-sm font-semibold text-converse-accentContrast disabled:opacity-50"
+                    class="w-full rounded-full bg-riwaaq-accent py-2 text-sm font-semibold text-riwaaq-accentContrast disabled:opacity-50"
                     :disabled="!picked.length"
                     @click="addMembers"
                 >
@@ -856,7 +856,7 @@ async function onDeleteChat() {
 
         <div
             v-if="showMedia"
-            class="absolute inset-0 z-10 flex flex-col bg-converse-surface"
+            class="absolute inset-0 z-10 flex flex-col bg-riwaaq-surface"
         >
             <SidebarScreenHeader
                 title="Media, links and docs"
@@ -870,7 +870,7 @@ async function onDeleteChat() {
 
         <div
             v-if="showStarred"
-            class="absolute inset-0 z-10 flex flex-col bg-converse-surface"
+            class="absolute inset-0 z-10 flex flex-col bg-riwaaq-surface"
         >
             <StarredMessagesPanel
                 :conversation-id="conversation.id"

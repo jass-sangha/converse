@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Http\Requests;
+namespace Riwaaq\Chat\Http\Requests;
 
-use Converse\Chat\Chat;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Riwaaq\Chat\Chat;
 
 class BlockUserRequest extends FormRequest
 {

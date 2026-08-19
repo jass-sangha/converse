@@ -1,9 +1,9 @@
 <?php
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Broadcast;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
 
 Broadcast::channel('conversation.{conversationId}', function (Model $chatable, int $conversationId) {
     $isParticipant = app(ParticipantRepositoryInterface::class)

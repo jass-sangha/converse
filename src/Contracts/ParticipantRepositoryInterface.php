@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Contracts;
+namespace Riwaaq\Chat\Contracts;
 
-use Converse\Chat\Models\ConversationParticipant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Riwaaq\Chat\Models\ConversationParticipant;
 
 interface ParticipantRepositoryInterface
 {

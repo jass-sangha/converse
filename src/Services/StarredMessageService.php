@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\StarredMessageServiceInterface;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Models\StarredMessage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\StarredMessageServiceInterface;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\StarredMessage;
 
 class StarredMessageService implements StarredMessageServiceInterface
 {

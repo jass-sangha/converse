@@ -1,6 +1,6 @@
 <?php
 
-namespace Converse\Chat\Contracts;
+namespace Riwaaq\Chat\Contracts;
 
 interface LinkPreviewFetcher
 {

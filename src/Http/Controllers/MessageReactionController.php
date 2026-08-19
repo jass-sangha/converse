@@ -1,12 +1,12 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\MessageReactionServiceInterface;
-use Converse\Chat\Http\Requests\ReactToMessageRequest;
-use Converse\Chat\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Riwaaq\Chat\Contracts\MessageReactionServiceInterface;
+use Riwaaq\Chat\Http\Requests\ReactToMessageRequest;
+use Riwaaq\Chat\Models\Message;
 
 class MessageReactionController extends Controller
 {

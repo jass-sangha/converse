@@ -3,7 +3,7 @@ import App from './App.vue';
 import './composables/usePreferences';
 import '../css/app.css';
 
-createApp(App).mount('#converse-chat-app');
+createApp(App).mount('#riwaaq-chat-app');
 
 // Lets a host that iframes the full-page chat route auto-size the iframe
 // instead of hardcoding a height. Complete no-op outside an iframe (including
@@ -11,14 +11,14 @@ createApp(App).mount('#converse-chat-app');
 // Vue 3 mounts *into* the container rather than replacing it, so the element
 // itself (not the app's, possibly multi-root, $el) is the stable thing to observe.
 if (window.self !== window.top && typeof ResizeObserver !== 'undefined') {
-    const target = document.getElementById('converse-chat-app');
+    const target = document.getElementById('riwaaq-chat-app');
     let lastHeight = null;
 
     new ResizeObserver(([entry]) => {
         const height = Math.ceil(entry.contentRect.height);
         if (height !== lastHeight) {
             lastHeight = height;
-            window.parent.postMessage({ source: 'converse-chat', height }, '*');
+            window.parent.postMessage({ source: 'riwaaq-chat', height }, '*');
         }
     }).observe(target);
 }

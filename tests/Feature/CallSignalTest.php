@@ -1,9 +1,9 @@
 <?php
 
-use Converse\Chat\Events\CallSignal;
-use Converse\Chat\Tests\Fixtures\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Riwaaq\Chat\Events\CallSignal;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function callSignalUser(string $email): User
 {
@@ -45,7 +45,7 @@ it('relays a call signal to the conversation channel without writing to the data
 });
 
 it('relays a targeted call signal to only the specified recipient, for a group call mesh', function () {
-    config(['converse.max_group_participants' => null]); // 3-participant group — exceeds the free-tier limit
+    config(['riwaaq.max_group_participants' => null]); // 3-participant group — exceeds the free-tier limit
 
     $alice = callSignalUser('alice-call-3@example.com');
     $bob = callSignalUser('bob-call-3@example.com');

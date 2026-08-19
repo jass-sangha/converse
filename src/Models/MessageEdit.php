@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Models;
+namespace Riwaaq\Chat\Models;
 
-use Converse\Chat\Chat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Riwaaq\Chat\Chat;
 
 class MessageEdit extends Model
 {

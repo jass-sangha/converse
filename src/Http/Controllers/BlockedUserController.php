@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\BlockedUserServiceInterface;
-use Converse\Chat\Http\Requests\BlockUserRequest;
 use Illuminate\Http\Request;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\BlockedUserServiceInterface;
+use Riwaaq\Chat\Http\Requests\BlockUserRequest;
 
 class BlockedUserController extends Controller
 {

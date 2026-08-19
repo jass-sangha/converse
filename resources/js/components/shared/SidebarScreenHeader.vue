@@ -8,12 +8,12 @@ const emit = defineEmits(["back"]);
 
 <template>
     <div
-        class="cv-sidebar-screen-header flex shrink-0 items-center gap-3 px-3 py-3"
+        class="chat-sidebar-screen-header flex shrink-0 items-center gap-3 px-3 py-3"
     >
         <button
             type="button"
             title="Back"
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
             @click="emit('back')"
         >
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -22,7 +22,7 @@ const emit = defineEmits(["back"]);
                 />
             </svg>
         </button>
-        <h1 class="flex-1 truncate text-lg font-semibold text-converse-text">
+        <h1 class="flex-1 truncate text-lg font-semibold text-riwaaq-text">
             {{ title }}
         </h1>
         <slot />

@@ -1,7 +1,7 @@
 <?php
 
-use Converse\Chat\Models\Message;
-use Converse\Chat\Tests\Fixtures\User;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function licenseTestUser(string $email): User
 {
@@ -20,16 +20,16 @@ it('blocks adding a participant past the free-tier group limit but respects a ra
 
     // Free-tier config (max_group_participants = 2): a 3rd participant is blocked
     // with a structured validation error, not a hard 500/blank failure.
-    config(['converse.max_group_participants' => 2]);
+    config(['riwaaq.max_group_participants' => 2]);
 
     $this->actingAs($alice)
         ->postJson("/api/chat/conversations/{$conversationId}/participants", ['participants' => [chatableRef($carol)]])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('participants');
 
-    // No converse-pro installed here, so this exercises ConverseLimits' config fallback path —
-    // the same path a host raising its own limit (or converse-pro overriding it) both go through.
-    config(['converse.max_group_participants' => null]);
+    // No riwaaq-pro installed here, so this exercises RiwaaqLimits' config fallback path —
+    // the same path a host raising its own limit (or riwaaq-pro overriding it) both go through.
+    config(['riwaaq.max_group_participants' => null]);
 
     $this->actingAs($alice)
         ->postJson("/api/chat/conversations/{$conversationId}/participants", ['participants' => [chatableRef($carol)]])
@@ -42,7 +42,7 @@ it('blocks creating a group past the free-tier participant limit but respects a 
     $carol = licenseTestUser('carol-group-license@example.com');
 
     // Free-tier config (max_group_participants = 2): a 3-participant group is blocked.
-    config(['converse.max_group_participants' => 2]);
+    config(['riwaaq.max_group_participants' => 2]);
 
     $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'group',
@@ -50,7 +50,7 @@ it('blocks creating a group past the free-tier participant limit but respects a 
         'participants' => chatableRefs([$bob, $carol]),
     ])->assertUnprocessable()->assertJsonValidationErrors('participants');
 
-    config(['converse.max_group_participants' => null]);
+    config(['riwaaq.max_group_participants' => null]);
 
     $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'group',
@@ -91,7 +91,7 @@ it('hides messages older than the free-tier history window but respects an unlim
 
     expect(Message::query()->where('id', $oldId)->exists())->toBeTrue();
 
-    config(['converse.history_days' => null]);
+    config(['riwaaq.history_days' => null]);
 
     // Unlimited history: the same, never-deleted message is visible again.
     $unlimited = $this->actingAs($alice)
@@ -104,13 +104,13 @@ it('hides messages older than the free-tier history window but respects an unlim
 it('reflects the show_branding config value in the widget bootstrap payload', function () {
     $user = licenseTestUser('branding-license@example.com');
 
-    $this->actingAs($user)->get('/converse/chat')
+    $this->actingAs($user)->get('/riwaaq/chat')
         ->assertOk()
         ->assertSee('"showBranding":true', false);
 
-    config(['converse.show_branding' => false]);
+    config(['riwaaq.show_branding' => false]);
 
-    $this->actingAs($user)->get('/converse/chat')
+    $this->actingAs($user)->get('/riwaaq/chat')
         ->assertOk()
         ->assertSee('"showBranding":false', false);
 });

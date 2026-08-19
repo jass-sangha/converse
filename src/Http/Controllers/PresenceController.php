@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\PresenceServiceInterface;
 use Illuminate\Http\Request;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\PresenceServiceInterface;
 
 class PresenceController extends Controller
 {

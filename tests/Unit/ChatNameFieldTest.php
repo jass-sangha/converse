@@ -1,8 +1,8 @@
 <?php
 
-use Converse\Chat\Chat;
-use Converse\Chat\Tests\Fixtures\Agent;
-use Converse\Chat\Tests\Fixtures\User;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Tests\Fixtures\Agent;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 it('resolves the per-alias name_field for an array-shaped chatable_models entry', function () {
     // TestCase::defineEnvironment() already configures 'agent' with an explicit

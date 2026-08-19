@@ -60,14 +60,14 @@ async function capture() {
 </script>
 
 <template>
-    <Modal class="cv-camera-capture" title="Camera" @close="emit('close')">
-        <p v-if="error" class="text-sm text-converse-danger">{{ error }}</p>
-        <video v-else ref="videoEl" autoplay playsinline class="w-full rounded-cv bg-converse-overlay" />
+    <Modal class="chat-camera-capture" title="Camera" @close="emit('close')">
+        <p v-if="error" class="text-sm text-riwaaq-danger">{{ error }}</p>
+        <video v-else ref="videoEl" autoplay playsinline class="w-full rounded-chat bg-riwaaq-overlay" />
 
         <template #footer>
             <button
                 type="button"
-                class="w-full rounded bg-converse-accent py-2 text-sm font-medium text-white disabled:opacity-50"
+                class="w-full rounded bg-riwaaq-accent py-2 text-sm font-medium text-white disabled:opacity-50"
                 :disabled="!!error || uploading"
                 @click="capture"
             >

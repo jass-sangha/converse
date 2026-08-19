@@ -1,11 +1,11 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Contracts\UserSettingsServiceInterface;
-use Converse\Chat\Http\Resources\ChatUserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
+use Riwaaq\Chat\Http\Resources\ChatUserResource;
 
 class ProfileController extends Controller
 {

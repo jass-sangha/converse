@@ -45,7 +45,7 @@ const viewerItems = computed(() =>
 
 <template>
     <div
-        class="cv-album-grid overflow-hidden rounded-2xl"
+        class="chat-album-grid overflow-hidden rounded-2xl"
         style="display: grid; gap: 3px"
         :style="{ gridTemplateColumns: cols }"
     >
@@ -54,7 +54,7 @@ const viewerItems = computed(() =>
             :key="tile.attachment.id"
             type="button"
             title="View"
-            class="relative block min-w-0 bg-converse-surfaceHover"
+            class="relative block min-w-0 bg-riwaaq-surfaceHover"
             :style="{ gridColumn: tile.span, aspectRatio: tile.ratio }"
             @click="viewerIndex = index"
         >
@@ -70,8 +70,8 @@ const viewerItems = computed(() =>
                 v-else-if="kind === 'document'"
                 class="flex h-full w-full flex-col items-center justify-center gap-1.5 p-2 text-center"
             >
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" class="shrink-0 text-converse-textMuted"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /></svg>
-                <span class="line-clamp-2 w-full break-words text-[10.5px] font-medium leading-tight text-converse-textMuted">{{ tile.attachment.original_filename }}</span>
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" class="shrink-0 text-riwaaq-textMuted"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /></svg>
+                <span class="line-clamp-2 w-full break-words text-[10.5px] font-medium leading-tight text-riwaaq-textMuted">{{ tile.attachment.original_filename }}</span>
             </div>
             <img
                 v-else
@@ -84,21 +84,21 @@ const viewerItems = computed(() =>
                 v-if="kind === 'video' && !tile.more"
                 class="absolute inset-0 flex items-center justify-center"
             >
-                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-converse-surface shadow">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="text-converse-accent"><path d="M8 5.5l11 6.5-11 6.5Z" /></svg>
+                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-riwaaq-surface shadow">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="text-riwaaq-accent"><path d="M8 5.5l11 6.5-11 6.5Z" /></svg>
                 </span>
             </span>
 
             <span
                 v-if="badge && !tile.more"
-                class="absolute left-1.5 top-1.5 rounded bg-converse-overlay/60 px-1.5 py-0.5 text-[10px] font-medium text-white"
+                class="absolute left-1.5 top-1.5 rounded bg-riwaaq-overlay/60 px-1.5 py-0.5 text-[10px] font-medium text-white"
             >
                 {{ badge }}
             </span>
 
             <span
                 v-if="tile.more"
-                class="absolute inset-0 flex items-center justify-center bg-converse-overlay/55 text-lg font-bold text-white"
+                class="absolute inset-0 flex items-center justify-center bg-riwaaq-overlay/55 text-lg font-bold text-white"
             >
                 {{ tile.more }}
             </span>

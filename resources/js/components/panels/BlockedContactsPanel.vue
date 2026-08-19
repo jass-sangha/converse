@@ -109,33 +109,33 @@ watch(
 </script>
 
 <template>
-    <div class="cv-blocked-contacts-panel flex h-full flex-col bg-converse-surface">
+    <div class="chat-blocked-contacts-panel flex h-full flex-col bg-riwaaq-surface">
         <SidebarScreenHeader title="Blocked contacts" @back="setView('chats')">
             <GlobalMenu />
         </SidebarScreenHeader>
 
-        <div ref="scrollEl" class="cv-scroll flex-1 overflow-y-auto px-2 pb-5">
-            <p v-if="!blockedRows.length && loading" class="px-3 py-4 text-sm text-converse-textMuted">Loading&hellip;</p>
-            <p v-else-if="!blockedRows.length" class="px-3 py-4 text-sm text-converse-textMuted">
+        <div ref="scrollEl" class="chat-scroll flex-1 overflow-y-auto px-2 pb-5">
+            <p v-if="!blockedRows.length && loading" class="px-3 py-4 text-sm text-riwaaq-textMuted">Loading&hellip;</p>
+            <p v-else-if="!blockedRows.length" class="px-3 py-4 text-sm text-riwaaq-textMuted">
                 No blocked contacts.
             </p>
 
             <div
                 v-for="row in blockedRows"
                 :key="`${row.blocked_type}:${row.blocked_id}`"
-                class="flex items-center gap-3 rounded-[20px] px-3 py-2.5 hover:bg-converse-surfaceHover"
+                class="flex items-center gap-3 rounded-[20px] px-3 py-2.5 hover:bg-riwaaq-surfaceHover"
             >
                 <Avatar
                     :name="getUser({ type: row.blocked_type, id: row.blocked_id }).name"
                     :avatar-url="getUser({ type: row.blocked_type, id: row.blocked_id }).avatar_url"
                     :size="44"
                 />
-                <span class="min-w-0 flex-1 truncate text-[14px] font-semibold text-converse-text">
+                <span class="min-w-0 flex-1 truncate text-[14px] font-semibold text-riwaaq-text">
                     {{ getUser({ type: row.blocked_type, id: row.blocked_id }).name }}
                 </span>
                 <button
                     type="button"
-                    class="h-8 shrink-0 rounded-full border border-converse-border px-3.5 text-xs font-semibold text-converse-textMuted hover:bg-converse-surfaceHover disabled:opacity-50"
+                    class="h-8 shrink-0 rounded-full border border-riwaaq-border px-3.5 text-xs font-semibold text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover disabled:opacity-50"
                     :disabled="unblockingKey === `${row.blocked_type}:${row.blocked_id}`"
                     @click="onUnblock(row)"
                 >
@@ -144,7 +144,7 @@ watch(
             </div>
 
             <div v-if="page < lastPage" ref="sentinelEl" class="h-1" />
-            <p v-if="blockedRows.length && loading" class="px-3 py-4 text-center text-sm text-converse-textMuted">
+            <p v-if="blockedRows.length && loading" class="px-3 py-4 text-center text-sm text-riwaaq-textMuted">
                 Loading&hellip;
             </p>
         </div>

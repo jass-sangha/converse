@@ -21,17 +21,17 @@ async function start() {
 </script>
 
 <template>
-    <div class="cv-new-chat-panel flex h-full flex-col bg-converse-surface">
+    <div class="chat-new-chat-panel flex h-full flex-col bg-riwaaq-surface">
         <SidebarScreenHeader title="New chat" @back="setView('chats')">
             <GlobalMenu />
         </SidebarScreenHeader>
 
         <UserPicker v-model="selected" :multiple="false" class="min-h-0 flex-1" />
 
-        <div class="border-t border-converse-border p-3">
+        <div class="border-t border-riwaaq-border p-3">
             <button
                 type="button"
-                class="cv-new-chat-panel__submit w-full rounded-full bg-converse-accent py-2 text-sm font-semibold text-converse-accentContrast disabled:opacity-50"
+                class="chat-new-chat-panel__submit w-full rounded-full bg-riwaaq-accent py-2 text-sm font-semibold text-riwaaq-accentContrast disabled:opacity-50"
                 :disabled="!selected.length"
                 @click="start"
             >

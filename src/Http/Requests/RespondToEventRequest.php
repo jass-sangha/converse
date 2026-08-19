@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Http\Requests;
+namespace Riwaaq\Chat\Http\Requests;
 
-use Converse\Chat\Services\EventRsvpService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Riwaaq\Chat\Services\EventRsvpService;
 
 class RespondToEventRequest extends FormRequest
 {

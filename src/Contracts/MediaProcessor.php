@@ -1,8 +1,8 @@
 <?php
 
-namespace Converse\Chat\Contracts;
+namespace Riwaaq\Chat\Contracts;
 
-use Converse\Chat\Models\MessageAttachment;
+use Riwaaq\Chat\Models\MessageAttachment;
 
 interface MediaProcessor
 {

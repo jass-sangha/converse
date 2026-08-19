@@ -31,11 +31,11 @@ function go(view) {
 </script>
 
 <template>
-    <div ref="menuRoot" class="cv-global-menu relative shrink-0">
+    <div ref="menuRoot" class="chat-global-menu relative shrink-0">
         <button
             type="button"
             title="Menu"
-            class="flex h-9 w-9 items-center justify-center rounded-full text-converse-textMuted hover:bg-converse-surfaceHover"
+            class="flex h-9 w-9 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
             @click="showMenu = !showMenu"
         >
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -47,12 +47,12 @@ function go(view) {
 
         <div
             v-if="showMenu"
-            class="cv-animate-pop-in absolute right-0 top-full z-20 w-56 rounded-[22px] border border-converse-border bg-converse-surface p-2 text-sm shadow-lg"
+            class="chat-animate-pop-in absolute right-0 top-full z-20 w-56 rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-lg"
         >
             <button
                 v-if="view !== 'chats' && view !== 'new-chat'"
                 type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="go('new-chat')"
             >
                 New chat
@@ -60,7 +60,7 @@ function go(view) {
             <button
                 v-if="view !== 'new-group'"
                 type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="go('new-group')"
             >
                 New group
@@ -68,7 +68,7 @@ function go(view) {
             <button
                 v-if="view !== 'starred'"
                 type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="go('starred')"
             >
                 Starred messages
@@ -76,7 +76,7 @@ function go(view) {
             <button
                 v-if="view !== 'blocked'"
                 type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="go('blocked')"
             >
                 Blocked contacts
@@ -84,7 +84,7 @@ function go(view) {
             <button
                 v-if="view !== 'archived'"
                 type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="go('archived')"
             >
                 Archived chats
@@ -92,7 +92,7 @@ function go(view) {
             <button
                 v-if="view !== 'media'"
                 type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="go('media')"
             >
                 Media
@@ -100,7 +100,7 @@ function go(view) {
             <button
                 v-if="view !== 'profile'"
                 type="button"
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-converse-text hover:bg-converse-surfaceHover"
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="go('profile')"
             >
                 Settings

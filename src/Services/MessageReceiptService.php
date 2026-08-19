@@ -1,16 +1,16 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\MessageReceiptServiceInterface;
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Events\MessagesDelivered;
-use Converse\Chat\Events\MessagesRead;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Models\MessageReceipt;
 use Illuminate\Database\Eloquent\Model;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\MessageReceiptServiceInterface;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Events\MessagesDelivered;
+use Riwaaq\Chat\Events\MessagesRead;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\MessageReceipt;
 
 class MessageReceiptService implements MessageReceiptServiceInterface
 {

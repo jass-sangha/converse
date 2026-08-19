@@ -171,14 +171,14 @@ async function onMuteAll(scope, durationKey) {
 </script>
 
 <template>
-    <div class="cv-settings-panel flex h-full flex-col bg-converse-surface">
+    <div class="chat-settings-panel flex h-full flex-col bg-riwaaq-surface">
         <SidebarScreenHeader title="You" @back="setView('chats')">
             <GlobalMenu />
         </SidebarScreenHeader>
 
-        <div class="cv-scroll flex-1 overflow-y-auto px-4 pb-5">
+        <div class="chat-scroll flex-1 overflow-y-auto px-4 pb-5">
             <div
-                class="flex items-start gap-3.5 rounded-[24px] bg-converse-railBg p-4"
+                class="flex items-start gap-3.5 rounded-[24px] bg-riwaaq-railBg p-4"
             >
                 <AvatarPhotoControl
                     :name="me?.name ?? ''"
@@ -191,7 +191,7 @@ async function onMuteAll(scope, durationKey) {
                     @remove="onRemoveAvatar"
                 />
                 <div class="min-w-0 flex-1">
-                    <div class="text-[15.5px] font-semibold text-converse-text">
+                    <div class="text-[15.5px] font-semibold text-riwaaq-text">
                         {{ me?.name ?? "—" }}
                     </div>
                     <div class="mt-[3px] flex items-center gap-1.5">
@@ -201,7 +201,7 @@ async function onMuteAll(scope, durationKey) {
                             maxlength="139"
                             placeholder="Add a short description"
                             title="Click to edit your description"
-                            class="h-[30px] min-w-0 flex-1 -ml-[11px] rounded-full border border-transparent bg-transparent px-[11px] text-[12.5px] text-converse-textMuted outline-none hover:border-converse-border hover:bg-converse-surface focus:border-converse-accent focus:bg-converse-surface focus:text-converse-text"
+                            class="h-[30px] min-w-0 flex-1 -ml-[11px] rounded-full border border-transparent bg-transparent px-[11px] text-[12.5px] text-riwaaq-textMuted outline-none hover:border-riwaaq-border hover:bg-riwaaq-surface focus:border-riwaaq-accent focus:bg-riwaaq-surface focus:text-riwaaq-text"
                             :disabled="savingAbout"
                             @blur="onAboutBlur"
                             @keyup.enter="$event.target.blur()"
@@ -215,14 +215,14 @@ async function onMuteAll(scope, durationKey) {
                             stroke-width="2.75"
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            class="shrink-0 text-converse-textDim"
+                            class="shrink-0 text-riwaaq-textDim"
                         >
                             <path d="M4 20h4L20 8l-4-4L4 16v4Z" />
                         </svg>
                     </div>
                     <p
                         v-if="uploadError"
-                        class="mt-1 text-xs text-converse-danger"
+                        class="mt-1 text-xs text-riwaaq-danger"
                     >
                         {{ uploadError }}
                     </p>
@@ -230,7 +230,7 @@ async function onMuteAll(scope, durationKey) {
             </div>
 
             <div
-                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-riwaaq-textDim"
             >
                 Privacy
             </div>
@@ -262,7 +262,7 @@ async function onMuteAll(scope, durationKey) {
             />
 
             <div
-                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-riwaaq-textDim"
             >
                 Notifications
             </div>
@@ -294,18 +294,18 @@ async function onMuteAll(scope, durationKey) {
             />
 
             <div
-                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+                class="px-1.5 pb-1 pt-[18px] text-[11.5px] font-bold uppercase tracking-wide text-riwaaq-textDim"
             >
                 Theme
             </div>
             <div
-                class="flex gap-1 rounded-full border border-converse-border bg-converse-surfaceHover p-1 mx-3"
+                class="flex gap-1 rounded-full border border-riwaaq-border bg-riwaaq-surfaceHover p-1 mx-3"
             >
                 <button
                     v-for="option in THEME_OPTIONS"
                     :key="option.key"
                     type="button"
-                    class="relative h-[38px] flex-1 rounded-full text-[12.5px] font-semibold text-converse-textMuted"
+                    class="relative h-[38px] flex-1 rounded-full text-[12.5px] font-semibold text-riwaaq-textMuted"
                     :title="option.hint"
                     role="radio"
                     :aria-checked="theme === option.key"
@@ -313,18 +313,18 @@ async function onMuteAll(scope, durationKey) {
                 >
                     <span
                         v-if="theme === option.key"
-                        class="absolute inset-0 rounded-full bg-converse-accent shadow"
+                        class="absolute inset-0 rounded-full bg-riwaaq-accent shadow"
                     />
                     <span
                         class="relative flex items-center justify-center gap-1.5"
                         :class="
                             theme === option.key
-                                ? 'text-converse-accentContrast'
-                                : 'text-converse-textMuted'
+                                ? 'text-riwaaq-accentContrast'
+                                : 'text-riwaaq-textMuted'
                         "
                     >
                         <span
-                            class="h-3.5 w-3.5 rounded-full border border-converse-border"
+                            class="h-3.5 w-3.5 rounded-full border border-riwaaq-border"
                             :class="option.swatch"
                         />
                         {{ option.label }}
@@ -333,11 +333,11 @@ async function onMuteAll(scope, durationKey) {
             </div>
 
             <div
-                class="px-1.5 pb-1 pt-[30px] text-[11.5px] font-bold uppercase tracking-wide text-converse-textDim"
+                class="px-1.5 pb-1 pt-[30px] text-[11.5px] font-bold uppercase tracking-wide text-riwaaq-textDim"
             >
                 Default chat wallpaper
             </div>
-            <p class="mx-3 mb-3 text-xs text-converse-textMuted">
+            <p class="mx-3 mb-3 text-xs text-riwaaq-textMuted">
                 Used for chats that don't have their own wallpaper set.
             </p>
             <div class="mx-3 mb-6">

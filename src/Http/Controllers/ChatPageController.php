@@ -1,9 +1,9 @@
 <?php
 
-namespace Converse\Chat\Http\Controllers;
+namespace Riwaaq\Chat\Http\Controllers;
 
-use Converse\Chat\Support\ChatConfig;
 use Illuminate\Http\Request;
+use Riwaaq\Chat\Support\ChatConfig;
 
 class ChatPageController extends Controller
 {

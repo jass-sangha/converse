@@ -1,6 +1,6 @@
 <?php
 
-use Converse\Chat\Tests\Fixtures\User;
+use Riwaaq\Chat\Tests\Fixtures\User;
 
 function frontendUser(string $email): User
 {
@@ -8,16 +8,16 @@ function frontendUser(string $email): User
 }
 
 it('serves the built js and css assets with correct content types', function () {
-    $this->get('/converse/assets/app.js')
+    $this->get('/riwaaq/assets/app.js')
         ->assertOk()
         ->assertHeader('Content-Type', 'application/javascript; charset=UTF-8');
 
-    $this->get('/converse/assets/app.css')
+    $this->get('/riwaaq/assets/app.css')
         ->assertOk()
         ->assertHeader('Content-Type', 'text/css; charset=UTF-8');
 });
 
-it('renders the mount page with a ConverseConfig script tag when reverb is configured', function () {
+it('renders the mount page with a RiwaaqConfig script tag when reverb is configured', function () {
     config(['broadcasting.connections.reverb' => [
         'driver' => 'reverb',
         'key' => 'test-key',
@@ -26,11 +26,11 @@ it('renders the mount page with a ConverseConfig script tag when reverb is confi
 
     $user = frontendUser('frontend-page@example.com');
 
-    $response = $this->actingAs($user)->get('/converse/chat');
+    $response = $this->actingAs($user)->get('/riwaaq/chat');
 
     $response->assertOk();
-    $response->assertSee('converse-chat-app', false);
-    $response->assertSee('window.ConverseConfig', false);
+    $response->assertSee('riwaaq-chat-app', false);
+    $response->assertSee('window.RiwaaqConfig', false);
     $response->assertSee('test-key', false);
 });
 
@@ -39,19 +39,19 @@ it('still renders the mount page when no reverb broadcasting connection is confi
 
     $user = frontendUser('frontend-noreverb@example.com');
 
-    $response = $this->actingAs($user)->get('/converse/chat');
+    $response = $this->actingAs($user)->get('/riwaaq/chat');
 
     $response->assertOk();
-    $response->assertSee('converse-chat-app', false);
+    $response->assertSee('riwaaq-chat-app', false);
 });
 
 it('applies the theme synchronously before the deferred app.js bundle to avoid a flash of the wrong theme', function () {
     $user = frontendUser('frontend-theme-sync@example.com');
 
-    $html = $this->actingAs($user)->get('/converse/chat')->assertOk()->getContent();
+    $html = $this->actingAs($user)->get('/riwaaq/chat')->assertOk()->getContent();
 
-    $mountPosition = strpos($html, 'id="converse-chat-app"');
-    $themeScriptPosition = strpos($html, "localStorage.getItem('converse:theme')");
+    $mountPosition = strpos($html, 'id="riwaaq-chat-app"');
+    $themeScriptPosition = strpos($html, "localStorage.getItem('riwaaq:theme')");
     $deferredBundlePosition = strpos($html, ' defer>');
 
     expect($mountPosition)->not->toBeFalse()

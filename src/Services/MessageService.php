@@ -1,30 +1,30 @@
 <?php
 
-namespace Converse\Chat\Services;
+namespace Riwaaq\Chat\Services;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\AttachmentServiceInterface;
-use Converse\Chat\Contracts\BlockedUserServiceInterface;
-use Converse\Chat\Contracts\ConversationRepositoryInterface;
-use Converse\Chat\Contracts\MessageRepositoryInterface;
-use Converse\Chat\Contracts\MessageServiceInterface;
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Enums\MessageType;
-use Converse\Chat\Events\MessageDeleted;
-use Converse\Chat\Events\MessageSent;
-use Converse\Chat\Events\MessageUpdated;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\Message;
-use Converse\Chat\Models\MessageAttachment;
-use Converse\Chat\Models\MessageDeletion;
-use Converse\Chat\Models\MessageEdit;
-use Converse\Chat\Models\MessageReceipt;
-use Converse\Chat\Notifications\NewChatMessageNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\AttachmentServiceInterface;
+use Riwaaq\Chat\Contracts\BlockedUserServiceInterface;
+use Riwaaq\Chat\Contracts\ConversationRepositoryInterface;
+use Riwaaq\Chat\Contracts\MessageRepositoryInterface;
+use Riwaaq\Chat\Contracts\MessageServiceInterface;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Enums\MessageType;
+use Riwaaq\Chat\Events\MessageDeleted;
+use Riwaaq\Chat\Events\MessageSent;
+use Riwaaq\Chat\Events\MessageUpdated;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\MessageAttachment;
+use Riwaaq\Chat\Models\MessageDeletion;
+use Riwaaq\Chat\Models\MessageEdit;
+use Riwaaq\Chat\Models\MessageReceipt;
+use Riwaaq\Chat\Notifications\NewChatMessageNotification;
 
 class MessageService implements MessageServiceInterface
 {

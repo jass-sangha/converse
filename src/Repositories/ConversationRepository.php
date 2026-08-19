@@ -1,16 +1,16 @@
 <?php
 
-namespace Converse\Chat\Repositories;
+namespace Riwaaq\Chat\Repositories;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ConversationRepositoryInterface;
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Enums\ConversationType;
-use Converse\Chat\Models\Conversation;
-use Converse\Chat\Models\ConversationParticipant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ConversationRepositoryInterface;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Enums\ConversationType;
+use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Models\ConversationParticipant;
 
 class ConversationRepository implements ConversationRepositoryInterface
 {

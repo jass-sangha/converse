@@ -1,15 +1,15 @@
 <?php
 
-namespace Converse\Chat\Models;
+namespace Riwaaq\Chat\Models;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Database\Factories\ConversationFactory;
-use Converse\Chat\Enums\ConversationType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Database\Factories\ConversationFactory;
+use Riwaaq\Chat\Enums\ConversationType;
 
 class Conversation extends Model
 {

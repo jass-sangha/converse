@@ -1,10 +1,10 @@
 <?php
 
-namespace Converse\Chat\Models;
+namespace Riwaaq\Chat\Models;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Traits\BelongsToChatable;
 use Illuminate\Database\Eloquent\Model;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Traits\BelongsToChatable;
 
 class UserSetting extends Model
 {

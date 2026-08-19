@@ -1,13 +1,13 @@
 <?php
 
-namespace Converse\Chat\Repositories;
+namespace Riwaaq\Chat\Repositories;
 
-use Converse\Chat\Chat;
-use Converse\Chat\Contracts\ParticipantRepositoryInterface;
-use Converse\Chat\Enums\ParticipantRole;
-use Converse\Chat\Models\ConversationParticipant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
+use Riwaaq\Chat\Enums\ParticipantRole;
+use Riwaaq\Chat\Models\ConversationParticipant;
 
 class ParticipantRepository implements ParticipantRepositoryInterface
 {
