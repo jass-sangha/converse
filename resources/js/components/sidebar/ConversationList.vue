@@ -50,7 +50,10 @@ watch(showArchived, (archived) => {
     refresh(archived ? { archived: true } : {});
 });
 
-watch(() => store.activeConversationId, () => scrollActiveIntoView());
+watch(
+    () => store.activeConversationId,
+    () => scrollActiveIntoView(),
+);
 
 function toggleArchived() {
     setView(showArchived.value ? "chats" : "archived");
@@ -69,8 +72,12 @@ function isFavourited(conversation) {
 // in place at its existing array index, it never re-sorts, so without this a freshly pinned (or
 // unpinned) chat would keep its old position until the next full list refetch.
 function sortKey(conversation) {
-    const pinnedAt = conversation.me?.pinned_at ? new Date(conversation.me.pinned_at).getTime() : null;
-    const lastActivityAt = conversation.last_activity_at ? new Date(conversation.last_activity_at).getTime() : 0;
+    const pinnedAt = conversation.me?.pinned_at
+        ? new Date(conversation.me.pinned_at).getTime()
+        : null;
+    const lastActivityAt = conversation.last_activity_at
+        ? new Date(conversation.last_activity_at).getTime()
+        : 0;
     return { pinnedAt, lastActivityAt };
 }
 
@@ -81,7 +88,11 @@ const sortedConversations = computed(() =>
         if ((ka.pinnedAt !== null) !== (kb.pinnedAt !== null)) {
             return ka.pinnedAt !== null ? -1 : 1;
         }
-        if (ka.pinnedAt !== null && kb.pinnedAt !== null && ka.pinnedAt !== kb.pinnedAt) {
+        if (
+            ka.pinnedAt !== null &&
+            kb.pinnedAt !== null &&
+            ka.pinnedAt !== kb.pinnedAt
+        ) {
             return kb.pinnedAt - ka.pinnedAt;
         }
         return kb.lastActivityAt - ka.lastActivityAt;
@@ -94,7 +105,9 @@ const filteredConversations = computed(() => {
     // when it doesn't actually belong in the Archived list, so it doesn't leak into view.
     const source = showArchived.value
         ? sortedConversations.value.filter((c) => c.me?.archived_at)
-        : sortedConversations.value.filter((c) => !c.me?.archived_at || c.id === store.activeConversationId);
+        : sortedConversations.value.filter(
+              (c) => !c.me?.archived_at || c.id === store.activeConversationId,
+          );
 
     switch (filter.value) {
         case "unread":
@@ -191,8 +204,10 @@ function openHit(hit) {
             v-else
             class="chat-conversation-list__header flex items-center justify-between px-4 py-3"
         >
-            <h1 class="font-display text-2xl font-normal text-riwaaq-text">
-                Riwaaq
+            <h1
+                class="block w-full rounded-full px-3.5 py-2.5 text-left text-riwaaq-text"
+            >
+                Chats
             </h1>
 
             <div

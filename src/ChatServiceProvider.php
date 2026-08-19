@@ -106,10 +106,10 @@ class ChatServiceProvider extends PackageServiceProvider
         // gates themselves read env(...) INSIDE config/chat.php (matching chatable_models'
         // existing convention), not as a config()-read-site fallback — once merged, the config
         // key always exists, so a fallback given only at the read site would never be reached.
-        $this->mergeConfigFrom(__DIR__.'/../config/chat.php', 'chat');
-        $this->mergeConfigFrom(__DIR__.'/../config/riwaaq.php', 'riwaaq');
+        $this->mergeConfigFrom(__DIR__ . '/../config/chat.php', 'chat');
+        $this->mergeConfigFrom(__DIR__ . '/../config/riwaaq.php', 'riwaaq');
 
-        $package->name('chat')->hasConfigFile(['chat', 'riwaaq']);
+        $package->name('chat')->hasConfigFile('chat');
 
         if ((bool) config('chat.run_migrations', true)) {
             // discoversMigrations() (not hasMigrations()) preserves the timestamp-prefixed
@@ -148,7 +148,7 @@ class ChatServiceProvider extends PackageServiceProvider
         $this->registerStatefulApiMiddleware();
 
         $this->publishes([
-            __DIR__.'/../resources/css/theme.css' => public_path('vendor/chat/theme.css'),
+            __DIR__ . '/../resources/css/theme.css' => public_path('vendor/chat/theme.css'),
         ], 'chat-theme');
     }
 
