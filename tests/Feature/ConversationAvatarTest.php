@@ -11,7 +11,6 @@ function avatarUser(string $email): User
 
 it('lets the group admin update the group avatar but rejects a non-admin', function () {
     Storage::fake('chat');
-    config(['riwaaq.max_group_participants' => null]); // 3-participant group — exceeds the free-tier limit
 
     $alice = avatarUser('alice-avatar@example.com');
     $bob = avatarUser('bob-avatar@example.com');
@@ -36,7 +35,6 @@ it('lets the group admin update the group avatar but rejects a non-admin', funct
 
 it('lets the group admin remove the group avatar but rejects a non-admin', function () {
     Storage::fake('chat');
-    config(['riwaaq.max_group_participants' => null]); // 3-participant group — exceeds the free-tier limit
 
     $alice = avatarUser('alice-avatar2@example.com');
     $bob = avatarUser('bob-avatar2@example.com');

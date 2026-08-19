@@ -13,7 +13,6 @@ use Riwaaq\Chat\Console\Commands\SweepPresenceCommand;
 use Riwaaq\Chat\Contracts\AttachmentServiceInterface;
 use Riwaaq\Chat\Contracts\BlockedUserServiceInterface;
 use Riwaaq\Chat\Contracts\ChatListServiceInterface;
-use Riwaaq\Chat\Contracts\ConversationLimitServiceInterface;
 use Riwaaq\Chat\Contracts\ConversationRepositoryInterface;
 use Riwaaq\Chat\Contracts\ConversationServiceInterface;
 use Riwaaq\Chat\Contracts\EventRsvpServiceInterface;
@@ -28,7 +27,6 @@ use Riwaaq\Chat\Contracts\ParticipantServiceInterface;
 use Riwaaq\Chat\Contracts\PinnedMessageServiceInterface;
 use Riwaaq\Chat\Contracts\PollVoteServiceInterface;
 use Riwaaq\Chat\Contracts\PresenceServiceInterface;
-use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
 use Riwaaq\Chat\Contracts\StarredMessageServiceInterface;
 use Riwaaq\Chat\Contracts\UserSearchServiceInterface;
 use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
@@ -42,7 +40,6 @@ use Riwaaq\Chat\Repositories\ParticipantRepository;
 use Riwaaq\Chat\Services\AttachmentService;
 use Riwaaq\Chat\Services\BlockedUserService;
 use Riwaaq\Chat\Services\ChatListService;
-use Riwaaq\Chat\Services\ConversationLimitService;
 use Riwaaq\Chat\Services\ConversationService;
 use Riwaaq\Chat\Services\EventRsvpService;
 use Riwaaq\Chat\Services\MessageReactionService;
@@ -54,7 +51,6 @@ use Riwaaq\Chat\Services\ParticipantService;
 use Riwaaq\Chat\Services\PinnedMessageService;
 use Riwaaq\Chat\Services\PollVoteService;
 use Riwaaq\Chat\Services\PresenceService;
-use Riwaaq\Chat\Services\RiwaaqLimits;
 use Riwaaq\Chat\Services\StarredMessageService;
 use Riwaaq\Chat\Services\UserSearchService;
 use Riwaaq\Chat\Services\UserSettingsService;
@@ -87,8 +83,6 @@ class ChatServiceProvider extends PackageServiceProvider
         ChatListServiceInterface::class => ChatListService::class,
         PollVoteServiceInterface::class => PollVoteService::class,
         EventRsvpServiceInterface::class => EventRsvpService::class,
-        RiwaaqLimitsInterface::class => RiwaaqLimits::class,
-        ConversationLimitServiceInterface::class => ConversationLimitService::class,
     ];
 
     protected array $policies = [
@@ -106,8 +100,7 @@ class ChatServiceProvider extends PackageServiceProvider
         // gates themselves read env(...) INSIDE config/chat.php (matching chatable_models'
         // existing convention), not as a config()-read-site fallback — once merged, the config
         // key always exists, so a fallback given only at the read site would never be reached.
-        $this->mergeConfigFrom(__DIR__ . '/../config/chat.php', 'chat');
-        $this->mergeConfigFrom(__DIR__ . '/../config/riwaaq.php', 'riwaaq');
+        $this->mergeConfigFrom(__DIR__.'/../config/chat.php', 'chat');
 
         $package->name('chat')->hasConfigFile('chat');
 
@@ -148,7 +141,7 @@ class ChatServiceProvider extends PackageServiceProvider
         $this->registerStatefulApiMiddleware();
 
         $this->publishes([
-            __DIR__ . '/../resources/css/theme.css' => public_path('vendor/chat/theme.css'),
+            __DIR__.'/../resources/css/theme.css' => public_path('vendor/chat/theme.css'),
         ], 'chat-theme');
     }
 

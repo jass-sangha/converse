@@ -4,7 +4,6 @@ namespace Riwaaq\Chat\Support;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Str;
-use Riwaaq\Chat\Contracts\RiwaaqLimitsInterface;
 
 /**
  * Builds the window.RiwaaqConfig payload and the theme-override inline
@@ -50,10 +49,6 @@ class ChatConfig
             ],
             'assetVersion' => is_file($assetPath) ? filemtime($assetPath) : time(),
             'embed' => $embed,
-            // Server-resolved (free default, or riwaaq-pro's override if installed) —
-            // never a query param, so an embedding site can't strip its own branding
-            // requirement by tampering with the URL.
-            'showBranding' => app(RiwaaqLimitsInterface::class)->showBranding(),
         ];
     }
 

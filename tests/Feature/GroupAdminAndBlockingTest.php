@@ -8,8 +8,6 @@ function groupUser(string $email): User
 }
 
 it('lets the group admin add and remove members but rejects a non-admin', function () {
-    config(['riwaaq.max_group_participants' => null]); // grows past the free-tier 2-participant limit
-
     $alice = groupUser('alice-grp@example.com');
     $bob = groupUser('bob-grp@example.com');
     $carol = groupUser('carol-grp@example.com');

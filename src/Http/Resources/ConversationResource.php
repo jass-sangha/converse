@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
 use Riwaaq\Chat\Chat;
-use Riwaaq\Chat\Contracts\ConversationLimitServiceInterface;
 use Riwaaq\Chat\Models\ConversationParticipant;
 use Riwaaq\Chat\Models\Message;
 
@@ -17,7 +16,7 @@ class ConversationResource extends JsonResource
     {
         $viewer = $request->user();
         $me = $viewer ? $this->participants->first(
-            fn(ConversationParticipant $p) => $p->chatable_type === $viewer->getMorphClass() && $p->chatable_id === $viewer->getKey()
+            fn (ConversationParticipant $p) => $p->chatable_type === $viewer->getMorphClass() && $p->chatable_id === $viewer->getKey()
         ) : null;
 
         return [
@@ -31,9 +30,6 @@ class ConversationResource extends JsonResource
             'last_message' => $this->resolveLastMessage($viewer),
             'participants' => ParticipantResource::collection($this->whenLoaded('participants')),
             'unread_count' => $me ? $this->unreadCountFor($me) : 0,
-            // Informational gating fields, never enforced client-side.
-            'max_group_participants' => app(ConversationLimitServiceInterface::class)->maxGroupParticipants(),
-            'can_add_participants' => app(ConversationLimitServiceInterface::class)->canAddParticipant($this->resource),
             'me' => $me ? [
                 'role' => $me->role?->value,
                 'muted_until' => $me->muted_until,
@@ -59,7 +55,7 @@ class ConversationResource extends JsonResource
         $query = Message::query()->where('conversation_id', $this->id)->orderByDesc('id');
 
         if ($viewer) {
-            $query->whereDoesntHave('deletions', fn($q) => Chat::whereChatable($q, $viewer));
+            $query->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $viewer));
         }
 
         $message = $query->with('receipts.chatable')->first();
@@ -76,7 +72,7 @@ class ConversationResource extends JsonResource
         }
 
         $count = $query
-            ->where(fn($q) => $q
+            ->where(fn ($q) => $q
                 ->where('chatable_type', '!=', $participant->chatable_type)
                 ->orWhere('chatable_id', '!=', $participant->chatable_id))
             ->count();

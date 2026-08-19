@@ -346,6 +346,12 @@ async function onMuteAll(scope, durationKey) {
                     @update:model-value="setDefaultWallpaper"
                 />
             </div>
+
+            <div
+                class="chat-settings-branding select-none px-1.5 pb-4 pt-2 text-center text-[11px] text-riwaaq-textDim"
+            >
+                Powered by Riwaaq · riwaaq-pro
+            </div>
         </div>
     </div>
 </template>

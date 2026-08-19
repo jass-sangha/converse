@@ -32,7 +32,6 @@ it('broadcasts ConversationCreated onto each participants private chatable chann
 
 it('broadcasts ParticipantAdded onto the conversation channel and each new participants private channel', function () {
     Event::fake([ParticipantAdded::class]);
-    config(['riwaaq.max_group_participants' => null]); // grows past the free-tier 2-participant limit
 
     $alice = pushUser('alice-push-grp@example.com');
     $bob = pushUser('bob-push-grp@example.com');

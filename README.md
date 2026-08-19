@@ -393,33 +393,6 @@ Event::listen(MessageSent::class, function (MessageSent $event) {
 
 The default `OpenGraphLinkPreviewFetcher` does a simple OG-tag scrape. Bind `Riwaaq\Chat\Contracts\LinkPreviewFetcher` to your own implementation (e.g. a dedicated unfurling service) if you need more than that.
 
-### Plan limits (for paid add-ons)
-
-This free/core package always runs with the limits in `config/riwaaq.php`:
-
-```php
-'max_group_participants' => 10,   // direct-message only by default
-'show_branding' => true,
-```
-
-Everywhere a limit is checked (adding a participant or rendering the widget's branding badge) reads through `Riwaaq\Chat\Contracts\RiwaaqLimitsInterface`, resolved to the `RiwaaqLimits` service — never `config('riwaaq.*')` directly. `RiwaaqLimits` itself does exactly one thing beyond reading that config: if a class named exactly `RiwaaqPro\LimitsOverride` is present (i.e. autoloadable — installing a package that ships one is enough, no manual wiring), it defers to that instead.
-
-A paid add-on hooks in by shipping a class implementing `Riwaaq\Chat\Contracts\LimitsOverrideInterface`:
-
-```php
-namespace RiwaaqPro;
-
-use Riwaaq\Chat\Contracts\LimitsOverrideInterface;
-
-class LimitsOverride implements LimitsOverrideInterface
-{
-    public function maxGroupParticipants(): ?int { return null; } // unlimited
-    public function showBranding(): bool { return false; }
-}
-```
-
-That's the entire contract — this package has no other concept of "plans," licenses, or tiers, and no hard dependency on any add-on being installed (the `class_exists()` check is the _only_ place this package ever references one). If you're building against this extension point, keep new limits on `LimitsOverrideInterface`/`RiwaaqLimitsInterface` rather than inventing a parallel mechanism, since every consumer of a limit depends on those two interfaces exclusively.
-
 ## Testing
 
 ```bash

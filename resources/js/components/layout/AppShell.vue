@@ -2,7 +2,6 @@
 import { computed } from "vue";
 import IconRail from "./IconRail.vue";
 import MobileTabBar from "./MobileTabBar.vue";
-import BrandingBadge from "../shared/BrandingBadge.vue";
 import ConversationList from "../sidebar/ConversationList.vue";
 import NewChatPanel from "../sidebar/NewChatPanel.vue";
 import NewGroupPanel from "../sidebar/NewGroupPanel.vue";
@@ -84,6 +83,5 @@ const showMobileTabBar = computed(
         </div>
 
         <MobileTabBar v-if="showMobileTabBar" />
-        <BrandingBadge />
     </div>
 </template>

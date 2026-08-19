@@ -1,5 +1,6 @@
 <?php
 
+use Riwaaq\Chat\Models\Message;
 use Riwaaq\Chat\Tests\Fixtures\User;
 
 function createPrivateConversation(User $a, User $b): int
@@ -45,4 +46,31 @@ it('rejects a non-participant from reading messages in a conversation', function
     $this->actingAs($eve)
         ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'hi'])
         ->assertForbidden();
+});
+
+it('does not limit message history by age', function () {
+    $alice = User::query()->create(['name' => 'Alice', 'email' => 'alice-history@example.com', 'password' => bcrypt('secret')]);
+    $bob = User::query()->create(['name' => 'Bob', 'email' => 'bob-history@example.com', 'password' => bcrypt('secret')]);
+
+    $conversationId = createPrivateConversation($alice, $bob);
+
+    $recentId = $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => 'recent',
+    ])->assertCreated()->json('data.id');
+
+    $oldId = $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => 'old',
+    ])->assertCreated()->json('data.id');
+
+    Message::query()->where('id', $oldId)->update(['created_at' => now()->subDays(45)]);
+
+    $messages = $this->actingAs($alice)
+        ->getJson("/api/chat/conversations/{$conversationId}/messages")
+        ->assertOk();
+
+    expect(collect($messages->json('data'))->pluck('id'))
+        ->toContain($recentId)
+        ->toContain($oldId);
 });
