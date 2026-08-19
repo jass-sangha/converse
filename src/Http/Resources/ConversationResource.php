@@ -17,7 +17,7 @@ class ConversationResource extends JsonResource
     {
         $viewer = $request->user();
         $me = $viewer ? $this->participants->first(
-            fn (ConversationParticipant $p) => $p->chatable_type === $viewer->getMorphClass() && $p->chatable_id === $viewer->getKey()
+            fn(ConversationParticipant $p) => $p->chatable_type === $viewer->getMorphClass() && $p->chatable_id === $viewer->getKey()
         ) : null;
 
         return [
@@ -59,7 +59,7 @@ class ConversationResource extends JsonResource
         $query = Message::query()->where('conversation_id', $this->id)->orderByDesc('id');
 
         if ($viewer) {
-            $query->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $viewer));
+            $query->whereDoesntHave('deletions', fn($q) => Chat::whereChatable($q, $viewer));
         }
 
         $message = $query->with('receipts.chatable')->first();
@@ -76,7 +76,7 @@ class ConversationResource extends JsonResource
         }
 
         $count = $query
-            ->where(fn ($q) => $q
+            ->where(fn($q) => $q
                 ->where('chatable_type', '!=', $participant->chatable_type)
                 ->orWhere('chatable_id', '!=', $participant->chatable_id))
             ->count();

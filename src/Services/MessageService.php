@@ -210,7 +210,7 @@ class MessageService implements MessageServiceInterface
         $senderIdentity = Chat::identify($sender);
 
         return $this->participants->activeChatables($conversation->id)
-            ->reject(fn (Model $chatable) => Chat::identify($chatable) === $senderIdentity)
+            ->reject(fn(Model $chatable) => Chat::identify($chatable) === $senderIdentity)
             ->values();
     }
 
@@ -223,7 +223,7 @@ class MessageService implements MessageServiceInterface
             return;
         }
 
-        MessageReceipt::query()->insert($others->map(fn (Model $chatable) => [
+        MessageReceipt::query()->insert($others->map(fn(Model $chatable) => [
             'message_id' => $message->id,
             'chatable_type' => $chatable->getMorphClass(),
             'chatable_id' => $chatable->getKey(),

@@ -30,7 +30,7 @@ class MessageRepository implements MessageRepositoryInterface
     ): LengthAwarePaginator {
         $query = Message::query()
             ->where('conversation_id', $conversation->id)
-            ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
+            ->whereDoesntHave('deletions', fn($q) => Chat::whereChatable($q, $chatable))
             ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps'])
             ->orderByDesc('id');
 
@@ -44,10 +44,10 @@ class MessageRepository implements MessageRepositoryInterface
     public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator
     {
         $builder = Message::query()
-            ->whereHas('conversation.participants', fn ($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
-            ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
+            ->whereHas('conversation.participants', fn($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
+            ->whereDoesntHave('deletions', fn($q) => Chat::whereChatable($q, $chatable))
             ->whereNull('deleted_for_everyone_at')
-            ->where('body', 'like', '%'.$query.'%')
+            ->where('body', 'like', '%' . $query . '%')
             ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps', 'conversation.participants'])
             ->orderByDesc('id');
 
@@ -61,8 +61,8 @@ class MessageRepository implements MessageRepositoryInterface
     public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage, ?string $search = null): LengthAwarePaginator
     {
         $builder = Message::query()
-            ->whereHas('conversation.participants', fn ($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
-            ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
+            ->whereHas('conversation.participants', fn($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
+            ->whereDoesntHave('deletions', fn($q) => Chat::whereChatable($q, $chatable))
             ->whereNull('deleted_for_everyone_at')
             ->with(['chatable', 'attachments', 'conversation'])
             ->orderByDesc('id');
@@ -85,15 +85,15 @@ class MessageRepository implements MessageRepositoryInterface
             $matches = Chat::matchingChatablePairs($search);
 
             $builder->where(function ($outer) use ($search, $matches) {
-                $outer->whereHas('attachments', fn ($q) => $q->where('original_filename', 'like', '%'.$search.'%'))
-                    ->orWhere('body', 'like', '%'.$search.'%')
-                    ->orWhereHas('conversation', fn ($q) => $q->where('name', 'like', '%'.$search.'%'));
+                $outer->whereHas('attachments', fn($q) => $q->where('original_filename', 'like', '%' . $search . '%'))
+                    ->orWhere('body', 'like', '%' . $search . '%')
+                    ->orWhereHas('conversation', fn($q) => $q->where('name', 'like', '%' . $search . '%'));
 
                 if (! empty($matches)) {
                     $outer->orWhereHas('conversation.participants', function ($participantQuery) use ($matches) {
                         $participantQuery->where(function ($inner) use ($matches) {
                             foreach ($matches as [$type, $id]) {
-                                $inner->orWhere(fn ($q) => $q->where('chatable_type', $type)->where('chatable_id', $id));
+                                $inner->orWhere(fn($q) => $q->where('chatable_type', $type)->where('chatable_id', $id));
                             }
                         });
                     });
@@ -108,14 +108,14 @@ class MessageRepository implements MessageRepositoryInterface
     {
         $ids = Message::query()
             ->where('conversation_id', $conversation->id)
-            ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
+            ->whereDoesntHave('deletions', fn($q) => Chat::whereChatable($q, $chatable))
             ->pluck('id');
 
         if ($ids->isEmpty()) {
             return;
         }
 
-        $rows = $ids->map(fn (int $id) => [
+        $rows = $ids->map(fn(int $id) => [
             'message_id' => $id,
             'chatable_type' => $chatable->getMorphClass(),
             'chatable_id' => $chatable->getKey(),
