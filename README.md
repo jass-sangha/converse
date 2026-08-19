@@ -252,7 +252,12 @@ export default function ConverseChat({ src = "/converse/chat" }: { src?: string 
 
 ```vue
 <template>
-    <iframe ref="frame" :src="src" style="width:100%;border:0;height:100%" title="Chat" />
+    <iframe
+        ref="frame"
+        :src="src"
+        style="width:100%;border:0;height:100%"
+        title="Chat"
+    />
 </template>
 
 <script setup>
@@ -393,7 +398,7 @@ The default `OpenGraphLinkPreviewFetcher` does a simple OG-tag scrape. Bind `Con
 This free/core package always runs with the limits in `config/converse.php`:
 
 ```php
-'max_group_participants' => 2,   // direct-message only by default
+'max_group_participants' => 10,   // direct-message only by default
 'history_days' => 30,
 'show_branding' => true,
 ```
@@ -415,7 +420,7 @@ class LimitsOverride implements LimitsOverrideInterface
 }
 ```
 
-That's the entire contract — this package has no other concept of "plans," licenses, or tiers, and no hard dependency on any add-on being installed (the `class_exists()` check is the *only* place this package ever references one). If you're building against this extension point, keep new limits on `LimitsOverrideInterface`/`ConverseLimitsInterface` rather than inventing a parallel mechanism, since every consumer of a limit depends on those two interfaces exclusively.
+That's the entire contract — this package has no other concept of "plans," licenses, or tiers, and no hard dependency on any add-on being installed (the `class_exists()` check is the _only_ place this package ever references one). If you're building against this extension point, keep new limits on `LimitsOverrideInterface`/`ConverseLimitsInterface` rather than inventing a parallel mechanism, since every consumer of a limit depends on those two interfaces exclusively.
 
 ## Testing
 

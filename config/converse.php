@@ -14,9 +14,9 @@ return [
     | of the README for how to build against it.
     |
     */
-    // 2 total participants is effectively direct-message only — any attempt to grow a
-    // conversation past that (i.e. an actual group) is blocked.
-    'max_group_participants' => 2,
+    // Conversations may grow to at most 10 total participants; any attempt to add
+    // beyond that is blocked.
+    'max_group_participants' => 10,
     'history_days' => 30,
     'show_branding' => true,
 

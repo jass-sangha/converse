@@ -18,8 +18,10 @@ it('blocks adding a participant past the free-tier group limit but respects a ra
         'participants' => [chatableRef($bob)],
     ])->assertCreated()->json('data.id');
 
-    // Default free-tier config (max_group_participants = 2): a 3rd participant is blocked
+    // Free-tier config (max_group_participants = 2): a 3rd participant is blocked
     // with a structured validation error, not a hard 500/blank failure.
+    config(['converse.max_group_participants' => 2]);
+
     $this->actingAs($alice)
         ->postJson("/api/chat/conversations/{$conversationId}/participants", ['participants' => [chatableRef($carol)]])
         ->assertUnprocessable()
@@ -38,6 +40,9 @@ it('blocks creating a group past the free-tier participant limit but respects a 
     $alice = licenseTestUser('alice-group-license@example.com');
     $bob = licenseTestUser('bob-group-license@example.com');
     $carol = licenseTestUser('carol-group-license@example.com');
+
+    // Free-tier config (max_group_participants = 2): a 3-participant group is blocked.
+    config(['converse.max_group_participants' => 2]);
 
     $this->actingAs($alice)->postJson('/api/chat/conversations', [
         'type' => 'group',
