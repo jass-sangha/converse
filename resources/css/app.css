@@ -1,4 +1,4 @@
-@import './theme.css';
+@import "./theme.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,104 +17,105 @@
  * background (switch tracks, the "+ New" button, etc).
  */
 @layer base {
-#riwaaq-chat-app,
-#riwaaq-chat-app *,
-#riwaaq-chat-app *::before,
-#riwaaq-chat-app *::after {
-    box-sizing: border-box;
-    border-width: 0;
-    border-style: solid;
-    border-color: currentColor;
-}
+    #riwaaq-chat-app,
+    #riwaaq-chat-app *,
+    #riwaaq-chat-app *::before,
+    #riwaaq-chat-app *::after {
+        box-sizing: border-box;
+        border-width: 0;
+        border-style: solid;
+        border-color: currentColor;
+    }
 
-#riwaaq-chat-app a {
-    color: inherit;
-    text-decoration: inherit;
-}
+    #riwaaq-chat-app a {
+        color: inherit;
+        text-decoration: inherit;
+    }
 
-#riwaaq-chat-app {
-    line-height: 1.5;
-    -webkit-text-size-adjust: 100%;
-    tab-size: 4;
-    /* Embedded mode (AppShell's h-full) fills this via the ordinary CSS percentage
+    #riwaaq-chat-app {
+        line-height: 1.5;
+        font-family: inherit;
+        -webkit-text-size-adjust: 100%;
+        tab-size: 4;
+        /* Embedded mode (AppShell's h-full) fills this via the ordinary CSS percentage
        chain — it only resolves to something non-zero once the host's own parent
        container has an explicit height, which embedding hosts must provide. */
-    display: block;
-    height: 100%;
-}
+        display: block;
+        height: 100%;
+    }
 
-#riwaaq-chat-app button,
-#riwaaq-chat-app input,
-#riwaaq-chat-app optgroup,
-#riwaaq-chat-app select,
-#riwaaq-chat-app textarea {
-    font-family: inherit;
-    font-size: 100%;
-    font-weight: inherit;
-    line-height: inherit;
-    color: inherit;
-    margin: 0;
-    padding: 0;
-}
+    #riwaaq-chat-app button,
+    #riwaaq-chat-app input,
+    #riwaaq-chat-app optgroup,
+    #riwaaq-chat-app select,
+    #riwaaq-chat-app textarea {
+        font-family: inherit;
+        font-size: 100%;
+        font-weight: inherit;
+        line-height: inherit;
+        color: inherit;
+        margin: 0;
+        padding: 0;
+    }
 
-#riwaaq-chat-app button,
-#riwaaq-chat-app select {
-    text-transform: none;
-}
+    #riwaaq-chat-app button,
+    #riwaaq-chat-app select {
+        text-transform: none;
+    }
 
-#riwaaq-chat-app button,
-#riwaaq-chat-app [type='button'],
-#riwaaq-chat-app [type='reset'],
-#riwaaq-chat-app [type='submit'] {
-    -webkit-appearance: button;
-    background-color: transparent;
-    background-image: none;
-}
+    #riwaaq-chat-app button,
+    #riwaaq-chat-app [type="button"],
+    #riwaaq-chat-app [type="reset"],
+    #riwaaq-chat-app [type="submit"] {
+        -webkit-appearance: button;
+        background-color: transparent;
+        background-image: none;
+    }
 
-#riwaaq-chat-app button:not(:disabled),
-#riwaaq-chat-app [type='button']:not(:disabled),
-#riwaaq-chat-app [type='reset']:not(:disabled),
-#riwaaq-chat-app [type='submit']:not(:disabled) {
-    cursor: pointer;
-}
+    #riwaaq-chat-app button:not(:disabled),
+    #riwaaq-chat-app [type="button"]:not(:disabled),
+    #riwaaq-chat-app [type="reset"]:not(:disabled),
+    #riwaaq-chat-app [type="submit"]:not(:disabled) {
+        cursor: pointer;
+    }
 
-#riwaaq-chat-app :is(h1, h2, h3, h4, h5, h6) {
-    font-size: inherit;
-    font-weight: inherit;
-}
+    #riwaaq-chat-app :is(h1, h2, h3, h4, h5, h6) {
+        font-size: inherit;
+        font-weight: inherit;
+    }
 
-#riwaaq-chat-app p,
-#riwaaq-chat-app h1,
-#riwaaq-chat-app h2,
-#riwaaq-chat-app h3,
-#riwaaq-chat-app h4,
-#riwaaq-chat-app h5,
-#riwaaq-chat-app h6,
-#riwaaq-chat-app blockquote,
-#riwaaq-chat-app figure {
-    margin: 0;
-}
+    #riwaaq-chat-app p,
+    #riwaaq-chat-app h1,
+    #riwaaq-chat-app h2,
+    #riwaaq-chat-app h3,
+    #riwaaq-chat-app h4,
+    #riwaaq-chat-app h5,
+    #riwaaq-chat-app h6,
+    #riwaaq-chat-app blockquote,
+    #riwaaq-chat-app figure {
+        margin: 0;
+    }
 
-#riwaaq-chat-app ul,
-#riwaaq-chat-app ol {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
+    #riwaaq-chat-app ul,
+    #riwaaq-chat-app ol {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
 
-#riwaaq-chat-app img,
-#riwaaq-chat-app svg,
-#riwaaq-chat-app video,
-#riwaaq-chat-app canvas {
-    display: block;
-    vertical-align: middle;
-}
+    #riwaaq-chat-app img,
+    #riwaaq-chat-app svg,
+    #riwaaq-chat-app video,
+    #riwaaq-chat-app canvas {
+        display: block;
+        vertical-align: middle;
+    }
 
-#riwaaq-chat-app img,
-#riwaaq-chat-app video {
-    max-width: 100%;
-    height: auto;
-}
+    #riwaaq-chat-app img,
+    #riwaaq-chat-app video {
+        max-width: 100%;
+        height: auto;
+    }
 }
 
 .chat-app-shell,
@@ -148,7 +149,8 @@
 }
 
 @keyframes chat-message-highlight {
-    0%, 40% {
+    0%,
+    40% {
         box-shadow: 0 0 0 4px rgb(var(--chat-accent) / 0.35);
     }
     100% {
@@ -157,18 +159,34 @@
 }
 
 @keyframes chat-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes chat-scale-in {
-    from { opacity: 0; transform: scale(0.96) translateY(6px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 @keyframes chat-pop-in {
-    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .chat-animate-fade-in {
@@ -184,8 +202,14 @@
 }
 
 @keyframes chat-panel-in {
-    from { opacity: 0; transform: translateX(46px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(46px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .chat-animate-panel-in {
@@ -193,8 +217,13 @@
 }
 
 @keyframes chat-call-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgb(var(--chat-accent) / 0.35); }
-    50% { box-shadow: 0 0 0 16px rgb(var(--chat-accent) / 0); }
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgb(var(--chat-accent) / 0.35);
+    }
+    50% {
+        box-shadow: 0 0 0 16px rgb(var(--chat-accent) / 0);
+    }
 }
 
 .chat-animate-call-pulse {
