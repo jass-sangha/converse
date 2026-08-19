@@ -204,9 +204,7 @@ function openHit(hit) {
             v-else
             class="chat-conversation-list__header flex items-center justify-between px-4 py-3"
         >
-            <h1
-                class="block w-full rounded-full px-3.5 py-2.5 text-left text-riwaaq-text"
-            >
+            <h1 class="font-display text-2xl font-normal text-riwaaq-text">
                 Chats
             </h1>
 
