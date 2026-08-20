@@ -103,6 +103,27 @@ it('rejects an oversized attachment upload but accepts any file type', function 
     ])->assertStatus(422);
 });
 
+it('reports a clear error when a single file was rejected by upload_max_filesize, instead of "must be a file"', function () {
+    $alice = mediaUser('alice-inisize@example.com');
+
+    // Simulates what PHP itself produces for a file over upload_max_filesize: the request
+    // completes fine (unlike post_max_size, which Illuminate\Http\Middleware\ValidatePostSize
+    // already rejects before this code runs), but the file arrives pre-marked as errored.
+    $file = new UploadedFile(
+        sys_get_temp_dir().'/does-not-matter',
+        'huge.jpg',
+        'image/jpeg',
+        UPLOAD_ERR_INI_SIZE,
+        true,
+    );
+
+    $response = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => $file,
+    ])->assertStatus(422);
+
+    expect($response->json('errors.file.0'))->toContain('larger than the server allows');
+});
+
 it('sends a location message and a contact message', function () {
     $alice = mediaUser('alice-loc@example.com');
     $bob = mediaUser('bob-loc@example.com');

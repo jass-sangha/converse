@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
 use Riwaaq\Chat\Http\Resources\ChatUserResource;
+use Riwaaq\Chat\Support\UploadLimitGuard;
 
 class ProfileController extends Controller
 {
@@ -15,6 +16,7 @@ class ProfileController extends Controller
 
     public function updateAvatar(Request $request)
     {
+        UploadLimitGuard::assertWithinServerLimits($request, 'avatar');
         $request->validate(['avatar' => ['required', 'image', 'max:5120']]);
 
         $user = $request->user();

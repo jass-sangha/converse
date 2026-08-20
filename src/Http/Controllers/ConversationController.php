@@ -11,6 +11,7 @@ use Riwaaq\Chat\Http\Requests\StoreConversationRequest;
 use Riwaaq\Chat\Http\Requests\UpdateConversationRequest;
 use Riwaaq\Chat\Http\Resources\ConversationResource;
 use Riwaaq\Chat\Models\Conversation;
+use Riwaaq\Chat\Support\UploadLimitGuard;
 
 class ConversationController extends Controller
 {
@@ -101,6 +102,7 @@ class ConversationController extends Controller
     {
         Gate::authorize('updateAvatar', $conversation);
 
+        UploadLimitGuard::assertWithinServerLimits($request, 'avatar');
         $request->validate(['avatar' => ['required', 'image', 'max:5120']]);
 
         $updated = $this->conversations->updateAvatar($conversation, $request->file('avatar'));

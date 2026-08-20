@@ -130,6 +130,8 @@ Key options in `config/chat.php`:
 | `theme.overrides`                                                           | Config-only color/border-radius tweaks, no CSS file required (see "Theming" below)                                                                 |
 | `frame_ancestors`                                                           | Frame policy for embedding the full page in an `<iframe>` (see "Iframe embedding" below)                                                           |
 
+`media.max_sizes` is only the app-level ceiling — PHP itself will silently reject anything larger before this package ever sees it. Make sure your server's `upload_max_filesize` and `post_max_size` (in `php.ini`, for both the `cli` and `fpm`/whichever SAPI serves requests) are at least as large as the biggest value you configure here — e.g. a 100MB `video` limit needs `upload_max_filesize = 100M` and `post_max_size` at least that too.
+
 ## API surface
 
 All routes are prefixed with `config('chat.route_prefix')` (default `api/chat`).
