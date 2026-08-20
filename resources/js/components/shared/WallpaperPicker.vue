@@ -1,14 +1,15 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import {
-    WALLPAPER_PATTERNS,
-    WALLPAPER_COLORS,
+    getWallpaperPatterns,
+    getWallpaperColors,
     decodeWallpaper,
     encodeWallpaper,
 } from "../../wallpapers";
 import { useMessages } from "../../composables/useMessages";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
+import Icon from "./Icon.vue";
 
 const props = defineProps({
     modelValue: { type: String, default: null },
@@ -35,6 +36,11 @@ const { opened: colorMenuOpened, closed: colorMenuClosed } = useExclusiveDropdow
 const { openUp: colorMenuOpenUp, maxHeight: colorMenuMaxHeight, place: placeColorMenu } =
     useDropdownPlacement();
 const hexDraft = ref("");
+
+// Read once at setup — after app.js's boot-time registerWallpaperPatterns/Colors() calls (or any
+// host override) have already run, and the lists don't change again during the component's life.
+const wallpaperPatterns = getWallpaperPatterns();
+const wallpaperColors = getWallpaperColors();
 
 const current = computed(() => decodeWallpaper(props.modelValue));
 const isImage = computed(() => current.value.colorKeyOrHex?.startsWith("image:"));
@@ -138,11 +144,11 @@ async function onImageChange(event) {
         </p>
         <div class="mb-4 flex flex-wrap gap-[9px]">
             <button
-                v-for="pattern in WALLPAPER_PATTERNS"
+                v-for="pattern in wallpaperPatterns"
                 :key="pattern.key"
                 type="button"
                 :title="pattern.label"
-                class="relative h-10 w-10 rounded-[10px] border border-riwaaq-border bg-riwaaq-surfaceHover"
+                class="relative h-10 w-10 rounded-chat-sm border border-riwaaq-border bg-riwaaq-surfaceHover"
                 :class="isImage ? 'cursor-not-allowed opacity-30 grayscale' : ''"
                 :disabled="isImage"
                 :style="{
@@ -155,19 +161,12 @@ async function onImageChange(event) {
                     v-if="!isImage && current.patternKey === pattern.key"
                     class="pointer-events-none absolute -inset-1 rounded-xl border-2 border-riwaaq-accent"
                 />
-                <svg
+                <Icon
                     v-if="isImage"
-                    viewBox="0 0 24 24"
-                    width="14"
-                    height="14"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
+                    name="slash"
+                    :size="14"
                     class="pointer-events-none absolute inset-0 m-auto text-riwaaq-textMuted"
-                >
-                    <path d="M4 4l16 16" />
-                </svg>
+                />
             </button>
         </div>
 
@@ -176,7 +175,7 @@ async function onImageChange(event) {
         </p>
         <div class="flex flex-wrap gap-[9px]">
             <button
-                v-for="color in WALLPAPER_COLORS"
+                v-for="color in wallpaperColors"
                 :key="color.key"
                 type="button"
                 :title="color.label"
@@ -197,20 +196,12 @@ async function onImageChange(event) {
                     :style="{ backgroundColor: isCustomHex ? current.colorKeyOrHex : 'transparent' }"
                     @click="toggleColorMenu"
                 >
-                    <svg
+                    <Icon
                         v-if="!isCustomHex"
-                        viewBox="0 0 24 24"
-                        width="15"
-                        height="15"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2.25"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        name="droplet"
+                        :size="15"
                         class="pointer-events-none absolute inset-0 m-auto text-riwaaq-textMuted"
-                    >
-                        <path d="M12 3c-3.5 4-6.5 8-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 11 15.5 7 12 3Z" />
-                    </svg>
+                    />
                     <span
                         v-if="!isImage && isCustomHex"
                         class="pointer-events-none absolute -inset-1 rounded-full border-2 border-riwaaq-accent"
@@ -219,7 +210,7 @@ async function onImageChange(event) {
 
                 <div
                     v-if="showColorMenu"
-                    class="chat-animate-pop-in absolute right-0 z-20 w-[190px] overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-3 shadow-lg"
+                    class="chat-animate-pop-in absolute right-0 z-20 w-[190px] overflow-y-auto rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-3 shadow-chat-lg"
                     :class="colorMenuOpenUp ? 'bottom-full mb-1' : 'top-full mt-1'"
                     :style="{ maxHeight: colorMenuMaxHeight + 'px' }"
                 >
@@ -247,21 +238,7 @@ async function onImageChange(event) {
                 :disabled="uploadingImage"
                 @click="pickImage"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="text-riwaaq-textMuted"
-                >
-                    <rect x="3" y="4" width="18" height="16" rx="4" />
-                    <circle cx="8.5" cy="9.5" r="1.4" />
-                    <path d="M4 17l4.5-5 4 4 2.5-2.5L20 17" />
-                </svg>
+                <Icon name="image" :size="15" class="text-riwaaq-textMuted" />
             </button>
             <input
                 ref="imageInput"

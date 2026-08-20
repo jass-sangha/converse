@@ -8,6 +8,7 @@ import UserPicker from "../shared/UserPicker.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
 import MediaViewerModal from "../shared/MediaViewerModal.vue";
+import Icon from "../shared/Icon.vue";
 import DisappearingToggle from "./DisappearingToggle.vue";
 import MediaDocsLinksGrid from "./MediaDocsLinksGrid.vue";
 import StarredMessagesPanel from "./StarredMessagesPanel.vue";
@@ -388,7 +389,7 @@ async function onDeleteChat() {
 
 <template>
     <div
-        class="chat-group-info-panel chat-animate-panel-in fixed inset-0 z-40 flex w-full flex-col bg-riwaaq-surface md:absolute md:inset-y-0 md:left-auto md:right-0 md:w-[330px] md:shadow-2xl md:border-l md:border-riwaaq-border lg:relative lg:z-auto lg:shrink-0 lg:shadow-none"
+        class="chat-group-info-panel chat-animate-panel-in fixed inset-0 z-40 flex w-full flex-col bg-riwaaq-surface md:absolute md:inset-y-0 md:left-auto md:right-0 md:w-[330px] md:shadow-chat-lg md:border-l md:border-riwaaq-border lg:relative lg:z-auto lg:shrink-0 lg:shadow-none"
     >
         <SidebarScreenHeader
             :title="isGroup ? 'Group info' : 'Contact info'"
@@ -460,7 +461,7 @@ async function onDeleteChat() {
                         :key="item.id"
                         type="button"
                         :title="item.original_filename"
-                        class="group relative aspect-square overflow-hidden rounded-[14px] bg-riwaaq-surfaceHover"
+                        class="group relative aspect-square overflow-hidden rounded-chat-sm bg-riwaaq-surfaceHover"
                         @click="openMediaTile(i)"
                     >
                         <video
@@ -608,17 +609,7 @@ async function onDeleteChat() {
                     class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                     @click="toggleFavourite"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="shrink-0 text-riwaaq-textMuted"
-                    >
-                        <path
-                            d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.02 6.02 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z"
-                        />
-                    </svg>
+                    <Icon name="heart" :size="20" class="shrink-0 text-riwaaq-textMuted" />
                     <span>{{
                         isFavourite
                             ? "Remove from favourites"
@@ -631,17 +622,7 @@ async function onDeleteChat() {
                     class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                     @click="showStarred = true"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="shrink-0 text-riwaaq-textMuted"
-                    >
-                        <path
-                            d="M12 2 15 9l7 .6-5.3 4.6L18.2 21 12 17.3 5.8 21l1.5-6.8L2 9.6 9 9Z"
-                        />
-                    </svg>
+                    <Icon name="star" :size="20" class="shrink-0 text-riwaaq-textMuted" />
                     <span>Starred messages</span>
                 </button>
 
@@ -651,17 +632,7 @@ async function onDeleteChat() {
                     :disabled="clearing"
                     @click="onClearChat"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="shrink-0 text-riwaaq-accentText"
-                    >
-                        <path
-                            d="M15 4V3H9v1H4v2h16V4h-5ZM6 8l1 12h10l1-12H6Z"
-                        />
-                    </svg>
+                    <Icon name="trash-alt" :size="20" class="shrink-0 text-riwaaq-accentText" />
                     <span>{{ cleared ? "Chat cleared" : "Clear chat" }}</span>
                 </button>
 
@@ -671,17 +642,7 @@ async function onDeleteChat() {
                     class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-accentText hover:bg-riwaaq-surfaceHover"
                     @click="toggleBlockOther"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="shrink-0 text-riwaaq-accentText"
-                    >
-                        <path
-                            d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.94 7.94 0 0 1 4 12a8 8 0 0 1 8-8Zm0 16c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.94 7.94 0 0 1 20 12a8 8 0 0 1-8 8Z"
-                        />
-                    </svg>
+                    <Icon name="block" :size="20" class="shrink-0 text-riwaaq-accentText" />
                     <span
                         >{{ isOtherBlocked ? "Unblock" : "Block" }}
                         {{ otherParticipant?.name }}</span
@@ -693,17 +654,7 @@ async function onDeleteChat() {
                     class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-accentText hover:bg-riwaaq-surfaceHover"
                     @click="leaveGroup"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="shrink-0 text-riwaaq-accentText"
-                    >
-                        <path
-                            d="M10 3v2H5v14h5v2H3V3h7Zm5.29 3.71L18.59 10H8v2h10.59l-3.3 3.29 1.42 1.42L22 11.41l-5.29-5.3-1.42 1.6Z"
-                        />
-                    </svg>
+                    <Icon name="leave" :size="20" class="shrink-0 text-riwaaq-accentText" />
                     <span>Leave group</span>
                 </button>
 
@@ -712,17 +663,7 @@ async function onDeleteChat() {
                     class="flex items-center gap-4 rounded-2xl px-3.5 py-3 text-left text-[13.5px] font-medium text-riwaaq-accentText hover:bg-riwaaq-surfaceHover"
                     @click="onDeleteChat"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="shrink-0 text-riwaaq-accentText"
-                    >
-                        <path
-                            d="M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z"
-                        />
-                    </svg>
+                    <Icon name="trash" :size="20" class="shrink-0 text-riwaaq-accentText" />
                     <span>Delete chat</span>
                 </button>
             </div>
@@ -732,32 +673,18 @@ async function onDeleteChat() {
                 class="relative mx-[10px] flex flex-col gap-0.5 border-t border-riwaaq-border py-3.5"
             >
                 <div
-                    class="flex cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-riwaaq-surfaceHover"
+                    class="flex cursor-pointer items-center gap-3.5 rounded-chat px-4 py-[15px] hover:bg-riwaaq-surfaceHover"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
+                    <Icon
+                        :name="isMuted ? 'bell-muted' : 'bell'"
+                        :size="20"
                         class="shrink-0"
                         :class="
                             isMuted
                                 ? 'text-riwaaq-sage'
                                 : 'text-riwaaq-textMuted'
                         "
-                    >
-                        <path
-                            d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6-1.6-1.6V10a5.4 5.4 0 0 0-4.5-5.32V3.5a1 1 0 1 0-2 0v1.18A5.4 5.4 0 0 0 6.4 10v4.4L4.8 16v1h14.4v-1Z"
-                        />
-                        <path
-                            v-if="isMuted"
-                            d="M3.5 3.5l17 17"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            fill="none"
-                        />
-                    </svg>
+                    />
                     <button
                         type="button"
                         class="flex-1 text-left"
@@ -796,7 +723,7 @@ async function onDeleteChat() {
                     :class="muteMenuUp ? 'bottom-full mb-1' : 'top-full mt-1'"
                 >
                     <div
-                        class="w-48 overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 shadow-lg"
+                        class="w-48 overflow-y-auto rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-2 shadow-chat-lg"
                         :style="{ maxHeight: muteMenuMaxHeight + 'px' }"
                     >
                         <p

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import Avatar from "../shared/Avatar.vue";
+import Icon from "../shared/Icon.vue";
 import { useChatStore } from "../../store";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 
@@ -50,21 +51,7 @@ function openProfile() {
                 v-if="isChats"
                 class="absolute inset-0 rounded-2xl bg-riwaaq-accent"
             />
-            <svg
-                viewBox="0 0 24 24"
-                width="23"
-                height="23"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="relative"
-            >
-                <path
-                    d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.5 9.5 0 0 1-2.8-.4L4 21l1.6-4.2A8.3 8.3 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"
-                />
-            </svg>
+                <Icon name="chat-bubble-alt" :size="23" class="relative" />
             <span
                 v-if="unreadCount > 0"
                 class="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-riwaaq-sage px-[5px] text-[10.5px] font-bold text-white"
@@ -82,21 +69,7 @@ function openProfile() {
                 v-if="isMedia"
                 class="absolute inset-0 rounded-2xl bg-riwaaq-bubbleOut"
             />
-            <svg
-                viewBox="0 0 24 24"
-                width="23"
-                height="23"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="relative"
-            >
-                <rect x="3" y="4" width="18" height="16" rx="4" />
-                <circle cx="8.5" cy="9.5" r="1.6" />
-                <path d="M4 17l4.5-5 4 4 2.5-2.5L20 17" />
-            </svg>
+                <Icon name="image-alt" :size="23" class="relative" />
         </button>
 
         <button

@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from "vue";
 import { useCall } from "../../composables/useCall";
 import { useUsers } from "../../composables/useUsers";
+import Icon from "../shared/Icon.vue";
 
 const { phase, announcer, peers, isGroupCall, minimized, elapsed, restore, endCall } = useCall();
 const { resolve, get } = useUsers();
@@ -47,7 +48,7 @@ const statusLabel = computed(() => {
         v-if="visible"
         type="button"
         title="Return to call"
-        class="chat-animate-pop-in fixed left-1/2 z-[70] flex -translate-x-1/2 items-center gap-3 rounded-full border border-riwaaq-border bg-riwaaq-surface py-2.5 pl-3.5 pr-2.5 shadow-lg top-[calc(max(env(safe-area-inset-top),8px)+52px)] sm:left-24 sm:top-auto sm:bottom-6 sm:translate-x-0"
+        class="chat-animate-pop-in fixed left-1/2 z-[70] flex -translate-x-1/2 items-center gap-3 rounded-full border border-riwaaq-border bg-riwaaq-surface py-2.5 pl-3.5 pr-2.5 shadow-chat-lg top-[calc(max(env(safe-area-inset-top),8px)+52px)] sm:left-24 sm:top-auto sm:bottom-6 sm:translate-x-0"
         @click="restore"
     >
         <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-riwaaq-accent" />
@@ -65,21 +66,7 @@ const statusLabel = computed(() => {
             class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-riwaaq-danger text-white"
             @click.stop="endCall()"
         >
-            <svg
-                viewBox="0 0 24 24"
-                width="15"
-                height="15"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                style="transform: rotate(135deg)"
-            >
-                <path
-                    d="M4.5 3.5h3.6l1.6 4-2.2 1.6a12.5 12.5 0 0 0 5.4 5.4l1.6-2.2 4 1.6v3.6a2 2 0 0 1-2.2 2A16.8 16.8 0 0 1 2.5 5.7a2 2 0 0 1 2-2.2Z"
-                />
-            </svg>
+            <Icon name="phone" :size="15" style="transform: rotate(135deg)" />
         </span>
     </button>
 </template>

@@ -252,19 +252,45 @@ return [
     | Theme Overrides
     |--------------------------------------------------------------------------
     |
-    | Quick, config-only color/border-radius tweaks — no CSS file required.
-    | Keys match the Tailwind token names in tailwind.config.js's "riwaaq"
-    | color palette (accent, accentContrast, radius, etc.), values are raw
-    | CSS custom-property values exactly as they'd appear in theme.css, e.g.:
-    |   'overrides' => ['accent' => '198 113 57', 'radius' => '0.75rem'],
+    | Quick, config-only tweaks — no CSS file required. Every knob theme.css
+    | defines is fair game here, not just colors: radius scale (radiusSm,
+    | radius, radiusLg, radiusXl), borderWidth, fontSans, fontDisplay,
+    | shadow, shadowLg — anything in theme.css. Keys are camelCase and get
+    | kebab-cased into the matching --chat-* custom property (fontSans =>
+    | --chat-font-sans), values are raw CSS exactly as they'd appear in
+    | theme.css, e.g.:
+    |   'overrides' => [
+    |       'accent' => '198 113 57',
+    |       'radius' => '0.75rem',
+    |       'fontSans' => '"Inter", sans-serif',
+    |       'borderWidth' => '2px',
+    |       'shadowLg' => '0 20px 40px rgba(0, 0, 0, 0.35)',
+    |   ],
     |
     | For full control (every color, both themes), instead publish and
     | hand-edit the CSS file: php artisan vendor:publish --tag=chat-theme.
     | This layer is additive to that one, not a replacement — it's applied on
     | top via an inline <style> block, after both stylesheets.
     |
+    | `icons` is the same idea for icon glyphs: a name => definition map (see
+    | resources/js/icon-overrides.js for the shape and an example) rendered
+    | as an inline <script> that seeds window.RiwaaqIconOverrides before the
+    | app boots. For full control over every icon, instead publish and
+    | hand-edit the JS file: php artisan vendor:publish --tag=chat-icons.
+    |
+    | `wallpapers` covers the wallpaper picker's background patterns/colors:
+    | ['patterns' => [...], 'colors' => [...]], each a key => definition map
+    | (see resources/js/wallpaper-overrides.js for the shape and an example).
+    | For full control, instead publish and hand-edit the JS file:
+    | php artisan vendor:publish --tag=chat-wallpapers.
+    |
     */
     'theme' => [
         'overrides' => [],
+        'icons' => [],
+        'wallpapers' => [
+            'patterns' => [],
+            'colors' => [],
+        ],
     ],
 ];

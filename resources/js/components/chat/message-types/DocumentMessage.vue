@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import MediaViewerModal from "../../shared/MediaViewerModal.vue";
 import AlbumGrid from "./AlbumGrid.vue";
+import Icon from "../../shared/Icon.vue";
 
 const props = defineProps({
     message: { type: Object, required: true },
@@ -45,7 +46,7 @@ function formatSize(bytes) {
                 class="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-riwaaq-surface"
                 :class="isOwn ? 'text-riwaaq-accent' : 'text-riwaaq-sage'"
             >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /></svg>
+                <Icon name="document" :size="18" />
             </span>
             <span class="chat-document-message__meta min-w-0 flex-1">
                 <span class="block truncate text-[13.5px] font-semibold">{{ attachment.original_filename }}</span>
@@ -59,7 +60,7 @@ function formatSize(bytes) {
                 :class="isOwn ? 'hover:text-riwaaq-accent' : 'hover:text-riwaaq-sage'"
                 @click.stop
             >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 20h14" /></svg>
+                <Icon name="download" :size="15" />
             </a>
         </button>
     </template>

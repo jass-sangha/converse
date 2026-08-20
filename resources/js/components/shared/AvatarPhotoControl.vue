@@ -3,6 +3,7 @@ import { onBeforeUnmount, ref, watch } from "vue";
 import Avatar from "./Avatar.vue";
 import MediaViewerModal from "./MediaViewerModal.vue";
 import CameraCapture from "../composer/CameraCapture.vue";
+import Icon from "./Icon.vue";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 
 const props = defineProps({
@@ -107,7 +108,7 @@ function pickView() {
 
         <div
             v-if="menuOpen"
-            class="chat-animate-pop-in absolute z-20 w-52 overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-lg"
+            class="chat-animate-pop-in absolute z-20 w-52 overflow-y-auto rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
             :class="[menuAlign === 'left' ? 'left-0' : 'right-0', openUp ? 'bottom-full mb-2' : 'top-full mt-2']"
             :style="{ maxHeight: maxHeight + 'px' }"
         >
@@ -117,7 +118,7 @@ function pickView() {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="pickView"
             >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-riwaaq-textMuted"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                <Icon name="eye" :size="16" class="shrink-0 text-riwaaq-textMuted" />
                 <span>View photo</span>
             </button>
             <button
@@ -125,7 +126,7 @@ function pickView() {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="pickCamera"
             >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0 text-riwaaq-textMuted"><path d="M9 4 7.5 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.5L15 4Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" /></svg>
+                <Icon name="camera-solid" :size="16" class="shrink-0 text-riwaaq-textMuted" />
                 <span>Take a photo</span>
             </button>
             <button
@@ -133,7 +134,7 @@ function pickView() {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="pickUpload"
             >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-riwaaq-textMuted"><path d="M12 20V9" /><path d="M7.5 13.5 12 9l4.5 4.5" /><path d="M5 4h14" /></svg>
+                <Icon name="upload" :size="16" class="shrink-0 text-riwaaq-textMuted" />
                 <span>Upload photo</span>
             </button>
             <button
@@ -142,7 +143,7 @@ function pickView() {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-danger hover:bg-riwaaq-surfaceHover"
                 @click="pickRemove"
             >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0"><path d="M15 4V3H9v1H4v2h16V4h-5ZM6 8l1 12h10l1-12H6Z" /></svg>
+                <Icon name="trash-alt" :size="16" class="shrink-0" />
                 <span>Remove photo</span>
             </button>
         </div>

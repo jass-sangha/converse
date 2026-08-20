@@ -56,15 +56,26 @@ export default {
                 },
             },
             borderRadius: {
+                'chat-sm': 'var(--chat-radius-sm)',
                 chat: 'var(--chat-radius)',
+                'chat-lg': 'var(--chat-radius-lg)',
+                'chat-xl': 'var(--chat-radius-xl)',
+            },
+            borderWidth: {
+                // Only the bare `border` utility (no numeric suffix) picks this up —
+                // `border-2` etc. stay literal, since those are deliberate one-off
+                // accents (avatar rings, etc.), not the widget's themeable border.
+                DEFAULT: 'var(--chat-border-width)',
             },
             boxShadow: {
-                chat: '0 1px 2px var(--chat-shadow)',
-                'chat-lg': '0 12px 32px var(--chat-shadow-lg)',
+                // Full shadow values (offset + blur + color) live in the CSS
+                // variable itself so blur/spread are themeable, not just color.
+                chat: 'var(--chat-shadow)',
+                'chat-lg': 'var(--chat-shadow-lg)',
             },
             fontFamily: {
-                sans: ['Figtree', 'system-ui', 'ui-sans-serif', 'sans-serif'],
-                display: ['Caprasimo', 'serif'],
+                sans: ['var(--chat-font-sans)'],
+                display: ['var(--chat-font-display)'],
             },
         },
     },

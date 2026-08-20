@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useConversations } from "../../composables/useConversations";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
+import Icon from "../shared/Icon.vue";
 
 const props = defineProps({
     conversation: { type: Object, required: true },
@@ -78,21 +79,14 @@ function turnOff() {
 <template>
     <div
         ref="root"
-        class="chat-disappearing-toggle relative flex w-full cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-riwaaq-surfaceHover"
+        class="chat-disappearing-toggle relative flex w-full cursor-pointer items-center gap-3.5 rounded-chat px-4 py-[15px] hover:bg-riwaaq-surfaceHover"
     >
-        <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="currentColor"
+        <Icon
+            name="timer"
+            :size="20"
             class="shrink-0"
             :class="isOn ? 'text-riwaaq-sage' : 'text-riwaaq-textMuted'"
-        >
-            <path
-                d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Zm0-18a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z"
-            />
-            <path d="M13 7h-2v6l5.2 3.2 1-1.6-4.2-2.5V7Z" />
-        </svg>
+        />
         <button type="button" class="flex-1 text-left" @click="toggleMenu">
             <span class="block text-[15px] text-nowrap text-riwaaq-text"
                 >Disappearing messages</span
@@ -121,7 +115,7 @@ function turnOff() {
             :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
         >
             <div
-                class="w-48 overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 shadow-lg"
+                class="w-48 overflow-y-auto rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-2 shadow-chat-lg"
                 :style="{ maxHeight: maxHeight + 'px' }"
             >
                 <p

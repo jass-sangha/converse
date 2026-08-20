@@ -27,7 +27,7 @@ const viewerItems = props.message.attachments.map((attachment) => ({
             <img
                 :src="attachment.url"
                 :alt="attachment.original_filename"
-                class="h-32 w-32 rounded-[20px]"
+                class="h-32 w-32 rounded-chat"
             />
         </button>
     </div>

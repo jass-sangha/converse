@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import { useUsers } from "../../composables/useUsers";
 import Avatar from "./Avatar.vue";
 import SearchBar from "../sidebar/SearchBar.vue";
+import Icon from "./Icon.vue";
 
 const props = defineProps({
     multiple: { type: Boolean, default: false },
@@ -145,12 +146,12 @@ function toggle(user) {
             <li
                 v-for="user in results"
                 :key="user.id"
-                class="chat-user-picker__result-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3 hover:bg-riwaaq-surfaceHover"
+                class="chat-user-picker__result-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-chat px-3 py-3 hover:bg-riwaaq-surfaceHover"
                 @click="toggle(user)"
             >
                 <div
                     v-if="isSelected(user)"
-                    class="pointer-events-none absolute inset-0 rounded-[20px] bg-riwaaq-accentTint"
+                    class="pointer-events-none absolute inset-0 rounded-chat bg-riwaaq-accentTint"
                 />
 
                 <Avatar
@@ -172,17 +173,7 @@ function toggle(user) {
                             : 'border-riwaaq-border'
                     "
                 >
-                    <svg
-                        v-if="isSelected(user)"
-                        viewBox="0 0 24 24"
-                        width="12"
-                        height="12"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41Z"
-                        />
-                    </svg>
+                    <Icon v-if="isSelected(user)" name="check-alt" :size="12" />
                 </span>
             </li>
             <li v-if="hasMore" ref="sentinelEl" class="chat-user-picker__sentinel h-1" />

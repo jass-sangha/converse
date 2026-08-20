@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import Avatar from '../shared/Avatar.vue';
+import Icon from '../shared/Icon.vue';
 import { useCall } from '../../composables/useCall';
 import { useUsers } from '../../composables/useUsers';
 
@@ -83,14 +84,14 @@ watch(localStream, (stream) => {
                 class="flex items-center gap-2 rounded-full border border-riwaaq-border bg-riwaaq-surface px-4 py-2 text-sm font-medium text-riwaaq-text"
                 @click="minimize"
             >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14h6v6M19 10h-6V4" /></svg>
+                <Icon name="minimize" :size="16" />
                 Hide
             </button>
         </div>
 
         <div class="flex flex-1 min-h-0 w-full flex-col items-center justify-center gap-6 px-6">
             <template v-if="video">
-                <div class="relative w-full max-w-[760px] overflow-hidden rounded-[32px] bg-riwaaq-railBg shadow-lg">
+                <div class="relative w-full max-w-[760px] overflow-hidden rounded-chat-xl bg-riwaaq-railBg shadow-chat-lg">
                     <div
                         class="grid gap-1"
                         :class="peers.length > 1 ? 'aspect-[16/10] grid-cols-2' : 'aspect-[16/10] grid-cols-1'"
@@ -140,18 +141,18 @@ watch(localStream, (stream) => {
                 <button
                     type="button"
                     title="Decline"
-                    class="grid h-[58px] w-[58px] place-items-center rounded-full bg-riwaaq-danger text-white shadow-lg"
+                    class="grid h-[58px] w-[58px] place-items-center rounded-full bg-riwaaq-danger text-white shadow-chat-lg"
                     @click="declineCall"
                 >
-                    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(135deg)"><path d="M4.5 3.5h3.6l1.6 4-2.2 1.6a12.5 12.5 0 0 0 5.4 5.4l1.6-2.2 4 1.6v3.6a2 2 0 0 1-2.2 2A16.8 16.8 0 0 1 2.5 5.7a2 2 0 0 1 2-2.2Z" /></svg>
+                    <Icon name="phone" :size="21" style="transform: rotate(135deg)" />
                 </button>
                 <button
                     type="button"
                     title="Accept"
-                    class="grid h-[58px] w-[58px] place-items-center rounded-full bg-riwaaq-accent text-riwaaq-accentContrast shadow-lg"
+                    class="grid h-[58px] w-[58px] place-items-center rounded-full bg-riwaaq-accent text-riwaaq-accentContrast shadow-chat-lg"
                     @click="acceptCall"
                 >
-                    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z" /></svg>
+                    <Icon name="phone-accept" :size="21" />
                 </button>
             </template>
 
@@ -163,7 +164,7 @@ watch(localStream, (stream) => {
                     :class="muted ? 'bg-riwaaq-accent text-riwaaq-accentContrast' : 'bg-riwaaq-surface text-riwaaq-text'"
                     @click="toggleMute"
                 >
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" /><path v-if="muted" d="M3.5 3.5l17 17" /></svg>
+                    <Icon :name="muted ? 'mic-muted' : 'mic'" :size="22" />
                 </button>
                 <button
                     v-if="video"
@@ -173,7 +174,7 @@ watch(localStream, (stream) => {
                     :class="camOn ? 'bg-riwaaq-surface text-riwaaq-text' : 'bg-riwaaq-surfaceHover text-riwaaq-textMuted'"
                     @click="toggleCam"
                 >
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="3.5" /><path d="M15.5 11l6-3.5v9L15.5 13" /><path v-if="!camOn" d="M3.5 20.5 20.5 3.5" /></svg>
+                    <Icon :name="camOn ? 'camera' : 'camera-off'" :size="22" />
                 </button>
                 <button
                     type="button"
@@ -182,15 +183,15 @@ watch(localStream, (stream) => {
                     :class="speakerOn ? 'bg-riwaaq-surface text-riwaaq-text' : 'bg-riwaaq-surfaceHover text-riwaaq-textMuted'"
                     @click="toggleSpeaker"
                 >
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4Z" /><path d="M16 9.5a4.5 4.5 0 0 1 0 5M19 7a8 8 0 0 1 0 10" /><path v-if="!speakerOn" d="M3.5 3.5l17 17" /></svg>
+                    <Icon :name="speakerOn ? 'speaker' : 'speaker-off'" :size="22" />
                 </button>
                 <button
                     type="button"
                     title="End call"
-                    class="flex h-[58px] items-center gap-2.5 rounded-full bg-riwaaq-danger px-7 font-bold text-white shadow-lg"
+                    class="flex h-[58px] items-center gap-2.5 rounded-full bg-riwaaq-danger px-7 font-bold text-white shadow-chat-lg"
                     @click="endCall()"
                 >
-                    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(135deg)"><path d="M4.5 3.5h3.6l1.6 4-2.2 1.6a12.5 12.5 0 0 0 5.4 5.4l1.6-2.2 4 1.6v3.6a2 2 0 0 1-2.2 2A16.8 16.8 0 0 1 2.5 5.7a2 2 0 0 1 2-2.2Z" /></svg>
+                    <Icon name="phone" :size="21" style="transform: rotate(135deg)" />
                     End
                 </button>
             </template>

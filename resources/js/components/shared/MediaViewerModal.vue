@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import Icon from './Icon.vue';
 
 const props = defineProps({
     items: { type: Array, required: true },
@@ -56,10 +57,10 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
                     title="Open original"
                     class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10"
                 >
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 20h14" /></svg>
+                    <Icon name="download" :size="18" />
                 </a>
                 <button type="button" title="Close" class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10" @click="close">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.7 2.9 18.3 9.19 12 2.9 5.71 4.3 4.29l6.3 6.3 6.29-6.3Z"/></svg>
+                    <Icon name="close" :size="18" />
                 </button>
             </div>
         </div>
@@ -72,7 +73,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
                 class="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60"
                 @click.stop="prev"
             >
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12Z"/></svg>
+                <Icon name="chevron-left" :size="20" />
             </button>
 
             <video v-if="item?.kind === 'video'" :src="item.url" controls autoplay class="max-h-full max-w-full rounded" />
@@ -86,7 +87,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
                 v-else-if="isDocument"
                 class="flex flex-col items-center gap-4 rounded-2xl bg-white/5 px-10 py-14 text-center text-white/80"
             >
-                <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor" class="text-white/50"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /></svg>
+                <Icon name="document" :size="40" class="text-white/50" />
                 <p class="text-sm">No preview available for this file type.</p>
                 <a
                     :href="item.url"
@@ -106,7 +107,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
                 class="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60"
                 @click.stop="next"
             >
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8.6 7.4 10 6l6 6-6 6-1.4-1.4L14.2 12Z"/></svg>
+                <Icon name="chevron-right" :size="20" />
             </button>
         </div>
     </div>

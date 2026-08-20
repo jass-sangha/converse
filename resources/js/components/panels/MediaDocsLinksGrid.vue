@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch } from "vue";
 import { useMessages } from "../../composables/useMessages";
 import { useChatStore } from "../../store";
 import MediaViewerModal from "../shared/MediaViewerModal.vue";
+import Icon from "../shared/Icon.vue";
 
 const props = defineProps({
     // A single conversation's items when set; every conversation the user is in when null.
@@ -216,19 +217,11 @@ function formatSize(bytes) {
     <div class="chat-media-docs-links flex min-h-0 flex-1 flex-col">
         <div class="px-4">
             <div class="relative">
-                <svg
-                    viewBox="0 0 24 24"
-                    width="14"
-                    height="14"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.75"
-                    stroke-linecap="round"
+                <Icon
+                    name="search-outline"
+                    :size="14"
                     class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-riwaaq-textMuted"
-                >
-                    <circle cx="11" cy="11" r="6.5" />
-                    <path d="M16 16l4 4" />
-                </svg>
+                />
                 <input
                     v-model="state.search"
                     type="text"
@@ -312,16 +305,7 @@ function formatSize(bytes) {
                             <span
                                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white"
                             >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"
-                                    />
-                                </svg>
+                                <Icon name="file" :size="16" />
                             </span>
                             <span class="min-w-0 flex-1">
                                 <span
@@ -366,16 +350,7 @@ function formatSize(bytes) {
                                 v-else
                                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-500 text-white"
                             >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        d="M3.9 12a4.1 4.1 0 0 1 4.1-4.1h4v-2h-4a6.1 6.1 0 0 0 0 12.2h4v-2h-4A4.1 4.1 0 0 1 3.9 12ZM8 13h8v-2H8Zm8-6h-4v2h4a4.1 4.1 0 0 1 0 8.2h-4v2h4a6.1 6.1 0 0 0 0-12.2Z"
-                                    />
-                                </svg>
+                                <Icon name="link" :size="16" />
                             </span>
                             <span class="min-w-0 flex-1">
                                 <span

@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useMessages } from '../../../composables/useMessages';
 import { useChatStore } from '../../../store';
 import { chatableKey } from '../../../chatable';
+import Icon from '../../shared/Icon.vue';
 
 const props = defineProps({
     message: { type: Object, required: true },
@@ -42,7 +43,7 @@ async function onVote(index) {
 <template>
     <div class="chat-poll-message min-w-0 max-w-sm rounded-2xl border border-riwaaq-border bg-riwaaq-surface p-3">
         <div class="mb-2 flex items-center gap-2">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="shrink-0 text-riwaaq-textMuted"><path d="M4 4h2v16H4Zm14 6h2v10h-2Zm-7-3h2v13h-2Z"/></svg>
+            <Icon name="poll" :size="18" class="shrink-0 text-riwaaq-textMuted" />
             <p class="text-sm font-medium text-riwaaq-text">{{ question }}</p>
         </div>
 
@@ -63,7 +64,7 @@ async function onVote(index) {
                 />
                 <span class="relative flex items-center justify-between gap-2">
                     <span class="flex items-center gap-2 text-sm">
-                        <svg v-if="optionAt(index).self" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="shrink-0 text-riwaaq-accent"><path d="m9 16.2-3.5-3.6L4 14.1l5 5 11-11-1.4-1.4Z"/></svg>
+                        <Icon v-if="optionAt(index).self" name="check" :size="14" class="shrink-0 text-riwaaq-accent" />
                         {{ label }}
                     </span>
                     <span class="shrink-0 text-xs text-riwaaq-textMuted">{{ percentage(index) }}%</span>

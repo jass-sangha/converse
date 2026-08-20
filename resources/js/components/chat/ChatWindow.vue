@@ -5,6 +5,7 @@ import MessageList from './MessageList.vue';
 import MessageBubble from './MessageBubble.vue';
 import MessageComposer from '../composer/MessageComposer.vue';
 import GroupInfoPanel from '../panels/GroupInfoPanel.vue';
+import Icon from '../shared/Icon.vue';
 import { useChatStore } from '../../store';
 import { useConversations } from '../../composables/useConversations';
 import { useMessages } from '../../composables/useMessages';
@@ -188,7 +189,7 @@ function onEdit(message) {
                     class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                     @click="onToggleChatSearch"
                 >
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"/></svg>
+                    <Icon name="close-alt" :size="18" />
                 </button>
             </div>
 
@@ -200,7 +201,7 @@ function onEdit(message) {
                     @click="scrollToMessage(pinned.id)"
                 >
                     <span class="flex shrink-0 items-center text-riwaaq-accent">
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M16 3v6.5l2 3V15h-6v6l-1 1-1-1v-6H4v-2.5l2-3V3Z" /></svg>
+                        <Icon name="pin" :size="12" />
                     </span>
                     <span class="flex-1 truncate text-xs text-riwaaq-textMuted">{{ pinned.deleted_for_everyone ? 'This message was deleted' : (pinned.type === 'text' ? pinned.body : `[${pinned.type}]`) }}</span>
                     <button type="button" class="chat-chat-window__pinned-unpin text-xs text-riwaaq-textMuted hover:text-riwaaq-danger" @click.stop="onUnpinFromBanner(pinned)">✕</button>

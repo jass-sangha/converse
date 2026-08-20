@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount, ref, watch } from "vue";
 import CameraCapture from "./CameraCapture.vue";
+import Icon from "../shared/Icon.vue";
 import { useMessages } from "../../composables/useMessages";
 import { useToast } from "../../composables/useToast";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
@@ -153,29 +154,16 @@ async function onChange(event) {
         <button
             type="button"
             title="Attach"
-            class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-textMuted shadow-sm hover:text-riwaaq-accent disabled:opacity-50"
+            class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-textMuted shadow-chat hover:text-riwaaq-accent disabled:opacity-50"
             :disabled="uploading"
             @click="toggleMenu"
         >
-            <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <path
-                    d="M21 12.5 12.8 20.7a5 5 0 0 1-7.1-7.1L14 5.3a3.4 3.4 0 0 1 4.8 4.8l-8.2 8.2a1.8 1.8 0 0 1-2.5-2.5l7.6-7.6"
-                />
-            </svg>
+            <Icon name="paperclip" :size="20" />
         </button>
 
         <div
             v-if="showMenu"
-            class="chat-attachment-picker__menu chat-animate-pop-in absolute bottom-14 left-0 z-20 w-52 rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-lg"
+            class="chat-attachment-picker__menu chat-animate-pop-in absolute bottom-14 left-0 z-20 w-52 rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
         >
             <button
                 v-for="option in OPTIONS"

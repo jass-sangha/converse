@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import ReadReceiptTicks from "../chat/ReadReceiptTicks.vue";
 import ConversationRowActions from "./ConversationRowActions.vue";
+import Icon from "../shared/Icon.vue";
 import { useUsers } from "../../composables/useUsers";
 import { useChatStore } from "../../store";
 import { chatableKey, chatableKeyOf } from "../../chatable";
@@ -153,7 +154,7 @@ function onTouchEnd(event) {
 <template>
     <li
         :data-conversation-id="conversation.id"
-        class="chat-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-[20px] px-3 py-3 hover:bg-riwaaq-surfaceHover"
+        class="chat-row group relative mb-1 flex cursor-pointer items-center gap-[13px] rounded-chat px-3 py-3 hover:bg-riwaaq-surfaceHover"
         @click="$emit('select', conversation.id)"
         @touchstart="onTouchStart"
         @touchend="onTouchEnd"
@@ -161,7 +162,7 @@ function onTouchEnd(event) {
     >
         <div
             v-if="active"
-            class="pointer-events-none absolute inset-0 rounded-[20px] bg-riwaaq-accentTint"
+            class="pointer-events-none absolute inset-0 rounded-chat bg-riwaaq-accentTint"
         />
 
         <Avatar
@@ -182,19 +183,13 @@ function onTouchEnd(event) {
                         class="truncate text-[14.5px] font-semibold text-riwaaq-text"
                         >{{ displayName }}</span
                     >
-                    <svg
+                    <Icon
                         v-if="isBlocked"
-                        viewBox="0 0 24 24"
-                        width="11"
-                        height="11"
-                        fill="currentColor"
+                        name="block"
+                        :size="11"
                         class="shrink-0 text-riwaaq-danger"
                         title="Blocked"
-                    >
-                        <path
-                            d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.94 7.94 0 0 1 4 12a8 8 0 0 1 8-8Zm0 16c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.94 7.94 0 0 1 20 12a8 8 0 0 1-8 8Z"
-                        />
-                    </svg>
+                    />
                 </span>
                 <span
                     v-if="lastActivityLabel"
@@ -217,43 +212,9 @@ function onTouchEnd(event) {
                 </span>
                 <span class="flex shrink-0 items-center gap-1">
                     <span v-if="isMuted || isFavourited || isPinned" class="flex items-center gap-1 text-riwaaq-textMuted">
-                        <svg
-                            v-if="isMuted"
-                            viewBox="0 0 24 24"
-                            width="13"
-                            height="13"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2.6"
-                            stroke-linecap="round"
-                        >
-                            <path
-                                d="M18 16v-5a6 6 0 0 0-4.6-5.8M6 11v5l-2 2h13"
-                            />
-                            <path d="M3 3l18 18" />
-                        </svg>
-                        <svg
-                            v-if="isFavourited"
-                            viewBox="0 0 24 24"
-                            width="13"
-                            height="13"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M12 20s-7-4.4-7-9a3.9 3.9 0 0 1 7-2.4A3.9 3.9 0 0 1 19 11c0 4.6-7 9-7 9Z"
-                            />
-                        </svg>
-                        <svg
-                            v-if="isPinned"
-                            viewBox="0 0 24 24"
-                            width="13"
-                            height="13"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM8.6 13h6.8L12 21Z"
-                            />
-                        </svg>
+                        <Icon v-if="isMuted" name="mute" :size="13" />
+                        <Icon v-if="isFavourited" name="heart-solid" :size="13" />
+                        <Icon v-if="isPinned" name="map-pin-solid" :size="13" />
                     </span>
 
                     <span

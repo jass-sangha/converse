@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import Avatar from '../shared/Avatar.vue';
 import Modal from '../shared/Modal.vue';
+import Icon from '../shared/Icon.vue';
 import { useUsers } from '../../composables/useUsers';
 import { useChatStore } from '../../store';
 import { chatableKey } from '../../chatable';
@@ -82,7 +83,7 @@ function formatTime(at) {
             <template v-if="isGroup">
                 <div v-if="readRows.length" class="mb-3">
                     <h3 class="mb-1 flex items-center gap-1 text-xs font-medium uppercase text-riwaaq-textMuted">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="text-riwaaq-accent"><path d="M18 7 9.5 15.5 5 11l1.4-1.4 3.1 3.1L16.6 5.6Zm-5 0L8.5 11.5 5 8l1.4-1.4L8.5 8.7l3.1-3.1Z"/></svg>
+                        <Icon name="double-check" :size="14" class="text-riwaaq-accent" />
                         Read by
                     </h3>
                     <ul class="flex flex-col gap-1">
@@ -96,7 +97,7 @@ function formatTime(at) {
 
                 <div v-if="deliveredRows.length" class="mb-3">
                     <h3 class="mb-1 flex items-center gap-1 text-xs font-medium uppercase text-riwaaq-textMuted">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 7 9.5 15.5 5 11l1.4-1.4 3.1 3.1L16.6 5.6Zm-5 0L8.5 11.5 5 8l1.4-1.4L8.5 8.7l3.1-3.1Z"/></svg>
+                        <Icon name="double-check" :size="14" />
                         Delivered to
                     </h3>
                     <ul class="flex flex-col gap-1">

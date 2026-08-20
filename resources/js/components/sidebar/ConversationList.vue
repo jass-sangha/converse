@@ -4,6 +4,7 @@ import ConversationListItem from "./ConversationListItem.vue";
 import SearchBar from "./SearchBar.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
+import Icon from "../shared/Icon.vue";
 import Avatar from "../shared/Avatar.vue";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
@@ -218,17 +219,7 @@ function openHit(hit) {
                     class="flex h-9 items-center gap-1.5 rounded-full bg-riwaaq-accent px-4 text-sm font-semibold text-riwaaq-accentContrast hover:opacity-90"
                     @click="setView('new-chat')"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2.75"
-                        stroke-linecap="round"
-                    >
-                        <path d="M12 5v14M5 12h14" />
-                    </svg>
+                    <Icon name="plus-outline" :size="16" />
                     New
                 </button>
 

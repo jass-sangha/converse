@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useUsers } from '../../composables/useUsers';
+import Icon from '../shared/Icon.vue';
 
 const props = defineProps({
     replyTo: { type: Object, required: true },
@@ -66,7 +67,7 @@ const snippet = computed(() => {
 <template>
     <div
         v-if="dismissible"
-        class="chat-reply-preview flex items-center gap-3 rounded-[18px] bg-riwaaq-surface px-4 py-2.5 shadow-sm"
+        class="chat-reply-preview flex items-center gap-3 rounded-chat bg-riwaaq-surface px-4 py-2.5 shadow-chat"
     >
         <span class="shrink-0 self-stretch rounded-full bg-riwaaq-accent" style="width: 3px" />
         <img
@@ -85,13 +86,13 @@ const snippet = computed(() => {
             class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
             @click="$emit('dismiss')"
         >
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            <Icon name="close-outline" :size="14" />
         </button>
     </div>
 
     <div
         v-else
-        class="chat-reply-preview flex items-center gap-2 rounded-[14px] px-[11px] py-[7px]"
+        class="chat-reply-preview flex items-center gap-2 rounded-chat-sm px-[11px] py-[7px]"
         :class="isOwn ? 'bg-[rgba(140,73,26,.1)]' : 'bg-riwaaq-surfaceHover'"
     >
         <div class="relative min-w-0 flex-1">
@@ -100,16 +101,12 @@ const snippet = computed(() => {
         </div>
         <span v-if="thumbnailUrl" class="relative shrink-0">
             <img :src="thumbnailUrl" alt="" class="h-9 w-9 rounded-lg object-cover">
-            <svg
+            <Icon
                 v-if="isVideoThumbnail"
-                viewBox="0 0 24 24"
-                width="14"
-                height="14"
-                fill="white"
+                name="play-overlay"
+                :size="14"
                 class="absolute inset-0 m-auto drop-shadow"
-            >
-                <path d="M8 5.5l11 6.5-11 6.5Z" />
-            </svg>
+            />
         </span>
     </div>
 </template>

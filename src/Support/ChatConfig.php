@@ -59,6 +59,62 @@ class ChatConfig
         return is_file($path) ? filemtime($path) : null;
     }
 
+    public static function iconOverrideVersion(): ?int
+    {
+        $path = public_path('vendor/chat/icons.js');
+
+        return is_file($path) ? filemtime($path) : null;
+    }
+
+    /**
+     * A config-only alternative to publishing/hand-editing icons.js — renders
+     * chat.theme.icons as an inline <script> that seeds window.RiwaaqIconOverrides
+     * before the published icons.js (if any) and the app bundle run. Applied
+     * first so a hand-published icons.js can still override it icon-by-icon.
+     */
+    public static function iconOverrideScript(): string
+    {
+        $icons = config('chat.theme.icons', []);
+
+        if (empty($icons)) {
+            return '';
+        }
+
+        // Not user input — values come from config/chat.php, which only the host
+        // app itself controls, so raw (unescaped) output into a <script> tag is safe.
+        return '<script>window.RiwaaqIconOverrides = Object.assign('.json_encode($icons).', window.RiwaaqIconOverrides || {});</script>';
+    }
+
+    public static function wallpaperOverrideVersion(): ?int
+    {
+        $path = public_path('vendor/chat/wallpapers.js');
+
+        return is_file($path) ? filemtime($path) : null;
+    }
+
+    /**
+     * Same idea as iconOverrideScript(), for the wallpaper picker's patterns/colors —
+     * renders chat.theme.wallpapers (a ['patterns' => [...], 'colors' => [...]] shape,
+     * each keyed by pattern/color key) as an inline <script> seeding
+     * window.RiwaaqWallpaperOverrides before the published wallpapers.js (if any) and
+     * the app bundle run.
+     */
+    public static function wallpaperOverrideScript(): string
+    {
+        $wallpapers = config('chat.theme.wallpapers', []);
+
+        if (empty($wallpapers['patterns']) && empty($wallpapers['colors'])) {
+            return '';
+        }
+
+        // Not user input — values come from config/chat.php, which only the host
+        // app itself controls, so raw (unescaped) output into a <script> tag is safe.
+        return '<script>window.RiwaaqWallpaperOverrides = {'
+            .'patterns: Object.assign('.json_encode($wallpapers['patterns'] ?? []).', (window.RiwaaqWallpaperOverrides || {}).patterns || {}),'
+            .'colors: Object.assign('.json_encode($wallpapers['colors'] ?? []).', (window.RiwaaqWallpaperOverrides || {}).colors || {}),'
+            .'};</script>';
+    }
+
     /**
      * A config-only alternative to publishing/hand-editing theme.css — renders
      * chat.theme.overrides as an inline <style> block scoped to the widget's

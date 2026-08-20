@@ -12,6 +12,7 @@ import MessageBubble from "./MessageBubble.vue";
 import { useChatStore } from "../../store";
 import { useMessages } from "../../composables/useMessages";
 import { chatableKeyOf } from "../../chatable";
+import Icon from "../shared/Icon.vue";
 
 const props = defineProps({
     conversationId: { type: Number, required: true },
@@ -214,7 +215,7 @@ watch(
                         class="flex justify-center py-1"
                     >
                         <span
-                            class="rounded-lg bg-riwaaq-surfaceHover px-3 py-1.5 text-xs font-medium text-riwaaq-textMuted shadow-sm"
+                            class="rounded-lg bg-riwaaq-surfaceHover px-3 py-1.5 text-xs font-medium text-riwaaq-textMuted shadow-chat"
                             >{{ item.label }}</span
                         >
                     </div>
@@ -236,18 +237,7 @@ watch(
             class="chat-animate-pop-in absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full border border-riwaaq-border bg-riwaaq-surface text-riwaaq-textMuted shadow-chat-lg hover:text-riwaaq-accentText sm:right-12 z-20"
             @click="onScrollToBottomClick"
         >
-            <svg
-                viewBox="0 0 24 24"
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <path d="M6 10l6 6 6-6" />
-            </svg>
+            <Icon name="chevron-down" :size="18" />
         </button>
     </div>
 </template>

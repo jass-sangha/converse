@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref } from "vue";
 import { useMessages } from "../../composables/useMessages";
+import Icon from "../shared/Icon.vue";
 
 const emit = defineEmits(["recorded", "recording-change"]);
 
@@ -169,27 +170,15 @@ onBeforeUnmount(() => {
         v-if="phase === 'idle'"
         type="button"
         title="Record a voice message"
-        class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-riwaaq-accent text-riwaaq-accentContrast shadow-sm"
+        class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-riwaaq-accent text-riwaaq-accentContrast shadow-chat"
         @click="start"
     >
-        <svg
-            viewBox="0 0 24 24"
-            width="21"
-            height="21"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.75"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-        >
-            <rect x="9" y="3" width="6" height="11" rx="3" />
-            <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" />
-        </svg>
+        <Icon name="mic" :size="21" />
     </button>
 
     <div
         v-else-if="phase === 'recording'"
-        class="chat-voice-recorder flex h-[52px] flex-1 items-center gap-3 rounded-full bg-riwaaq-surface px-[14px] shadow-sm"
+        class="chat-voice-recorder flex h-[52px] flex-1 items-center gap-3 rounded-full bg-riwaaq-surface px-[14px] shadow-chat"
     >
         <button
             type="button"
@@ -197,9 +186,7 @@ onBeforeUnmount(() => {
             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-riwaaq-danger hover:bg-riwaaq-surfaceHover"
             @click="cancelRecording"
         >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <path d="M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z" />
-            </svg>
+            <Icon name="trash" :size="18" />
         </button>
 
         <span
@@ -228,15 +215,13 @@ onBeforeUnmount(() => {
             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-riwaaq-accent text-riwaaq-accentContrast"
             @click="stopRecording"
         >
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                <rect x="5" y="5" width="14" height="14" rx="2" />
-            </svg>
+            <Icon name="stop" :size="14" />
         </button>
     </div>
 
     <div
         v-else
-        class="chat-voice-recorder-preview flex h-[52px] flex-1 items-center gap-2.5 rounded-full bg-riwaaq-surface px-[14px] shadow-sm"
+        class="chat-voice-recorder-preview flex h-[52px] flex-1 items-center gap-2.5 rounded-full bg-riwaaq-surface px-[14px] shadow-chat"
     >
         <span class="h-2 w-2 shrink-0 rounded-full bg-riwaaq-accent" />
 
@@ -264,9 +249,7 @@ onBeforeUnmount(() => {
             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover hover:text-riwaaq-danger"
             @click="discardPreview"
         >
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
-                <path d="M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z" />
-            </svg>
+            <Icon name="trash" :size="17" />
         </button>
 
         <button
@@ -275,25 +258,7 @@ onBeforeUnmount(() => {
             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
             @click="togglePlay"
         >
-            <svg
-                v-if="playing"
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                fill="currentColor"
-            >
-                <rect x="6.5" y="5" width="4" height="14" rx="1.4" />
-                <rect x="13.5" y="5" width="4" height="14" rx="1.4" />
-            </svg>
-            <svg
-                v-else
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                fill="currentColor"
-            >
-                <path d="M8 5.5l11 6.5-11 6.5Z" />
-            </svg>
+            <Icon :name="playing ? 'pause' : 'play'" :size="16" />
         </button>
 
         <button
@@ -303,9 +268,7 @@ onBeforeUnmount(() => {
             :disabled="sending"
             @click="send"
         >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <path d="M2 21 23 12 2 3v7l15 2-15 2Z" />
-            </svg>
+            <Icon name="paper-plane" :size="16" />
         </button>
 
         <audio

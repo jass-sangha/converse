@@ -6,6 +6,7 @@ import { useMessages } from "../../composables/useMessages";
 import { useMessagePins } from "../../composables/useMessagePins";
 import { useUsers } from "../../composables/useUsers";
 import Avatar from "../shared/Avatar.vue";
+import Icon from "../shared/Icon.vue";
 import TextMessage from "./message-types/TextMessage.vue";
 import ImageMessage from "./message-types/ImageMessage.vue";
 import VideoMessage from "./message-types/VideoMessage.vue";
@@ -60,39 +61,39 @@ const MENU_ITEMS = [
         key: "info",
         label: "Message info",
         ownOnly: true,
-        path: "M11 7h2v2h-2Zm0 4h2v6h-2Zm1-9a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z",
+        icon: "info",
     },
     {
         key: "reply",
         label: "Reply",
-        path: "M10 9V4.5L2 12l8 7.5V15c5.2 0 8.8 1.7 11.4 5.3-1-5.2-4.1-10.3-11.4-11.3Z",
+        icon: "reply",
     },
     {
         key: "copy",
         label: "Copy",
-        path: "M16 1H4a2 2 0 0 0-2 2v14h2V3h12Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11Z",
+        icon: "copy",
     },
     {
         key: "react",
         label: "React",
-        path: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-3.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 17c-2.5 0-4.6-1.5-5.4-3.6h10.8C16.6 15.5 14.5 17 12 17Z",
+        icon: "smile-face",
     },
     {
         key: "forward",
         label: "Forward",
-        path: "M14 9V4.5l8 7.5-8 7.5V15c-5.2 0-8.8 1.7-11.4 5.3 1-5.2 4.1-10.3 11.4-11.3Z",
+        icon: "forward",
     },
     {
         key: "pin",
         label: "Pin",
         dynamicLabel: true,
-        path: "M16 3v6.5l2 3V15h-6v6l-1 1-1-1v-6H4v-2.5l2-3V3Z",
+        icon: "pin",
     },
     {
         key: "star",
         label: "Star",
         dynamicLabel: true,
-        path: "M12 2 15 9l7 .6-5.3 4.6L18.2 21 12 17.3 5.8 21l1.5-6.8L2 9.6 9 9Z",
+        icon: "star",
     },
     {
         key: "edit",
@@ -100,13 +101,13 @@ const MENU_ITEMS = [
         ownOnly: true,
         textOnly: true,
         windowMinutes: EDIT_WINDOW_MINUTES,
-        path: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z",
+        icon: "edit",
     },
     {
         key: "delete-me",
         label: "Delete for me",
         danger: true,
-        path: "M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z",
+        icon: "trash",
     },
     {
         key: "delete-everyone",
@@ -114,7 +115,7 @@ const MENU_ITEMS = [
         danger: true,
         ownOnly: true,
         windowMinutes: DELETE_FOR_EVERYONE_WINDOW_MINUTES,
-        path: "M9 3v1H4v2h16V4h-5V3H9Zm-3 6 1 12h10l1-12H6Z",
+        icon: "trash",
     },
 ];
 
@@ -492,20 +493,7 @@ function onMenuAction(key) {
                 class="flex h-7 w-7 items-center justify-center rounded-full text-riwaaq-textDim hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
                 @click.stop="toggleReactionPicker"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                >
-                    <circle cx="12" cy="12" r="8.5" />
-                    <path
-                        d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01"
-                    />
-                </svg>
+                <Icon name="smile" :size="15" />
             </button>
             <button
                 type="button"
@@ -513,16 +501,7 @@ function onMenuAction(key) {
                 class="flex h-7 w-7 items-center justify-center rounded-full text-riwaaq-textDim hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
                 @click.stop="toggleMenu"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="currentColor"
-                >
-                    <circle cx="12" cy="5" r="1.8" />
-                    <circle cx="12" cy="12" r="1.8" />
-                    <circle cx="12" cy="19" r="1.8" />
-                </svg>
+                <Icon name="more-vertical" :size="15" />
             </button>
 
             <div
@@ -545,14 +524,7 @@ function onMenuAction(key) {
                     class="flex h-8 w-8 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                     @click.stop="showFullEmojiPicker = true"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="15"
-                        height="15"
-                        fill="currentColor"
-                    >
-                        <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" />
-                    </svg>
+                    <Icon name="plus" :size="15" />
                 </button>
             </div>
 
@@ -567,7 +539,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="chat-message-bubble__menu chat-animate-pop-in absolute right-0 z-20 w-[220px] overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
+                class="chat-message-bubble__menu chat-animate-pop-in absolute right-0 z-20 w-[220px] overflow-y-auto rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 :style="{ maxHeight: popMax + 'px' }"
             >
@@ -583,15 +555,7 @@ function onMenuAction(key) {
                     "
                     @click.stop="onMenuAction(item.key)"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="shrink-0"
-                    >
-                        <path :d="item.path" />
-                    </svg>
+                    <Icon :name="item.icon" :size="16" class="shrink-0" />
                     <span>{{ itemLabel(item) }}</span>
                 </button>
             </div>
@@ -607,7 +571,7 @@ function onMenuAction(key) {
         />
 
         <div
-            class="chat-message-bubble__content relative max-w-[min(55%,380px)] rounded-[20px] p-2 shadow-chat"
+            class="chat-message-bubble__content relative max-w-[min(55%,380px)] rounded-chat p-2 shadow-chat"
             :class="[
                 isOwn
                     ? 'rounded-br-[8px] bg-riwaaq-bubbleOut'
@@ -624,32 +588,14 @@ function onMenuAction(key) {
                     class="chat-message-bubble__pin-indicator flex h-5 w-5 items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-accent shadow-chat"
                     title="Pinned"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="11"
-                        height="11"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M16 3v6.5l2 3V15h-6v6l-1 1-1-1v-6H4v-2.5l2-3V3Z"
-                        />
-                    </svg>
+                    <Icon name="pin" :size="11" />
                 </span>
                 <span
                     v-if="message.is_starred_by_me"
                     class="chat-message-bubble__star-indicator flex h-5 w-5 items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-accent shadow-chat"
                     title="Starred"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="11"
-                        height="11"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M12 2 15 9l7 .6-5.3 4.6L18.2 21 12 17.3 5.8 21l1.5-6.8L2 9.6 9 9Z"
-                        />
-                    </svg>
+                    <Icon name="star" :size="11" />
                 </span>
             </div>
 
@@ -735,20 +681,7 @@ function onMenuAction(key) {
                 class="flex h-7 w-7 items-center justify-center rounded-full text-riwaaq-textDim hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
                 @click.stop="toggleReactionPicker"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                >
-                    <circle cx="12" cy="12" r="8.5" />
-                    <path
-                        d="M9 14.5c.8 1 1.8 1.5 3 1.5s2.2-.5 3-1.5M9 9.5h.01M15 9.5h.01"
-                    />
-                </svg>
+                <Icon name="smile" :size="15" />
             </button>
             <button
                 type="button"
@@ -756,16 +689,7 @@ function onMenuAction(key) {
                 class="flex h-7 w-7 items-center justify-center rounded-full text-riwaaq-textDim hover:bg-riwaaq-surfaceHover hover:text-riwaaq-accentText"
                 @click.stop="toggleMenu"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="currentColor"
-                >
-                    <circle cx="12" cy="5" r="1.8" />
-                    <circle cx="12" cy="12" r="1.8" />
-                    <circle cx="12" cy="19" r="1.8" />
-                </svg>
+                <Icon name="more-vertical" :size="15" />
             </button>
 
             <div
@@ -788,14 +712,7 @@ function onMenuAction(key) {
                     class="flex h-8 w-8 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                     @click.stop="showFullEmojiPicker = true"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="15"
-                        height="15"
-                        fill="currentColor"
-                    >
-                        <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z" />
-                    </svg>
+                    <Icon name="plus" :size="15" />
                 </button>
             </div>
 
@@ -810,7 +727,7 @@ function onMenuAction(key) {
 
             <div
                 v-if="showMenu"
-                class="chat-message-bubble__menu chat-animate-pop-in absolute left-0 z-20 w-[220px] overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
+                class="chat-message-bubble__menu chat-animate-pop-in absolute left-0 z-20 w-[220px] overflow-y-auto rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
                 :class="popUp ? 'bottom-full mb-2' : 'top-full mt-2'"
                 :style="{ maxHeight: popMax + 'px' }"
             >
@@ -826,15 +743,7 @@ function onMenuAction(key) {
                     "
                     @click.stop="onMenuAction(item.key)"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="shrink-0"
-                    >
-                        <path :d="item.path" />
-                    </svg>
+                    <Icon :name="item.icon" :size="16" class="shrink-0" />
                     <span>{{ itemLabel(item) }}</span>
                 </button>
             </div>

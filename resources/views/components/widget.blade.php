@@ -12,5 +12,7 @@
 @php
     $chatConfig = \Riwaaq\Chat\Support\ChatConfig::build(auth()->user(), embed: true);
     $themeOverrideVersion = \Riwaaq\Chat\Support\ChatConfig::themeOverrideVersion();
+    $iconOverrideVersion = \Riwaaq\Chat\Support\ChatConfig::iconOverrideVersion();
+    $wallpaperOverrideVersion = \Riwaaq\Chat\Support\ChatConfig::wallpaperOverrideVersion();
 @endphp
-@include('chat::partials.assets', ['chatConfig' => $chatConfig, 'themeOverrideVersion' => $themeOverrideVersion])
+@include('chat::partials.assets', ['chatConfig' => $chatConfig, 'themeOverrideVersion' => $themeOverrideVersion, 'iconOverrideVersion' => $iconOverrideVersion, 'wallpaperOverrideVersion' => $wallpaperOverrideVersion])

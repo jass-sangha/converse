@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import MediaViewerModal from "../../shared/MediaViewerModal.vue";
+import Icon from "../../shared/Icon.vue";
 
 const props = defineProps({
     attachments: { type: Array, required: true },
@@ -70,7 +71,7 @@ const viewerItems = computed(() =>
                 v-else-if="kind === 'document'"
                 class="flex h-full w-full flex-col items-center justify-center gap-1.5 p-2 text-center"
             >
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" class="shrink-0 text-riwaaq-textMuted"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /></svg>
+                <Icon name="document" :size="26" class="shrink-0 text-riwaaq-textMuted" />
                 <span class="line-clamp-2 w-full break-words text-[10.5px] font-medium leading-tight text-riwaaq-textMuted">{{ tile.attachment.original_filename }}</span>
             </div>
             <img
@@ -85,7 +86,7 @@ const viewerItems = computed(() =>
                 class="absolute inset-0 flex items-center justify-center"
             >
                 <span class="flex h-9 w-9 items-center justify-center rounded-full bg-riwaaq-surface shadow">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="text-riwaaq-accent"><path d="M8 5.5l11 6.5-11 6.5Z" /></svg>
+                    <Icon name="play" :size="14" class="text-riwaaq-accent" />
                 </span>
             </span>
 

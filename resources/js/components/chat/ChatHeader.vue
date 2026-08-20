@@ -6,6 +6,7 @@ import { chatableKey, chatableKeyOf } from '../../chatable';
 import { useUsers } from '../../composables/useUsers';
 import { usePresence } from '../../composables/usePresence';
 import { useCall } from '../../composables/useCall';
+import Icon from '../shared/Icon.vue';
 
 const props = defineProps({
     conversation: { type: Object, required: true },
@@ -72,7 +73,7 @@ const subtitle = computed(() => {
 <template>
     <div class="chat-chat-header flex items-center gap-3.5 border-b border-riwaaq-border bg-riwaaq-surface px-5 py-[13px]">
         <button type="button" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover sm:hidden" @click="emit('back')">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12Z"/></svg>
+            <Icon name="back" :size="22" />
         </button>
 
         <div class="chat-chat-header__info flex flex-1 cursor-pointer items-center gap-3 overflow-hidden" @click="emit('open-info')">
@@ -91,7 +92,7 @@ const subtitle = computed(() => {
                 class="flex h-9 w-9 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                 @click="startCall(conversation, { video: false })"
             >
-                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z"/></svg>
+                <Icon name="phone-accept" :size="19" />
             </button>
             <button
                 type="button"
@@ -99,7 +100,7 @@ const subtitle = computed(() => {
                 class="flex h-9 w-9 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                 @click="startCall(conversation, { video: true })"
             >
-                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="M15.5 11l6-3.2v8.4l-6-3.2Z"/></svg>
+                <Icon name="video-camera" :size="19" />
             </button>
             <button
                 type="button"
@@ -108,7 +109,7 @@ const subtitle = computed(() => {
                 :class="{ 'text-riwaaq-accent': searchOpen }"
                 @click="emit('toggle-search')"
             >
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
+                <Icon name="search" :size="20" />
             </button>
             <button
                 type="button"

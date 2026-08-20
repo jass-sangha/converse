@@ -2,6 +2,7 @@
 import { onBeforeUnmount, ref, watch } from "vue";
 import { useSidebarUi } from "../../composables/useSidebarUi";
 import { usePreferences } from "../../composables/usePreferences";
+import Icon from "./Icon.vue";
 
 const { view, setView } = useSidebarUi();
 
@@ -38,16 +39,12 @@ function go(view) {
             class="flex h-9 w-9 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
             @click="showMenu = !showMenu"
         >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path
-                    d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"
-                />
-            </svg>
+            <Icon name="more-vertical-alt" :size="20" />
         </button>
 
         <div
             v-if="showMenu"
-            class="chat-animate-pop-in absolute right-0 top-full z-20 w-56 rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-lg"
+            class="chat-animate-pop-in absolute right-0 top-full z-20 w-56 rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
         >
             <button
                 v-if="view !== 'chats' && view !== 'new-chat'"

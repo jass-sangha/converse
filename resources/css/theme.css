@@ -6,8 +6,15 @@
  * the widget's own mount element (not :root) so overrides never bleed into or
  * get bled into by the host page's own styles, in both the full-page route and
  * the embeddable <x-chat::widget /> component.
- * Values are space-separated RGB triplets so Tailwind's `/opacity` modifiers work
- * (e.g. `bg-riwaaq-accent/60`).
+ * Color values are space-separated RGB triplets so Tailwind's `/opacity` modifiers
+ * work (e.g. `bg-riwaaq-accent/60`) — everything else (radius scale, border width,
+ * shadows, font families) is a plain CSS value, used as-is.
+ *
+ * --chat-shadow / --chat-shadow-lg are full box-shadow values (offset + blur +
+ * color together), not just a color, so shadow size is themeable too — not
+ * split into separate offset/blur/color variables, since box-shadow doesn't
+ * support being assembled from multiple var()s without also hand-editing
+ * tailwind.config.js.
  */
 
 #riwaaq-chat-app {
@@ -25,7 +32,13 @@
     --chat-overlay: 0 0 0;
     --chat-warning: 255 225 208;
     --chat-info: 122 138 94;
+    --chat-radius-sm: 0.75rem;
     --chat-radius: 1.25rem;
+    --chat-radius-lg: 1.375rem;
+    --chat-radius-xl: 2rem;
+    --chat-border-width: 1px;
+    --chat-font-sans: Figtree, system-ui, ui-sans-serif, sans-serif;
+    --chat-font-display: Caprasimo, serif;
     --chat-rail-bg: 235 221 197;
     --chat-chat-bg: 245 234 216;
     --chat-sage: 122 138 94;
@@ -39,8 +52,8 @@
     --chat-danger-contrast: 255 255 255;
     --chat-tick: 161 151 134;
     --chat-dots: rgba(32, 30, 29, 0.07);
-    --chat-shadow: rgba(46, 43, 37, 0.14);
-    --chat-shadow-lg: rgba(46, 43, 37, 0.2);
+    --chat-shadow: 0 1px 2px rgba(46, 43, 37, 0.14);
+    --chat-shadow-lg: 0 12px 32px rgba(46, 43, 37, 0.2);
 }
 
 #riwaaq-chat-app[data-theme="dark"] {
@@ -70,6 +83,6 @@
     --chat-danger-contrast: 32 30 29;
     --chat-tick: 161 151 134;
     --chat-dots: rgba(249, 244, 237, 0.07);
-    --chat-shadow: rgba(0, 0, 0, 0.32);
-    --chat-shadow-lg: rgba(0, 0, 0, 0.45);
+    --chat-shadow: 0 1px 2px rgba(0, 0, 0, 0.32);
+    --chat-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
 }

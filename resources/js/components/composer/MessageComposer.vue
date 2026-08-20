@@ -6,6 +6,7 @@ import AttachmentPicker from './AttachmentPicker.vue';
 import VoiceRecorder from './VoiceRecorder.vue';
 import PollComposerModal from './PollComposerModal.vue';
 import EventComposerModal from './EventComposerModal.vue';
+import Icon from '../shared/Icon.vue';
 import { useMessages } from '../../composables/useMessages';
 import { useTyping } from '../../composables/useTyping';
 import { useApi } from '../../composables/useApi';
@@ -261,7 +262,7 @@ async function submit() {
         />
 
         <div v-if="editing" class="chat-composer__editing mb-2 flex items-center gap-2 rounded-chat border-l-4 border-riwaaq-accent bg-riwaaq-surfaceHover px-3 py-1.5">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="shrink-0 text-riwaaq-accent"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
+            <Icon name="edit" :size="16" class="shrink-0 text-riwaaq-accent" />
             <span class="flex-1 truncate text-xs text-riwaaq-textMuted">Editing message</span>
             <button type="button" class="text-riwaaq-textMuted hover:text-riwaaq-text" @click="cancelEdit">✕</button>
         </div>
@@ -279,7 +280,7 @@ async function submit() {
                 >
                 <video v-else-if="item.type === 'video'" :src="item.attachment.url" class="h-16 w-16 rounded object-cover" muted />
                 <div v-else class="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded bg-riwaaq-surface p-1 text-center">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="text-riwaaq-textMuted"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"/></svg>
+                    <Icon name="file" :size="18" class="text-riwaaq-textMuted" />
                     <span class="w-full truncate text-[10px] text-riwaaq-textMuted">{{ item.attachment.original_filename }}</span>
                 </div>
                 <button
@@ -288,7 +289,7 @@ async function submit() {
                     class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-riwaaq-overlay/70 text-white"
                     @click="removeStaged(item.attachment)"
                 >
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"/></svg>
+                    <Icon name="close-alt" :size="12" />
                 </button>
             </div>
         </div>
@@ -302,15 +303,15 @@ async function submit() {
                 />
 
                 <div ref="emojiWrap" class="chat-composer__emoji-wrap relative hidden shrink-0 sm:block">
-                    <button type="button" title="Emoji" class="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-textMuted shadow-sm hover:text-riwaaq-accent" @click="toggleEmoji">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
+                    <button type="button" title="Emoji" class="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-riwaaq-surface text-riwaaq-textMuted shadow-chat hover:text-riwaaq-accent" @click="toggleEmoji">
+                        <Icon name="smile-outline" :size="20" />
                     </button>
                     <div v-if="showEmoji" class="chat-animate-pop-in absolute bottom-14 left-0 z-10">
                         <EmojiPicker @pick="onEmojiPick" />
                     </div>
                 </div>
 
-                <div class="flex h-[52px] min-w-0 flex-1 items-center rounded-full bg-riwaaq-surface px-[22px] shadow-sm">
+                <div class="flex h-[52px] min-w-0 flex-1 items-center rounded-full bg-riwaaq-surface px-[22px] shadow-chat">
                     <input
                         ref="inputEl"
                         v-model="body"
@@ -327,8 +328,8 @@ async function submit() {
                 @recorded="onVoiceRecorded"
                 @recording-change="recording = $event"
             />
-            <button v-else type="submit" class="chat-composer__send flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-riwaaq-accent text-sm font-medium text-riwaaq-accentContrast shadow-sm">
-                <svg v-if="!editing" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+            <button v-else type="submit" class="chat-composer__send flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-riwaaq-accent text-sm font-medium text-riwaaq-accentContrast shadow-chat">
+                <Icon v-if="!editing" name="send" :size="21" />
                 <span v-else>Save</span>
             </button>
         </form>

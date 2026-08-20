@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
+import Icon from '../../shared/Icon.vue';
 
 const props = defineProps({
     message: { type: Object, required: true },
@@ -68,8 +69,7 @@ function cycleRate() {
             :class="isOwn ? 'bg-riwaaq-accent text-riwaaq-accentContrast hover:opacity-90' : 'bg-riwaaq-sage text-riwaaq-sageContrast hover:opacity-90'"
             @click="toggle"
         >
-            <svg v-if="playing" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.4" /><rect x="13.5" y="5" width="4" height="14" rx="1.4" /></svg>
-            <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5.5l11 6.5-11 6.5Z" /></svg>
+            <Icon :name="playing ? 'pause' : 'play'" :size="16" />
         </button>
 
         <div class="min-w-0 flex-1">

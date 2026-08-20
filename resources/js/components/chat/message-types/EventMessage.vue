@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from "vue";
+import Icon from "../../shared/Icon.vue";
 import { useMessages } from "../../../composables/useMessages";
 import { useChatStore } from "../../../store";
 import { chatableKey } from "../../../chatable";
@@ -81,17 +82,7 @@ async function onRespond(status) {
         class="chat-event-message min-w-0 max-w-sm rounded-2xl border border-riwaaq-border bg-riwaaq-surface p-3"
     >
         <div class="mb-2 flex items-center gap-2">
-            <svg
-                viewBox="0 0 24 24"
-                width="18"
-                height="18"
-                fill="currentColor"
-                class="shrink-0 text-riwaaq-textMuted"
-            >
-                <path
-                    d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2Zm-2 8h14v10H5Z"
-                />
-            </svg>
+            <Icon name="calendar" :size="18" class="shrink-0 text-riwaaq-textMuted" />
             <p class="text-sm font-medium text-riwaaq-text">{{ title }}</p>
         </div>
 

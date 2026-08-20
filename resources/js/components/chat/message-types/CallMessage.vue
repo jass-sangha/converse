@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from "vue";
+import Icon from "../../shared/Icon.vue";
 
 const props = defineProps({
     message: { type: Object, required: true },
@@ -34,35 +35,7 @@ const detailLabel = computed(() =>
         <span
             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-riwaaq-surfaceHover text-riwaaq-sage"
         >
-            <svg
-                v-if="isVideo"
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <rect x="2.5" y="6" width="13" height="12" rx="3" />
-                <path d="M15.5 11l6-3.2v8.4l-6-3.2Z" />
-            </svg>
-            <svg
-                v-else
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <path
-                    d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z"
-                />
-            </svg>
+            <Icon :name="isVideo ? 'video-camera' : 'phone-accept'" :size="16" />
         </span>
         <span class="min-w-0">
             <span class="block text-sm font-medium text-riwaaq-text pr-4">{{

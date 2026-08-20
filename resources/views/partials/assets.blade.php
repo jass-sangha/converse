@@ -9,6 +9,14 @@
         <link rel="stylesheet" href="{{ asset('vendor/chat/theme.css') }}?v={{ $themeOverrideVersion }}">
     @endif
     {!! \Riwaaq\Chat\Support\ChatConfig::themeOverrideStyles() !!}
+    {!! \Riwaaq\Chat\Support\ChatConfig::iconOverrideScript() !!}
+    @if($iconOverrideVersion ?? null)
+        <script src="{{ asset('vendor/chat/icons.js') }}?v={{ $iconOverrideVersion }}"></script>
+    @endif
+    {!! \Riwaaq\Chat\Support\ChatConfig::wallpaperOverrideScript() !!}
+    @if($wallpaperOverrideVersion ?? null)
+        <script src="{{ asset('vendor/chat/wallpapers.js') }}?v={{ $wallpaperOverrideVersion }}"></script>
+    @endif
     <div id="riwaaq-chat-app"></div>
     <script>
         // Resolves and applies the theme synchronously, before the deferred app.js

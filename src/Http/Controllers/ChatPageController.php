@@ -12,6 +12,8 @@ class ChatPageController extends Controller
         return view('chat::chat', [
             'chatConfig' => ChatConfig::build($request->user(), embed: false),
             'themeOverrideVersion' => ChatConfig::themeOverrideVersion(),
+            'iconOverrideVersion' => ChatConfig::iconOverrideVersion(),
+            'wallpaperOverrideVersion' => ChatConfig::wallpaperOverrideVersion(),
         ]);
     }
 }

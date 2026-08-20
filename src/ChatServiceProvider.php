@@ -4,6 +4,7 @@ namespace Riwaaq\Chat;
 
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
@@ -143,6 +144,14 @@ class ChatServiceProvider extends PackageServiceProvider
         $this->publishes([
             __DIR__.'/../resources/css/theme.css' => public_path('vendor/chat/theme.css'),
         ], 'chat-theme');
+
+        $this->publishes([
+            __DIR__.'/../resources/js/icon-overrides.js' => public_path('vendor/chat/icons.js'),
+        ], 'chat-icons');
+
+        $this->publishes([
+            __DIR__.'/../resources/js/wallpaper-overrides.js' => public_path('vendor/chat/wallpapers.js'),
+        ], 'chat-wallpapers');
     }
 
     /**
@@ -174,6 +183,8 @@ class ChatServiceProvider extends PackageServiceProvider
             return;
         }
 
+        $root = config('chat.media.disk_root', storage_path('app/public/chat'));
+
         config(["filesystems.disks.{$disk}" => [
             'driver' => 'local',
             // Defaults nested under app/public (not app/chat) so it resolves through the
@@ -182,9 +193,46 @@ class ChatServiceProvider extends PackageServiceProvider
             // serves media, so avatars/attachments would 403 on any disk root that isn't
             // reachable that way. A host overriding chat.media.disk_root/disk_url is responsible
             // for keeping that same guarantee (a symlink or an equivalent serving route).
-            'root' => config('chat.media.disk_root', storage_path('app/public/chat')),
+            'root' => $root,
             'url' => config('chat.media.disk_url', '/storage/chat'),
             'visibility' => 'public',
         ]]);
+
+        $this->ensureStorageLinkExists($root);
+    }
+
+    /**
+     * The disk above only serves anything through the standard public/storage symlink —
+     * without it every avatar/attachment 404s until someone remembers to run
+     * `php artisan storage:link` by hand, which then has to be re-run after every fresh
+     * clone/deploy/container rebuild since the symlink itself isn't committed to git.
+     * Create it automatically on boot instead (idempotent — a no-op once it exists, and
+     * self-healing if something ever removes it again), the same way the artisan command
+     * itself does under the hood (Filesystem::link()).
+     *
+     * Only does this for the untouched default root — a host that customized
+     * chat.media.disk_root/disk_url already opted into managing serving themselves (per
+     * the comment above), so we don't assume their path also wants the public/storage
+     * symlink.
+     */
+    protected function ensureStorageLinkExists(string $root): void
+    {
+        if ($root !== storage_path('app/public/chat')) {
+            return;
+        }
+
+        $link = public_path('storage');
+        $target = storage_path('app/public');
+
+        if (is_link($link) || file_exists($link) || ! is_dir($target)) {
+            return;
+        }
+
+        try {
+            $this->app->make(Filesystem::class)->link($target, $link);
+        } catch (\Throwable) {
+            // Best-effort: e.g. no permission to write into public/. Falls back to the
+            // previous behavior of needing `php artisan storage:link` run by hand.
+        }
     }
 }

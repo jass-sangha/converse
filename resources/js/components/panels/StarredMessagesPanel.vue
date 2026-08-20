@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import Avatar from "../shared/Avatar.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
+import Icon from "../shared/Icon.vue";
 import { useApi } from "../../composables/useApi";
 import { useConversations } from "../../composables/useConversations";
 import { useMessages } from "../../composables/useMessages";
@@ -208,7 +209,7 @@ async function onUnstar(message) {
                 <div
                     v-for="message in messages"
                     :key="message.id"
-                    class="flex cursor-pointer items-center gap-3 rounded-[20px] px-3 py-2.5 hover:bg-riwaaq-surfaceHover"
+                    class="flex cursor-pointer items-center gap-3 rounded-chat px-3 py-2.5 hover:bg-riwaaq-surfaceHover"
                     @click="jumpTo(message)"
                 >
                     <img
@@ -247,11 +248,7 @@ async function onUnstar(message) {
                             class="flex h-6 w-6 items-center justify-center rounded-full text-riwaaq-accent hover:bg-riwaaq-surface"
                             @click.stop="onUnstar(message)"
                         >
-                            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
-                                <path
-                                    d="M12 2 15 9l7 .6-5.3 4.6L18.2 21 12 17.3 5.8 21l1.5-6.8L2 9.6 9 9Z"
-                                />
-                            </svg>
+                            <Icon name="star" :size="15" />
                         </button>
                     </div>
                 </div>

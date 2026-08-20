@@ -2,6 +2,7 @@
 import { onBeforeUnmount, ref, watch } from "vue";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
+import Icon from "./Icon.vue";
 
 const props = defineProps({
     icon: { type: String, default: null },
@@ -65,21 +66,17 @@ function pick(option) {
 <template>
     <div ref="root" data-menu-root="1" class="chat-setting-row relative">
         <div
-            class="flex w-full cursor-pointer items-center gap-3.5 rounded-[20px] px-4 py-[15px] hover:bg-riwaaq-surfaceHover"
+            class="flex w-full cursor-pointer items-center gap-3.5 rounded-chat px-4 py-[15px] hover:bg-riwaaq-surfaceHover"
             role="switch"
             :aria-checked="isOn"
             @click="onRowClick"
         >
-            <svg
+            <Icon
                 v-if="icon"
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="currentColor"
+                :name="icon"
+                :size="20"
                 class="shrink-0 text-riwaaq-textMuted"
-            >
-                <path :d="icon" />
-            </svg>
+            />
             <span class="min-w-0 flex-1">
                 <span
                     class="block text-[14px] font-semibold text-riwaaq-text"
@@ -104,7 +101,7 @@ function pick(option) {
 
         <div
             v-if="isOn && showMenu"
-            class="chat-animate-pop-in absolute right-4 z-20 w-[180px] overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 shadow-lg"
+            class="chat-animate-pop-in absolute right-4 z-20 w-[180px] overflow-y-auto rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-2 shadow-chat-lg"
             :class="openUp ? 'bottom-full mb-1' : 'top-full mt-1'"
             :style="{ maxHeight: maxHeight + 'px' }"
         >

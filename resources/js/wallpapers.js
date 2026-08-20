@@ -4,12 +4,48 @@
 // token — never a hardcoded color — so it flips correctly between light and dark automatically.
 const INK = "rgb(var(--chat-text) / .16)";
 
+/**
+ * Runtime registries for wallpaper patterns/colors, mirroring icons/registry.js: a host can add
+ * or replace any entry (by `key`) without rebuilding the bundle, via window.RiwaaqWallpaperOverrides
+ * (see wallpaper-overrides.js, publishable with `--tag=chat-wallpapers`) or config('chat.theme.wallpapers').
+ * Order is preserved (Map insertion order), so overriding an existing key keeps its position and a
+ * brand-new key is appended at the end.
+ */
+const patternsRegistry = new Map();
+const colorsRegistry = new Map();
+
+function normalizeEntries(list) {
+    if (!list) return [];
+    // Array form (used by the defaults below) already carries its own `key` per entry; object-map
+    // form (the ergonomic shape for host overrides, e.g. `{ waves: { label: 'Waves', ... } }`)
+    // doesn't repeat it, so backfill `key` from the map key when it's missing.
+    return Array.isArray(list)
+        ? list
+        : Object.entries(list).map(([key, def]) => ({ key, ...def }));
+}
+
+export function registerWallpaperPatterns(list) {
+    normalizeEntries(list).forEach((pattern) => patternsRegistry.set(pattern.key, pattern));
+}
+
+export function registerWallpaperColors(list) {
+    normalizeEntries(list).forEach((color) => colorsRegistry.set(color.key, color));
+}
+
+export function getWallpaperPatterns() {
+    return [...patternsRegistry.values()];
+}
+
+export function getWallpaperColors() {
+    return [...colorsRegistry.values()];
+}
+
 // Picker swatches are ~40px, far smaller than several of these patterns' real tile sizes (up to
 // 84px) — at full size a swatch would show at most a sliver of one repeat, making patterns look
 // indistinguishable from each other (or from Plain). Each pattern that needs it carries a
 // `preview` image/size scaled down specifically for the swatch, independent of the size actually
 // used on the chat background.
-export const WALLPAPER_PATTERNS = [
+registerWallpaperPatterns([
     {
         key: "default",
         label: "Dots",
@@ -50,17 +86,17 @@ export const WALLPAPER_PATTERNS = [
         size: "84px 84px, 84px 84px",
         preview: { size: "14px 14px, 14px 14px" },
     },
-];
+]);
 
 // Every color is a low-opacity tint of an existing theme token (`rgb(var(--chat-*) / alpha)`,
 // the same pattern the app's own Tailwind config uses) so it re-tints automatically for
 // light/dark themes — never a fixed hex value.
-export const WALLPAPER_COLORS = [
+registerWallpaperColors([
     { key: "default", label: "Default", css: null },
     { key: "info", label: "Sky", css: "rgb(var(--chat-info) / .16)" },
     { key: "danger", label: "Blush", css: "rgb(var(--chat-danger) / .12)" },
     { key: "text", label: "Slate", css: "rgb(var(--chat-text) / .07)" },
-];
+]);
 
 export function encodeWallpaper(patternKey, colorKeyOrHex) {
     // Every explicit pick — including "default" pattern + "default" color — is stored as-is, never
@@ -102,10 +138,9 @@ export function resolveWallpaper(value) {
         };
     }
 
-    const pattern =
-        WALLPAPER_PATTERNS.find((p) => p.key === patternKey) ??
-        WALLPAPER_PATTERNS[0];
-    const colorPreset = WALLPAPER_COLORS.find((c) => c.key === colorKeyOrHex);
+    const patterns = getWallpaperPatterns();
+    const pattern = patterns.find((p) => p.key === patternKey) ?? patterns[0];
+    const colorPreset = getWallpaperColors().find((c) => c.key === colorKeyOrHex);
     const tint = colorPreset
         ? colorPreset.css
         : colorKeyOrHex?.startsWith("#")

@@ -10,7 +10,7 @@ const { message, dismiss } = useToast();
         class="chat-toast pointer-events-none fixed inset-x-0 bottom-24 z-[70] flex justify-center px-4 sm:bottom-8"
     >
         <div
-            class="chat-animate-pop-in pointer-events-auto flex max-w-[90vw] items-center gap-3 rounded-full border border-riwaaq-border bg-riwaaq-surface px-5 py-3 text-[13px] font-medium text-riwaaq-text shadow-lg"
+            class="chat-animate-pop-in pointer-events-auto flex max-w-[90vw] items-center gap-3 rounded-full border border-riwaaq-border bg-riwaaq-surface px-5 py-3 text-[13px] font-medium text-riwaaq-text shadow-chat-lg"
         >
             <span class="truncate">{{ message }}</span>
             <button

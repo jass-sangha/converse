@@ -123,7 +123,7 @@ watch(
             <div
                 v-for="row in blockedRows"
                 :key="`${row.blocked_type}:${row.blocked_id}`"
-                class="flex items-center gap-3 rounded-[20px] px-3 py-2.5 hover:bg-riwaaq-surfaceHover"
+                class="flex items-center gap-3 rounded-chat px-3 py-2.5 hover:bg-riwaaq-surfaceHover"
             >
                 <Avatar
                     :name="getUser({ type: row.blocked_type, id: row.blocked_id }).name"

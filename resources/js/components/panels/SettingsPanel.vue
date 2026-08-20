@@ -6,6 +6,7 @@ import SettingRow from "../shared/SettingRow.vue";
 import SidebarScreenHeader from "../shared/SidebarScreenHeader.vue";
 import GlobalMenu from "../shared/GlobalMenu.vue";
 import WallpaperPicker from "../shared/WallpaperPicker.vue";
+import Icon from "../shared/Icon.vue";
 import { useChatStore } from "../../store";
 import { useProfile } from "../../composables/useProfile";
 import { usePreferences } from "../../composables/usePreferences";
@@ -178,7 +179,7 @@ async function onMuteAll(scope, durationKey) {
 
         <div class="chat-scroll flex-1 overflow-y-auto px-4 pb-5">
             <div
-                class="flex items-start gap-3.5 rounded-[24px] bg-riwaaq-railBg p-4"
+                class="flex items-start gap-3.5 rounded-chat-lg bg-riwaaq-railBg p-4"
             >
                 <AvatarPhotoControl
                     :name="me?.name ?? ''"
@@ -206,19 +207,7 @@ async function onMuteAll(scope, durationKey) {
                             @blur="onAboutBlur"
                             @keyup.enter="$event.target.blur()"
                         />
-                        <svg
-                            viewBox="0 0 24 24"
-                            width="14"
-                            height="14"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2.75"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="shrink-0 text-riwaaq-textDim"
-                        >
-                            <path d="M4 20h4L20 8l-4-4L4 16v4Z" />
-                        </svg>
+                            <Icon name="edit-outline" :size="14" class="shrink-0 text-riwaaq-textDim" />
                     </div>
                     <p
                         v-if="uploadError"

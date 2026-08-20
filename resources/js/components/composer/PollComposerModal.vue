@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import Modal from '../shared/Modal.vue';
+import Icon from '../shared/Icon.vue';
 
 const emit = defineEmits(['close', 'create']);
 
@@ -64,7 +65,7 @@ async function submit() {
                     class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                     @click="removeOption(index)"
                 >
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.3 5.71 12 12.01l6.3 6.3-1.41 1.41L10.59 13.4l-6.3 6.3-1.41-1.42 6.3-6.3-6.3-6.29L4.3 4.28l6.29 6.3 6.3-6.3Z"/></svg>
+                    <Icon name="close-alt" :size="16" />
                 </button>
             </div>
         </div>

@@ -1,4 +1,6 @@
 <script setup>
+import Icon from "./Icon.vue";
+
 defineProps({
     title: { type: String, required: true },
 });
@@ -16,11 +18,7 @@ const emit = defineEmits(["back"]);
             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
             @click="emit('back')"
         >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path
-                    d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20Z"
-                />
-            </svg>
+            <Icon name="back-arrow" :size="20" />
         </button>
         <h1 class="flex-1 truncate text-lg font-semibold text-riwaaq-text">
             {{ title }}

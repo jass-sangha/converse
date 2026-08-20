@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import Icon from '../shared/Icon.vue';
 
 const CATEGORIES = [
     {
@@ -108,7 +109,7 @@ const activeEmojis = computed(() => {
 </script>
 
 <template>
-    <div class="chat-emoji-picker w-80 rounded-chat border border-riwaaq-border bg-riwaaq-surface shadow-lg">
+    <div class="chat-emoji-picker w-80 rounded-chat border border-riwaaq-border bg-riwaaq-surface shadow-chat-lg">
         <div class="chat-emoji-picker__tabs flex items-center gap-1 border-b border-riwaaq-border p-1.5">
             <button
                 type="button"
@@ -117,7 +118,7 @@ const activeEmojis = computed(() => {
                 :class="activeCategory === 'recent' && !query ? 'bg-riwaaq-accent/15 text-riwaaq-accent' : 'text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover'"
                 @click="activeCategory = 'recent'; query = ''"
             >
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 1a11 11 0 1 0 0 22 11 11 0 0 0 0-22Zm1 11h5v2h-7V6h2Z"/></svg>
+                <Icon name="clock" :size="16" />
             </button>
             <button
                 v-for="cat in CATEGORIES"
@@ -134,7 +135,7 @@ const activeEmojis = computed(() => {
 
         <div class="p-2">
             <div class="relative">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-riwaaq-textMuted"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
+                <Icon name="search" :size="14" class="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-riwaaq-textMuted" />
                 <input
                     v-model="query"
                     type="text"

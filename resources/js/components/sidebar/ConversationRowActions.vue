@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useConversations } from "../../composables/useConversations";
 import { useDropdownPlacement } from "../../composables/useDropdownPlacement";
 import { useExclusiveDropdown } from "../../composables/useExclusiveDropdown";
+import Icon from "../shared/Icon.vue";
 
 const props = defineProps({
     conversation: { type: Object, required: true },
@@ -117,22 +118,12 @@ function toggleUnread(event) {
             :class="{ 'w-6 opacity-100': menuOpen }"
             @click.stop="toggleMenu"
         >
-            <svg
-                viewBox="0 0 24 24"
-                width="14"
-                height="14"
-                fill="currentColor"
-                class="shrink-0"
-            >
-                <circle cx="12" cy="5" r="1.8" />
-                <circle cx="12" cy="12" r="1.8" />
-                <circle cx="12" cy="19" r="1.8" />
-            </svg>
+            <Icon name="more-vertical" :size="14" class="shrink-0" />
         </button>
 
         <div
             v-if="menuOpen"
-            class="chat-animate-pop-in absolute right-0 z-20 overflow-y-auto rounded-[22px] border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-lg"
+            class="chat-animate-pop-in absolute right-0 z-20 overflow-y-auto rounded-chat-lg border border-riwaaq-border bg-riwaaq-surface p-2 text-sm shadow-chat-lg"
             :class="[
                 openUp ? 'bottom-full mb-1' : 'top-full mt-1',
                 isFavourited ? 'w-60' : 'w-52',
@@ -145,19 +136,7 @@ function toggleUnread(event) {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="toggleMute"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                    class="shrink-0 text-riwaaq-textMuted"
-                >
-                    <path d="M18 16v-5a6 6 0 0 0-4.6-5.8M6 11v5l-2 2h13" />
-                    <path d="M3 3l18 18" />
-                </svg>
+                <Icon name="mute" :size="15" class="shrink-0 text-riwaaq-textMuted" />
                 <span>{{ isMuted ? "Unmute" : "Mute" }}</span>
             </button>
             <button
@@ -165,21 +144,7 @@ function toggleUnread(event) {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-nowrap text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="toggleFavourite"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="shrink-0 text-riwaaq-textMuted"
-                >
-                    <path
-                        d="M12 20s-7-4.4-7-9a3.9 3.9 0 0 1 7-2.4A3.9 3.9 0 0 1 19 11c0 4.6-7 9-7 9Z"
-                    />
-                </svg>
+                <Icon name="heart-outline" :size="15" class="shrink-0 text-riwaaq-textMuted" />
                 <span>{{
                     isFavourited
                         ? "Remove from favourites"
@@ -191,19 +156,7 @@ function toggleUnread(event) {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="togglePin"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="shrink-0 text-riwaaq-textMuted"
-                >
-                    <path d="M8 8a4 4 0 1 1 8 0 4 4 0 0 1-8 0ZM12 13v8" />
-                </svg>
+                <Icon name="map-pin-outline" :size="15" class="shrink-0 text-riwaaq-textMuted" />
                 <span>{{ isPinned ? "Unpin" : "Pin" }}</span>
             </button>
             <button
@@ -211,20 +164,11 @@ function toggleUnread(event) {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="toggleUnread"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                <Icon
+                    :name="isUnread ? 'ring' : 'ring-dot'"
+                    :size="15"
                     class="shrink-0 text-riwaaq-textMuted"
-                >
-                    <circle cx="12" cy="12" r="9" />
-                    <circle v-if="!isUnread" cx="12" cy="12" r="3.5" fill="currentColor" stroke="none" />
-                </svg>
+                />
                 <span>{{ isUnread ? "Mark as read" : "Mark as unread" }}</span>
             </button>
             <button
@@ -232,19 +176,7 @@ function toggleUnread(event) {
                 class="flex w-full items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-riwaaq-text hover:bg-riwaaq-surfaceHover"
                 @click="toggleArchive"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="shrink-0 text-riwaaq-textMuted"
-                >
-                    <path d="M3 4h18v4H3zM5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 13h4" />
-                </svg>
+                <Icon name="archive" :size="15" class="shrink-0 text-riwaaq-textMuted" />
                 <span>{{ isArchived ? "Unarchive" : "Archive" }}</span>
             </button>
         </div>

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
+import Icon from '../shared/Icon.vue';
 
 const props = defineProps({
     autofocus: { type: Boolean, default: true },
@@ -20,7 +21,7 @@ watch(query, (value) => {
 <template>
     <div class="chat-search-bar px-4 pb-3">
         <div class="relative">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-riwaaq-textMuted"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+            <Icon name="search-outline" :size="16" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-riwaaq-textMuted" />
             <input
                 v-model="query"
                 type="text"

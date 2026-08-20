@@ -26,7 +26,7 @@ const totalCount = computed(() =>
     <button
         v-if="reactions.length"
         type="button"
-        class="chat-reaction-pills__pill flex items-center gap-1 rounded-full border border-riwaaq-border bg-riwaaq-surface px-2 py-0.5 text-xs shadow-sm"
+        class="chat-reaction-pills__pill flex items-center gap-1 rounded-full border border-riwaaq-border bg-riwaaq-surface px-2 py-0.5 text-xs shadow-chat"
         @click.stop="emit('open')"
     >
         <span v-for="emoji in topEmojis" :key="emoji">{{ emoji }}</span>

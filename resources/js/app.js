@@ -2,6 +2,24 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import './composables/usePreferences';
 import '../css/app.css';
+import { registerIcons } from './icons/registry';
+import { defaultIcons } from './icons/defaults';
+import { registerWallpaperPatterns, registerWallpaperColors } from './wallpapers';
+
+registerIcons(defaultIcons);
+// Seeded (in cascade order) by config('chat.theme.icons') inline <script>, the
+// published icons.js, or a host script set before this bundle loads — whichever
+// ran last on the page wins, since registerIcons() here always runs last.
+if (window.RiwaaqIconOverrides) {
+    registerIcons(window.RiwaaqIconOverrides);
+}
+
+// Same idea as the icon overrides above, for the wallpaper picker's patterns/colors —
+// seeded by config('chat.theme.wallpapers') and/or the published wallpapers.js.
+if (window.RiwaaqWallpaperOverrides) {
+    registerWallpaperPatterns(window.RiwaaqWallpaperOverrides.patterns);
+    registerWallpaperColors(window.RiwaaqWallpaperOverrides.colors);
+}
 
 createApp(App).mount('#riwaaq-chat-app');
 
