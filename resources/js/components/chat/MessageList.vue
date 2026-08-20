@@ -35,6 +35,10 @@ const messages = computed(
     () => store.messagesByConversation[props.conversationId] ?? [],
 );
 
+const isTyping = computed(
+    () => (store.typingByConversation[props.conversationId]?.size ?? 0) > 0,
+);
+
 function dateLabel(date) {
     const now = new Date();
     if (date.toDateString() === now.toDateString()) return "Today";
@@ -227,6 +231,19 @@ watch(
                         @edit="(m) => emit('edit', m)"
                     />
                 </template>
+
+                <div
+                    v-if="isTyping"
+                    class="chat-animate-fade-in flex items-end justify-start gap-2"
+                >
+                    <div
+                        class="chat-typing-bubble inline-flex items-center gap-1 rounded-chat rounded-bl-[8px] bg-riwaaq-bubbleIn px-3.5 py-3 shadow-chat"
+                    >
+                        <span class="chat-typing-dot" />
+                        <span class="chat-typing-dot" />
+                        <span class="chat-typing-dot" />
+                    </div>
+                </div>
             </div>
         </div>
 
