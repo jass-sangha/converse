@@ -14,4 +14,6 @@ interface UserSettingsServiceInterface
     public function allowsLastSeen(Model $chatable): bool;
 
     public function allowsReadReceipts(Model $chatable): bool;
+
+    public function allowsTypingIndicator(Model $chatable): bool;
 }

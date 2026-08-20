@@ -15,6 +15,7 @@ class UserSetting extends Model
         'chatable_type',
         'show_last_seen',
         'show_read_receipts',
+        'show_typing_indicator',
         'last_seen_hidden_until',
         'read_receipts_hidden_until',
         'avatar_path',
@@ -24,6 +25,7 @@ class UserSetting extends Model
     protected $casts = [
         'show_last_seen' => 'boolean',
         'show_read_receipts' => 'boolean',
+        'show_typing_indicator' => 'boolean',
         'last_seen_hidden_until' => 'datetime',
         'read_receipts_hidden_until' => 'datetime',
     ];
@@ -49,6 +51,11 @@ class UserSetting extends Model
         }
 
         return $this->show_read_receipts;
+    }
+
+    public function typingIndicatorVisible(): bool
+    {
+        return $this->show_typing_indicator;
     }
 
     public function getTable(): string

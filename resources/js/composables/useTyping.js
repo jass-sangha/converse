@@ -1,20 +1,22 @@
-import { useEcho } from './useEcho';
+import { useApi } from './useApi';
 
 const timers = {};
 
 export function useTyping() {
+    const api = useApi();
+
     function notifyTyping(conversationId) {
-        useEcho().whisperTyping(conversationId, 'start');
+        api.post(`/conversations/${conversationId}/typing`, { state: 'start' });
 
         clearTimeout(timers[conversationId]);
         timers[conversationId] = setTimeout(() => {
-            useEcho().whisperTyping(conversationId, 'stop');
+            api.post(`/conversations/${conversationId}/typing`, { state: 'stop' });
         }, 4000);
     }
 
     function stopTyping(conversationId) {
         clearTimeout(timers[conversationId]);
-        useEcho().whisperTyping(conversationId, 'stop');
+        api.post(`/conversations/${conversationId}/typing`, { state: 'stop' });
     }
 
     return { notifyTyping, stopTyping };

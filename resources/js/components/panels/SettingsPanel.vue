@@ -31,6 +31,7 @@ const lastSeenHidden = ref(false);
 const lastSeenHiddenUntil = ref(null);
 const readReceiptsHidden = ref(false);
 const readReceiptsHiddenUntil = ref(null);
+const typingIndicatorHidden = ref(false);
 const about = ref("");
 const savingAbout = ref(false);
 const mutedScopes = ref({ private: false, group: false });
@@ -81,6 +82,7 @@ function applyPrivacySettings(settings) {
     lastSeenHiddenUntil.value = settings.last_seen_hidden_until ?? null;
     readReceiptsHidden.value = !settings.show_read_receipts;
     readReceiptsHiddenUntil.value = settings.read_receipts_hidden_until ?? null;
+    typingIndicatorHidden.value = !settings.show_typing_indicator;
 }
 
 onMounted(async () => {
@@ -153,6 +155,13 @@ async function onHideReadReceipts(option) {
     const settings = await updatePrivacySettings({
         show_read_receipts: true,
         read_receipts_hidden_until: mutedUntilFor(option.key),
+    });
+    applyPrivacySettings(settings);
+}
+
+async function onToggleTypingIndicator() {
+    const settings = await updatePrivacySettings({
+        show_typing_indicator: typingIndicatorHidden.value,
     });
     applyPrivacySettings(settings);
 }
@@ -248,6 +257,16 @@ async function onMuteAll(scope, durationKey) {
                 menu-title="Turn off for"
                 @toggle="onShowReadReceipts"
                 @pick="onHideReadReceipts"
+            />
+            <SettingRow
+                label="Show typing indicators"
+                :hint="
+                    !typingIndicatorHidden
+                        ? 'Others can see when you\'re typing'
+                        : 'Hidden from everyone'
+                "
+                :is-on="!typingIndicatorHidden"
+                @toggle="onToggleTypingIndicator"
             />
 
             <div

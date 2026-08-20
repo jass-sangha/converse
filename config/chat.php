@@ -192,6 +192,7 @@ return [
     'privacy' => [
         'last_seen_default' => true,
         'read_receipts_default' => true,
+        'typing_indicator_default' => true,
     ],
 
     /*

@@ -61,6 +61,7 @@ class ProfileController extends Controller
         $data = $request->validate([
             'show_last_seen' => ['sometimes', 'boolean'],
             'show_read_receipts' => ['sometimes', 'boolean'],
+            'show_typing_indicator' => ['sometimes', 'boolean'],
             'last_seen_hidden_until' => ['sometimes', 'nullable', 'date'],
             'read_receipts_hidden_until' => ['sometimes', 'nullable', 'date'],
             'about' => ['sometimes', 'nullable', 'string', 'max:139'],
@@ -78,6 +79,7 @@ class ProfileController extends Controller
             // see UserSetting::lastSeenVisible()/readReceiptsVisible().
             'show_last_seen' => $setting->lastSeenVisible(),
             'show_read_receipts' => $setting->readReceiptsVisible(),
+            'show_typing_indicator' => $setting->typingIndicatorVisible(),
             'last_seen_hidden_until' => $setting->last_seen_hidden_until,
             'read_receipts_hidden_until' => $setting->read_receipts_hidden_until,
             'about' => $setting->about,

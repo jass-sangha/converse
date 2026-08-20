@@ -130,7 +130,6 @@ function build() {
     return {
         joinConversation,
         leaveConversation,
-        whisperTyping,
     };
 }
 
@@ -224,10 +223,6 @@ function joinConversation(conversationId) {
 function leaveConversation(conversationId) {
     echo?.leave(`conversation.${conversationId}`);
     joinedChannels.delete(conversationId);
-}
-
-function whisperTyping(conversationId, state) {
-    joinedChannels.get(conversationId)?.whisper('typing', { state });
 }
 
 function findMessage(conversationId, messageId) {

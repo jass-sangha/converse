@@ -15,6 +15,7 @@ class UserSettingsService implements UserSettingsServiceInterface
             [
                 'show_last_seen' => config('chat.privacy.last_seen_default', true),
                 'show_read_receipts' => config('chat.privacy.read_receipts_default', true),
+                'show_typing_indicator' => config('chat.privacy.typing_indicator_default', true),
             ],
         );
     }
@@ -35,5 +36,20 @@ class UserSettingsService implements UserSettingsServiceInterface
     public function allowsReadReceipts(Model $chatable): bool
     {
         return $this->get($chatable)->readReceiptsVisible();
+    }
+
+    // Deliberately skips get()'s firstOrCreate: typing events fire on every keystroke, and this
+    // check must never incur a write — a plain read falls back to the configured default for a
+    // chatable that has no settings row yet (mirroring what firstOrCreate would have seeded).
+    public function allowsTypingIndicator(Model $chatable): bool
+    {
+        $value = UserSetting::query()
+            ->where('chatable_type', $chatable->getMorphClass())
+            ->where('chatable_id', $chatable->getKey())
+            ->value('show_typing_indicator');
+
+        return $value === null
+            ? config('chat.privacy.typing_indicator_default', true)
+            : (bool) $value;
     }
 }

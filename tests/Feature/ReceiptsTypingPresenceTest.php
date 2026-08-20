@@ -110,6 +110,28 @@ it('never writes to the database when broadcasting a typing indicator', function
     DB::disableQueryLog();
 });
 
+it('suppresses the typing broadcast when the sender has disabled typing indicators', function () {
+    $alice = presenceUser('alice-typingoff@example.com');
+    $bob = presenceUser('bob-typingoff@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $this->actingAs($alice)->patchJson('/api/chat/profile/settings', [
+        'show_typing_indicator' => false,
+    ])->assertOk();
+
+    Event::fake();
+
+    $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/typing", ['state' => 'start'])
+        ->assertNoContent();
+
+    Event::assertNotDispatched(UserTyping::class);
+});
+
 it('debounces presence heartbeat db writes and reports online status', function () {
     $alice = presenceUser('alice-presence@example.com');
 

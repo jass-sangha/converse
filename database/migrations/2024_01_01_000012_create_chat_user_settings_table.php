@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('last_seen_hidden_until')->nullable();
             $table->boolean('show_read_receipts')->default(true);
             $table->timestamp('read_receipts_hidden_until')->nullable();
+            $table->boolean('show_typing_indicator')->default(true);
             $table->timestamps();
 
             $table->unique(['chatable_type', 'chatable_id']);
