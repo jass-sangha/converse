@@ -62,6 +62,17 @@ function pickPattern(patternKey) {
     emit("update:modelValue", encodeWallpaper(patternKey, current.value.colorKeyOrHex));
 }
 
+// null (as opposed to an explicit "default|default" pick) is what actually falls back to the
+// default wallpaper — an explicit pick freezes this chat on today's default even if the default
+// itself changes later (e.g. the global default gets changed in Settings), where resetting stays
+// live and always tracks whatever the default currently is. Only offered once there's something
+// to reset away from, i.e. this chat has ever had its own wallpaper set at all.
+const hasOverride = computed(() => !!props.modelValue);
+
+function resetToDefault() {
+    emit("update:modelValue", null);
+}
+
 function pickColor(colorKey) {
     emit("update:modelValue", encodeWallpaper(current.value.patternKey, colorKey));
 }
@@ -139,9 +150,19 @@ async function onImageChange(event) {
 
 <template>
     <div class="chat-wallpaper-picker">
-        <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-riwaaq-textDim">
-            Pattern
-        </p>
+        <div class="mb-2 flex items-center justify-between gap-2">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-riwaaq-textDim">
+                Pattern
+            </p>
+            <button
+                v-if="hasOverride"
+                type="button"
+                class="text-[11px] font-semibold text-riwaaq-accent hover:underline"
+                @click="resetToDefault"
+            >
+                Reset to default
+            </button>
+        </div>
         <div class="mb-4 flex flex-wrap gap-[9px]">
             <button
                 v-for="pattern in wallpaperPatterns"

@@ -204,6 +204,30 @@ it('mutes, archives, and pins a conversation for the requesting participant only
         ->assertJsonPath('data.me.pinned_at', fn ($value) => $value !== null);
 });
 
+it('sets a conversation wallpaper for the requesting participant only, then resets it back to null', function () {
+    $alice = socialUser('alice-wallpaper@example.com');
+    $bob = socialUser('bob-wallpaper@example.com');
+    $conversationId = privateConversationBetween($alice, $bob);
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/conversations/{$conversationId}/wallpaper", ['wallpaper' => 'lines|info'])
+        ->assertOk()
+        ->assertJsonPath('data.me.wallpaper', 'lines|info');
+
+    // Bob's own view of the same conversation is unaffected — wallpaper is per-participant, not
+    // shared conversation state.
+    $bobsView = $this->actingAs($bob)->getJson("/api/chat/conversations/{$conversationId}")->assertOk();
+    expect($bobsView->json('data.me.wallpaper'))->toBeNull();
+
+    // The "Reset to default" action in the picker sends wallpaper: null — must actually clear the
+    // column back to null (falls back to the client's own default wallpaper preference), not get
+    // rejected or silently coerced to an empty string.
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/conversations/{$conversationId}/wallpaper", ['wallpaper' => null])
+        ->assertOk()
+        ->assertJsonPath('data.me.wallpaper', null);
+});
+
 it('marks a conversation manually unread without disturbing read receipts, then clears it on mark-read', function () {
     $alice = socialUser('alice-unread@example.com');
     $bob = socialUser('bob-unread@example.com');
