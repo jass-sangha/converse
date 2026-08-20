@@ -6,7 +6,7 @@ import MessageBubble from './MessageBubble.vue';
 import MessageComposer from '../composer/MessageComposer.vue';
 import GroupInfoPanel from '../panels/GroupInfoPanel.vue';
 import Icon from '../shared/Icon.vue';
-import { useChatStore } from '../../store';
+import { useChatStore, upsertConversation } from '../../store';
 import { useConversations } from '../../composables/useConversations';
 import { useMessages } from '../../composables/useMessages';
 import { useMessagePins } from '../../composables/useMessagePins';
@@ -72,6 +72,13 @@ watch(() => store.activeConversationId, async (newId, oldId) => {
         const messages = store.messagesByConversation[newId] ?? [];
         if (messages.length) {
             await markRead(newId, messages[messages.length - 1].id);
+
+            // `markRead` returns no content, so the sidebar badge is cleared locally rather
+            // than waiting on a broadcast/refetch of this conversation's unread_count.
+            const readConversation = store.conversations.find((c) => c.id === newId);
+            if (readConversation && readConversation.unread_count) {
+                upsertConversation({ ...readConversation, unread_count: 0 });
+            }
         }
 
         if (store.pendingScrollMessageId) {

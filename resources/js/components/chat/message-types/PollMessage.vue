@@ -41,7 +41,7 @@ async function onVote(index) {
 </script>
 
 <template>
-    <div class="chat-poll-message min-w-0 max-w-sm rounded-2xl border border-riwaaq-border bg-riwaaq-surface p-3">
+    <div class="chat-poll-message w-80 min-w-0 max-w-full rounded-2xl border border-riwaaq-border bg-riwaaq-surface p-3">
         <div class="mb-2 flex items-center gap-2">
             <Icon name="poll" :size="18" class="shrink-0 text-riwaaq-textMuted" />
             <p class="text-sm font-medium text-riwaaq-text">{{ question }}</p>
@@ -64,7 +64,12 @@ async function onVote(index) {
                 />
                 <span class="relative flex items-center justify-between gap-2">
                     <span class="flex items-center gap-2 text-sm">
-                        <Icon v-if="optionAt(index).self" name="check" :size="14" class="shrink-0 text-riwaaq-accent" />
+                        <Icon
+                            name="check"
+                            :size="14"
+                            class="shrink-0 text-riwaaq-accent"
+                            :class="{ invisible: !optionAt(index).self }"
+                        />
                         {{ label }}
                     </span>
                     <span class="shrink-0 text-xs text-riwaaq-textMuted">{{ percentage(index) }}%</span>
