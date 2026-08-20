@@ -67,7 +67,12 @@ export function removeMessage(conversationId, messageId) {
 }
 
 export function setTyping(conversationId, key, isTyping) {
-    const set = state.typingByConversation[conversationId] ?? (state.typingByConversation[conversationId] = new Set());
+    if (!state.typingByConversation[conversationId]) {
+        state.typingByConversation[conversationId] = new Set();
+    }
+    // Re-read after creating: the assignment above evaluates to the raw Set, not the reactive
+    // proxy Vue wraps it in, and mutating the raw Set bypasses reactivity tracking entirely.
+    const set = state.typingByConversation[conversationId];
 
     if (isTyping) {
         set.add(key);
