@@ -17,21 +17,7 @@ class ChatConfig
      */
     public static function build(?Authenticatable $actor, bool $embed = false): array
     {
-        $connectionName = config('broadcasting.default', 'reverb');
-        $connection = config("broadcasting.connections.{$connectionName}");
-
-        if (! in_array($connectionName, ['reverb', 'pusher'])) {
-            if (config('broadcasting.connections.reverb.key')) {
-                $connectionName = 'reverb';
-                $connection = config('broadcasting.connections.reverb');
-            } elseif (config('broadcasting.connections.pusher.key')) {
-                $connectionName = 'pusher';
-                $connection = config('broadcasting.connections.pusher');
-            } else {
-                $connectionName = 'reverb';
-                $connection = config('broadcasting.connections.reverb') ?? [];
-            }
-        }
+        [$connectionName, $connection] = self::resolveBroadcastConnection();
 
         $assetPath = __DIR__.'/../../resources/dist/app.js';
 
@@ -50,6 +36,51 @@ class ChatConfig
             'assetVersion' => is_file($assetPath) ? filemtime($assetPath) : time(),
             'embed' => $embed,
         ];
+    }
+
+    /**
+     * Every broadcaster the bundled widget knows how to drive on the frontend (see
+     * resources/js/composables/useEcho.js) — adding support for a new one is exactly two
+     * changes: add its name here, and add a matching `else if (driver === '...')` block to
+     * useEcho.js. No other backend or frontend code needs to know the list exists.
+     *
+     * @var list<string>
+     */
+    public const SUPPORTED_BROADCAST_DRIVERS = ['reverb', 'pusher', 'ably'];
+
+    /**
+     * Resolves which broadcaster to hand the frontend, and its connection config, from the
+     * host app's own config/broadcasting.php — never anything chat-package-specific, so
+     * switching driver is purely a host-side .env change (BROADCAST_CONNECTION plus that
+     * driver's own key), with zero code or chat config changes on either end.
+     *
+     * config('broadcasting.default') is trusted as-is whenever it names one of
+     * SUPPORTED_BROADCAST_DRIVERS, even without a key configured yet (so a fresh
+     * `php artisan reverb:install`, which sets BROADCAST_CONNECTION=reverb before you've
+     * necessarily set REVERB_APP_KEY, doesn't get silently overridden here). Only an
+     * unrecognized/unset default (Laravel's own out-of-the-box default is 'log' or 'null',
+     * neither of which broadcasts anything real) falls through to auto-detecting whichever
+     * supported driver actually has a key set — reverb first, since it's the first-class
+     * target — so the widget still works the instant credentials for any one of them exist,
+     * with no config('chat.*') broadcasting setting required at all.
+     *
+     * @return array{0: string, 1: array<string, mixed>}
+     */
+    protected static function resolveBroadcastConnection(): array
+    {
+        $default = config('broadcasting.default', 'reverb');
+
+        if (in_array($default, self::SUPPORTED_BROADCAST_DRIVERS, true)) {
+            return [$default, config("broadcasting.connections.{$default}", [])];
+        }
+
+        foreach (self::SUPPORTED_BROADCAST_DRIVERS as $driver) {
+            if (filled(config("broadcasting.connections.{$driver}.key"))) {
+                return [$driver, config("broadcasting.connections.{$driver}", [])];
+            }
+        }
+
+        return ['reverb', config('broadcasting.connections.reverb', [])];
     }
 
     public static function themeOverrideVersion(): ?int

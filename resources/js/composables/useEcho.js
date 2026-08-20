@@ -62,6 +62,24 @@ export function useEcho() {
                 forceTLS: true,
                 authEndpoint: (config.apiBaseUrl || '/api/chat') + '/broadcasting/auth',
             });
+        } else if (driver === 'ably') {
+            // Ably has no dedicated Echo/pusher-js connector — it ships its own realtime SDK
+            // instead — but it does expose a Pusher-protocol-compatible endpoint specifically so
+            // existing Pusher/Echo integrations work unmodified: https://ably.com/docs/broadcast/laravel.
+            // These host/port/cluster values are that endpoint's fixed address, not user config,
+            // which is why only `key` comes from broadcasting.ably.key (an Ably API key) below —
+            // nothing else about this connection is configurable per-app.
+            echo = new Echo({
+                broadcaster: 'pusher',
+                key: broadcasting.key,
+                wsHost: 'realtime-pusher.ably.io',
+                wsPort: 80,
+                wssPort: 443,
+                forceTLS: true,
+                enabledTransports: ['ws', 'wss'],
+                disableStats: true,
+                authEndpoint: (config.apiBaseUrl || '/api/chat') + '/broadcasting/auth',
+            });
         } else {
             echo = noopEcho;
         }

@@ -1,12 +1,12 @@
 # Riwaaq
 
-A WhatsApp-style real-time chat package for Laravel. Ships conversations (private & group), rich message types, reactions, replies, forwarding, read receipts, typing indicators, presence, group admin roles, blocking, disappearing messages, search, and a push-notification extension point — as a REST API + Laravel Reverb broadcasting — **plus a fully self-contained Vue 3 chat widget** pre-built and served directly by the package. No frontend build tooling required on your side; use the JSON API standalone if you'd rather bring your own client.
+A WhatsApp-style real-time chat package for Laravel. Ships conversations (private & group), rich message types, reactions, replies, forwarding, read receipts, typing indicators, presence, group admin roles, blocking, disappearing messages, search, and a push-notification extension point — as a REST API + real-time broadcasting (Reverb, Pusher, or Ably — pick whichever, switch anytime) — **plus a fully self-contained Vue 3 chat widget** pre-built and served directly by the package. No frontend build tooling required on your side; use the JSON API standalone if you'd rather bring your own client.
 
 ## Requirements
 
 - PHP 8.2+
 - Laravel 11, 12, or 13
-- A broadcasting driver — [Laravel Reverb](https://reverb.laravel.com) is the first-class target, but anything built on Laravel's standard broadcasting contracts (Pusher, Ably) works too
+- A broadcasting driver — pick one of [Laravel Reverb](https://reverb.laravel.com) (first-class target, self-hosted), [Pusher](https://pusher.com), or [Ably](https://ably.com); see "Broadcasting" below. Switching later is a one-line `.env` change, nothing to touch in code
 
 Laravel Sanctum ships as a direct dependency of this package (not something you add yourself), so `composer require jass-sangha/riwaaq` is enough to get a working `auth:sanctum` guard — no `composer require laravel/sanctum` or `php artisan install:api` step, and no `bootstrap/app.php` edit either: the package's service provider pushes `EnsureFrontendRequestsAreStateful` onto the `api` middleware group itself, so same-origin cookie auth (what the bundled UI and any first-party SPA use) works out of the box. Set `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` in `.env` to match the domain you'll serve the chat page from. If you also want Bearer-token auth for non-browser clients, run `php artisan vendor:publish --tag=sanctum-migrations && php artisan migrate` once to get the `personal_access_tokens` table, then issue tokens the normal Sanctum way.
 
@@ -42,7 +42,12 @@ Every `chat_*` table stores a polymorphic `chatable_type` / `chatable_id` pair r
 
 Anywhere the API accepts a participant (creating a conversation, adding members, blocking someone), it takes a `{type, id}` pair using these aliases, e.g. `{"type": "user", "id": 5}`. Anywhere a chatable appears in a URL, it's `.../{type}/{id}`, e.g. `DELETE /conversations/{id}/participants/user/5`.
 
-### Broadcasting (Reverb)
+### Broadcasting: Reverb, Pusher, or Ably — pick one
+
+The widget auto-detects whichever one you've set up — there's nothing broadcasting-related in `config/chat.php` to configure, it just reads your app's own `config/broadcasting.php`. Set up **one** of the three below; switching later is purely a `.env` change (`BROADCAST_CONNECTION` plus that driver's own key) — no code, no `config/chat.php`, no rebuilding the widget.
+
+<details open>
+<summary><strong>Reverb</strong> — self-hosted, no third-party account, first-class target</summary>
 
 ```bash
 composer require laravel/reverb
@@ -50,7 +55,43 @@ php artisan reverb:install
 php artisan reverb:start
 ```
 
-Conversations broadcast on **presence channels** (`presence-conversation.{id}`), authorized in the package's `routes/channels.php`. Presence channels let clients see who's currently viewing a chat for free, and let the frontend `whisper()` typing events peer-to-peer through Reverb — the backend never sees or stores a typing event unless you use the REST fallback (`POST /conversations/{id}/typing`).
+`reverb:install` writes `BROADCAST_CONNECTION=reverb` plus `REVERB_APP_KEY`/`REVERB_APP_SECRET`/etc. to `.env` for you.
+</details>
+
+<details>
+<summary><strong>Pusher</strong> — hosted, sign up at <a href="https://pusher.com">pusher.com</a></summary>
+
+```bash
+composer require pusher/pusher-php-server
+```
+
+```env
+BROADCAST_CONNECTION=pusher
+PUSHER_APP_ID=your-app-id
+PUSHER_APP_KEY=your-app-key
+PUSHER_APP_SECRET=your-app-secret
+PUSHER_APP_CLUSTER=your-cluster
+```
+</details>
+
+<details>
+<summary><strong>Ably</strong> — hosted, sign up at <a href="https://ably.com">ably.com</a></summary>
+
+```bash
+composer require ably/ably-php
+```
+
+```env
+BROADCAST_CONNECTION=ably
+ABLY_KEY=your-ably-key
+```
+
+Ably has no dedicated Echo/pusher-js connector of its own — the widget talks to it over Ably's [Pusher-compatible endpoint](https://ably.com/docs/broadcast/laravel), which is built into `useEcho.js` already. No extra frontend package or config needed beyond `ABLY_KEY` above.
+</details>
+
+If `BROADCAST_CONNECTION` is left unset or pointed at something the widget doesn't recognize (e.g. Laravel's own out-of-the-box default of `log`), it auto-detects instead: Reverb, then Pusher, then Ably, whichever has a key configured — so as long as exactly one of the three is set up, the widget works without `BROADCAST_CONNECTION` needing to be set explicitly at all.
+
+Conversations broadcast on **presence channels** (`presence-conversation.{id}`), authorized in the package's `routes/channels.php`. Presence channels let clients see who's currently viewing a chat for free, and let the frontend `whisper()` typing events peer-to-peer through your broadcaster — the backend never sees or stores a typing event unless you use the REST fallback (`POST /conversations/{id}/typing`).
 
 ```js
 // Example Echo usage in a consuming frontend
