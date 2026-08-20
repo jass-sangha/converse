@@ -32,6 +32,7 @@ const lastSeenHiddenUntil = ref(null);
 const readReceiptsHidden = ref(false);
 const readReceiptsHiddenUntil = ref(null);
 const typingIndicatorHidden = ref(false);
+const typingIndicatorHiddenUntil = ref(null);
 const about = ref("");
 const savingAbout = ref(false);
 const mutedScopes = ref({ private: false, group: false });
@@ -83,6 +84,7 @@ function applyPrivacySettings(settings) {
     readReceiptsHidden.value = !settings.show_read_receipts;
     readReceiptsHiddenUntil.value = settings.read_receipts_hidden_until ?? null;
     typingIndicatorHidden.value = !settings.show_typing_indicator;
+    typingIndicatorHiddenUntil.value = settings.typing_indicator_hidden_until ?? null;
 }
 
 onMounted(async () => {
@@ -159,9 +161,18 @@ async function onHideReadReceipts(option) {
     applyPrivacySettings(settings);
 }
 
-async function onToggleTypingIndicator() {
+async function onShowTypingIndicator() {
     const settings = await updatePrivacySettings({
-        show_typing_indicator: typingIndicatorHidden.value,
+        show_typing_indicator: true,
+        typing_indicator_hidden_until: null,
+    });
+    applyPrivacySettings(settings);
+}
+
+async function onHideTypingIndicator(option) {
+    const settings = await updatePrivacySettings({
+        show_typing_indicator: true,
+        typing_indicator_hidden_until: mutedUntilFor(option.key),
     });
     applyPrivacySettings(settings);
 }
@@ -263,10 +274,13 @@ async function onMuteAll(scope, durationKey) {
                 :hint="
                     !typingIndicatorHidden
                         ? 'Others can see when you\'re typing'
-                        : 'Hidden from everyone'
+                        : offHint(typingIndicatorHiddenUntil)
                 "
                 :is-on="!typingIndicatorHidden"
-                @toggle="onToggleTypingIndicator"
+                :options="MUTE_DURATIONS"
+                menu-title="Turn off for"
+                @toggle="onShowTypingIndicator"
+                @pick="onHideTypingIndicator"
             />
 
             <div

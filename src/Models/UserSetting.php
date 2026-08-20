@@ -18,6 +18,7 @@ class UserSetting extends Model
         'show_typing_indicator',
         'last_seen_hidden_until',
         'read_receipts_hidden_until',
+        'typing_indicator_hidden_until',
         'avatar_path',
         'about',
     ];
@@ -28,6 +29,7 @@ class UserSetting extends Model
         'show_typing_indicator' => 'boolean',
         'last_seen_hidden_until' => 'datetime',
         'read_receipts_hidden_until' => 'datetime',
+        'typing_indicator_hidden_until' => 'datetime',
     ];
 
     /**
@@ -55,6 +57,10 @@ class UserSetting extends Model
 
     public function typingIndicatorVisible(): bool
     {
+        if ($this->typing_indicator_hidden_until !== null && $this->typing_indicator_hidden_until->isFuture()) {
+            return false;
+        }
+
         return $this->show_typing_indicator;
     }
 

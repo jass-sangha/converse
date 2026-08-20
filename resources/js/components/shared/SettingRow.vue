@@ -47,11 +47,9 @@ onBeforeUnmount(() => {
 
 // Off rows turn back on the instant you click them — no confirmation needed.
 // On rows open a menu so turning one off always goes through a duration pick
-// (the options list should include an indefinite/"always" entry for that) —
-// unless no options were given, in which case this is a plain toggle and
-// clicking while on just flips it straight back off.
+// (the options list should include an indefinite/"always" entry for that).
 function onRowClick() {
-    if (props.isOn && props.options.length) {
+    if (props.isOn) {
         if (!showMenu.value) place(root.value, { preferredHeight: 250 });
         showMenu.value = !showMenu.value;
     } else {

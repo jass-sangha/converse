@@ -43,13 +43,13 @@ class UserSettingsService implements UserSettingsServiceInterface
     // chatable that has no settings row yet (mirroring what firstOrCreate would have seeded).
     public function allowsTypingIndicator(Model $chatable): bool
     {
-        $value = UserSetting::query()
+        $setting = UserSetting::query()
             ->where('chatable_type', $chatable->getMorphClass())
             ->where('chatable_id', $chatable->getKey())
-            ->value('show_typing_indicator');
+            ->first(['show_typing_indicator', 'typing_indicator_hidden_until']);
 
-        return $value === null
+        return $setting === null
             ? config('chat.privacy.typing_indicator_default', true)
-            : (bool) $value;
+            : $setting->typingIndicatorVisible();
     }
 }

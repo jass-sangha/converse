@@ -17,18 +17,22 @@ it('hides last seen and read receipts for a set duration, then reverts automatic
         'last_seen_hidden_until' => $hiddenUntil,
         'show_read_receipts' => true,
         'read_receipts_hidden_until' => $hiddenUntil,
+        'show_typing_indicator' => true,
+        'typing_indicator_hidden_until' => $hiddenUntil,
     ])->assertOk();
 
     // Effective visibility is false while inside the hidden window, even though the
     // underlying "show" flag is true — the timestamp is what's actually hiding it.
     expect($updated->json('data.show_last_seen'))->toBeFalse()
-        ->and($updated->json('data.show_read_receipts'))->toBeFalse();
+        ->and($updated->json('data.show_read_receipts'))->toBeFalse()
+        ->and($updated->json('data.show_typing_indicator'))->toBeFalse();
 
     $this->travel(9)->hours();
 
     $afterExpiry = $this->actingAs($alice)->getJson('/api/chat/profile/settings')->assertOk();
     expect($afterExpiry->json('data.show_last_seen'))->toBeTrue()
-        ->and($afterExpiry->json('data.show_read_receipts'))->toBeTrue();
+        ->and($afterExpiry->json('data.show_read_receipts'))->toBeTrue()
+        ->and($afterExpiry->json('data.show_typing_indicator'))->toBeTrue();
 
     // Without this, the traveled clock leaks into whichever test runs next in the same
     // process — $this->travel() mutates Carbon's global test-now, not a per-test sandbox.

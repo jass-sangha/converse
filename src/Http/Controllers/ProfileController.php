@@ -64,6 +64,7 @@ class ProfileController extends Controller
             'show_typing_indicator' => ['sometimes', 'boolean'],
             'last_seen_hidden_until' => ['sometimes', 'nullable', 'date'],
             'read_receipts_hidden_until' => ['sometimes', 'nullable', 'date'],
+            'typing_indicator_hidden_until' => ['sometimes', 'nullable', 'date'],
             'about' => ['sometimes', 'nullable', 'string', 'max:139'],
         ]);
 
@@ -82,6 +83,7 @@ class ProfileController extends Controller
             'show_typing_indicator' => $setting->typingIndicatorVisible(),
             'last_seen_hidden_until' => $setting->last_seen_hidden_until,
             'read_receipts_hidden_until' => $setting->read_receipts_hidden_until,
+            'typing_indicator_hidden_until' => $setting->typing_indicator_hidden_until,
             'about' => $setting->about,
         ];
     }
