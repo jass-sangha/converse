@@ -4,24 +4,44 @@ namespace Riwaaq\Chat\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 use Riwaaq\Chat\Models\Message;
 
 class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    /**
+     * @param  Collection<int, Model>  $recipients  Chatables to also notify on their own personal
+     *                                              "chatable.{type}.{id}" channel — joined once at
+     *                                              app boot regardless of which conversation (if
+     *                                              any) is open, unlike the per-conversation
+     *                                              presence channel below, which only a recipient
+     *                                              actively viewing this conversation has joined.
+     *                                              Without this, the sidebar (last message preview,
+     *                                              ordering, unread badge) never updates live for a
+     *                                              conversation that isn't the one currently open.
+     */
     public function __construct(
         public Message $message,
+        public Collection $recipients = new Collection,
     ) {
         $this->message->loadMissing(['attachments', 'replyTo.attachments']);
     }
 
     public function broadcastOn(): array
     {
-        return [new PresenceChannel("conversation.{$this->message->conversation_id}")];
+        return [
+            new PresenceChannel("conversation.{$this->message->conversation_id}"),
+            ...$this->recipients->map(
+                fn (Model $chatable) => new PrivateChannel("chatable.{$chatable->getMorphClass()}.{$chatable->getKey()}")
+            ),
+        ];
     }
 
     public function broadcastAs(): string

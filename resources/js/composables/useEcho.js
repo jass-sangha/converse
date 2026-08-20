@@ -67,6 +67,8 @@ export function useEcho() {
         }
 
         if (echo !== noopEcho && config.chatableType && config.chatableId) {
+            const store = useChatStore();
+
             echo.private(`chatable.${config.chatableType}.${config.chatableId}`)
                 .listen('.conversation.created', () => {
                     useConversations().refresh();
@@ -78,6 +80,18 @@ export function useEcho() {
 
                     if (iWasAdded) {
                         useConversations().refresh();
+                    }
+                })
+                // Also broadcast here (not just on the per-conversation channel below), since
+                // this personal channel is joined once at boot regardless of which conversation
+                // (if any) is open — without it, a conversation that isn't the currently active
+                // one never updates its sidebar preview/ordering/unread badge until a reload.
+                // Skipped when it IS the active conversation: that case is already handled (message
+                // list + sidebar preview) by the per-conversation listener below, and refetching
+                // here too would just be a redundant request on every single message.
+                .listen('.message.sent', (payload) => {
+                    if (payload.conversation_id !== store.activeConversationId) {
+                        useConversations().refreshOne(payload.conversation_id);
                     }
                 })
                 // Personal channel, not the per-conversation one — joined at boot regardless

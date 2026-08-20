@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Support\Facades\Event;
 use Riwaaq\Chat\Events\ConversationCreated;
+use Riwaaq\Chat\Events\MessageSent;
 use Riwaaq\Chat\Events\ParticipantAdded;
 use Riwaaq\Chat\Tests\Fixtures\User;
 
@@ -51,5 +53,35 @@ it('broadcasts ParticipantAdded onto the conversation channel and each new parti
         $channelNames = collect($event->broadcastOn())->map(fn ($c) => $c->name);
 
         return $channelNames->contains("private-chatable.user.{$carol->id}");
+    });
+});
+
+it('broadcasts MessageSent onto the conversation channel and the recipients own private channel', function () {
+    Event::fake([MessageSent::class]);
+
+    $alice = pushUser('alice-push-msg@example.com');
+    $bob = pushUser('bob-push-msg@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => 'hey bob',
+    ])->assertCreated();
+
+    // Without both of these, the recipient only learns about a new message while that specific
+    // conversation happens to be the one open in their ChatWindow — everywhere else (the sidebar
+    // list for a conversation not currently open) silently never updates until a manual reload.
+    Event::assertDispatched(MessageSent::class, function (MessageSent $event) use ($conversationId, $alice, $bob) {
+        $channelNames = collect($event->broadcastOn())->map(fn ($c) => $c->name);
+
+        return $channelNames->contains((new PresenceChannel("conversation.{$conversationId}"))->name)
+            && $channelNames->contains("private-chatable.user.{$bob->id}")
+            // The sender's own personal channel shouldn't be a broadcast target here — their
+            // own UI already updates optimistically off the HTTP response, not the broadcast.
+            && ! $channelNames->contains("private-chatable.user.{$alice->id}");
     });
 });

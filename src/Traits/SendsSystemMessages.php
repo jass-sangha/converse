@@ -28,8 +28,10 @@ trait SendsSystemMessages
 
         // No client optimistically inserts this locally the way a sent message's own author
         // does — broadcast to everyone, including the actor who triggered it, so it appears
-        // live for them too instead of only after their next reload.
-        broadcast(new MessageSent($message));
+        // live for them too instead of only after their next reload. Also broadcast on every
+        // active participant's personal channel (not just the conversation's own), so the
+        // sidebar updates live for whoever doesn't have this conversation open right now.
+        broadcast(new MessageSent($message, $this->participants->activeChatables($conversation->id)));
 
         return $message;
     }
