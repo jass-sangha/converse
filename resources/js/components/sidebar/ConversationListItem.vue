@@ -256,14 +256,14 @@ function onTouchEnd(event) {
                         </svg>
                     </span>
 
-                    <ConversationRowActions ref="rowActions" :conversation="conversation" />
-
                     <span
                         v-if="conversation.unread_count > 0"
                         class="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-riwaaq-accent px-1.5 text-[11px] font-bold text-riwaaq-accentContrast"
                     >
                         {{ conversation.unread_count }}
                     </span>
+
+                    <ConversationRowActions ref="rowActions" :conversation="conversation" />
                 </span>
             </div>
         </div>
