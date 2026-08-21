@@ -167,6 +167,13 @@ return [
             'voice' => 15 * 1024,
             'document' => 50 * 1024,
         ],
+        // Total bytes a single chatable may have stored across every attachment they've ever
+        // uploaded (attached or not) before further uploads are rejected. Null disables the
+        // check entirely — opt in once you need to cap per-user storage.
+        'max_storage_per_user_mb' => env('CHAT_MAX_STORAGE_PER_USER_MB'),
+        // How long an uploaded-but-never-attached file (POST /attachments without a follow-up
+        // message) is kept before chat:prune-orphaned-attachments removes it.
+        'orphan_ttl_minutes' => 1440,
     ],
 
     /*

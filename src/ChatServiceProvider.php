@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Riwaaq\Chat\Console\Commands\InstallCommand;
 use Riwaaq\Chat\Console\Commands\PruneExpiredMessagesCommand;
+use Riwaaq\Chat\Console\Commands\PruneOrphanedAttachmentsCommand;
 use Riwaaq\Chat\Console\Commands\SweepPresenceCommand;
 use Riwaaq\Chat\Contracts\AttachmentServiceInterface;
 use Riwaaq\Chat\Contracts\BlockedUserServiceInterface;
@@ -121,7 +122,7 @@ class ChatServiceProvider extends PackageServiceProvider
             $package->hasRoutes('web')->hasViews();
         }
 
-        $package->hasCommands([SweepPresenceCommand::class, PruneExpiredMessagesCommand::class, InstallCommand::class]);
+        $package->hasCommands([SweepPresenceCommand::class, PruneExpiredMessagesCommand::class, PruneOrphanedAttachmentsCommand::class, InstallCommand::class]);
     }
 
     public function packageBooted(): void

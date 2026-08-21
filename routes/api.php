@@ -98,7 +98,7 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
 
         Route::post('attachments', [AttachmentController::class, 'store']);
 
-        Route::post('link-preview', [LinkPreviewController::class, 'store']);
+        Route::post('link-preview', [LinkPreviewController::class, 'store'])->middleware('throttle:10,1');
 
         Route::get('messages/search', [MessageController::class, 'search']);
         Route::get('messages/media', [MessageController::class, 'media']);

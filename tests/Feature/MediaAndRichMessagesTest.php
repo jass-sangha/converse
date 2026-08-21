@@ -81,25 +81,40 @@ it('forwards a media message with its attachment intact', function () {
     expect(collect($original)->firstWhere('id', $originalId)['attachments'])->toHaveCount(1);
 });
 
-it('rejects an oversized attachment upload but accepts any file type', function () {
+it('rejects an oversized attachment upload', function () {
     Storage::fake('chat');
 
     $alice = mediaUser('alice-oversize@example.com');
 
-    // Anything not explicitly categorized falls back to the generic 'document' bucket rather
-    // than being rejected — the app shouldn't gatekeep what kind of file people can share.
-    $uncategorized = $this->actingAs($alice)->postJson('/api/chat/attachments', [
-        'file' => UploadedFile::fake()->create('archive.rar', 10, 'application/x-rar-compressed'),
-    ])->assertCreated();
-    expect($uncategorized->json('data.mime_type'))->toBe('application/x-rar-compressed');
-
-    // Size limits still apply, keyed off that same fallback category's own configured max.
     $this->actingAs($alice)->postJson('/api/chat/attachments', [
         'file' => UploadedFile::fake()->create('huge.jpg', 20 * 1024, 'image/jpeg'),
     ])->assertStatus(422);
+});
+
+it('rejects a file whose mime type is not on the allow-list', function () {
+    Storage::fake('chat');
+
+    $alice = mediaUser('alice-mimereject@example.com');
+
+    // A mime type absent from chat.media.mime_types must be rejected outright rather than
+    // silently falling back to the generic 'document' bucket — that fallback is what let
+    // text/html and image/svg+xml through as stored XSS in the first place.
+    $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->create('archive.rar', 10, 'application/x-rar-compressed'),
+    ])->assertStatus(422);
+});
+
+it('rejects html and svg uploads that could execute as stored XSS', function () {
+    Storage::fake('chat');
+
+    $alice = mediaUser('alice-xss@example.com');
 
     $this->actingAs($alice)->postJson('/api/chat/attachments', [
-        'file' => UploadedFile::fake()->create('huge.rar', 60 * 1024, 'application/x-rar-compressed'),
+        'file' => UploadedFile::fake()->createWithContent('payload.html', '<script>alert(1)</script>'),
+    ])->assertStatus(422);
+
+    $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->createWithContent('payload.svg', '<svg onload="alert(1)"></svg>'),
     ])->assertStatus(422);
 });
 
@@ -122,6 +137,78 @@ it('reports a clear error when a single file was rejected by upload_max_filesize
     ])->assertStatus(422);
 
     expect($response->json('errors.file.0'))->toContain('larger than the server allows');
+});
+
+it('deletes an attachment file from disk when the message is deleted for everyone', function () {
+    Storage::fake('chat');
+
+    $alice = mediaUser('alice-delfile@example.com');
+    $bob = mediaUser('bob-delfile@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $attachmentId = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->image('photo.jpg', 200, 200),
+    ])->json('data.id');
+
+    $messageId = $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'image',
+        'attachment_ids' => [$attachmentId],
+    ])->json('data.id');
+
+    expect(Storage::disk('chat')->allFiles())->toHaveCount(1);
+
+    $this->actingAs($alice)->deleteJson("/api/chat/messages/{$messageId}")->assertNoContent();
+
+    // Gone from disk, and gone from the API response — not just hidden client-side while the
+    // URL still resolves for anyone who re-fetches or hits the API directly.
+    expect(Storage::disk('chat')->allFiles())->toHaveCount(0);
+
+    $list = $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
+    expect($list->json('data.0.attachments'))->toBe([]);
+});
+
+it('keeps a forwarded attachment file on disk when only the original is deleted for everyone', function () {
+    Storage::fake('chat');
+
+    $alice = mediaUser('alice-fwdkeep@example.com');
+    $bob = mediaUser('bob-fwdkeep@example.com');
+    $carol = mediaUser('carol-fwdkeep@example.com');
+
+    $convoAB = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $convoAC = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($carol)],
+    ])->json('data.id');
+
+    $attachmentId = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->image('photo.jpg', 200, 200),
+    ])->json('data.id');
+
+    $originalId = $this->actingAs($alice)->postJson("/api/chat/conversations/{$convoAB}/messages", [
+        'type' => 'image',
+        'attachment_ids' => [$attachmentId],
+    ])->json('data.id');
+
+    $this->actingAs($alice)
+        ->postJson("/api/chat/messages/{$originalId}/forward", ['conversation_ids' => [$convoAC]])
+        ->assertOk();
+
+    $this->actingAs($alice)->deleteJson("/api/chat/messages/{$originalId}")->assertNoContent();
+
+    // The forwarded copy's row points at the same underlying file — deleting the original
+    // must not pull the file out from under it.
+    expect(Storage::disk('chat')->allFiles())->toHaveCount(1);
+
+    $forwardedList = $this->actingAs($alice)->getJson("/api/chat/conversations/{$convoAC}/messages")->assertOk();
+    expect($forwardedList->json('data.0.attachments'))->toHaveCount(1);
 });
 
 it('sends a location message and a contact message', function () {
@@ -324,4 +411,58 @@ it('retries a link preview that failed instead of caching the empty result', fun
     expect($second->json('data.title'))->toBe('Back Up');
 
     Http::assertSentCount(2);
+});
+
+it('blocks a link preview targeting a private/loopback IP instead of issuing the request (SSRF guard)', function () {
+    $alice = mediaUser('alice-ssrf-private@example.com');
+
+    // No matcher registered — any request that reaches the HTTP client gets Laravel's default
+    // fake 200 response rather than a real connection attempt, so this stays hermetic even if
+    // the guard has a bug; assertNothingSent() below is what actually proves the guard fired.
+    Http::fake();
+
+    $response = $this->actingAs($alice)
+        ->postJson('/api/chat/link-preview', ['url' => 'http://127.0.0.1/admin'])
+        ->assertOk();
+
+    expect($response->json('data.title'))->toBeNull();
+    Http::assertNothingSent();
+});
+
+it('blocks a link preview targeting the cloud metadata endpoint', function () {
+    $alice = mediaUser('alice-ssrf-metadata@example.com');
+
+    Http::fake();
+
+    $response = $this->actingAs($alice)
+        ->postJson('/api/chat/link-preview', ['url' => 'http://169.254.169.254/latest/meta-data/'])
+        ->assertOk();
+
+    expect($response->json('data.title'))->toBeNull();
+    Http::assertNothingSent();
+});
+
+it('rejects a non-http(s) scheme for link previews', function () {
+    $alice = mediaUser('alice-ssrf-scheme@example.com');
+
+    $this->actingAs($alice)
+        ->postJson('/api/chat/link-preview', ['url' => 'file:///etc/passwd'])
+        ->assertStatus(422);
+});
+
+it('blocks a link preview redirect that points at a private IP instead of following it', function () {
+    $alice = mediaUser('alice-ssrf-redirect@example.com');
+
+    Http::fake([
+        'http://1.1.1.1/*' => Http::response('', 302, ['Location' => 'http://127.0.0.1/internal']),
+    ]);
+
+    $response = $this->actingAs($alice)
+        ->postJson('/api/chat/link-preview', ['url' => 'http://1.1.1.1/page'])
+        ->assertOk();
+
+    expect($response->json('data.title'))->toBeNull();
+    // Only the first hop should ever be requested — the redirect target must be validated and
+    // rejected before it's followed, not fetched and then discarded.
+    Http::assertSentCount(1);
 });

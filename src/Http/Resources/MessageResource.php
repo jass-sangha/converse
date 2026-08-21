@@ -38,7 +38,7 @@ class MessageResource extends JsonResource
                 'body' => str($this->replyTo->body ?? '')->limit(100)->toString(),
                 'metadata' => $this->replyTo->metadata,
                 'deleted_for_everyone' => $this->replyTo->isDeletedForEveryone(),
-                'attachments' => $this->replyTo->relationLoaded('attachments')
+                'attachments' => $this->replyTo->relationLoaded('attachments') && ! $this->replyTo->isDeletedForEveryone()
                     ? $this->replyTo->attachments->map(fn ($attachment) => [
                         'id' => $attachment->id,
                         'url' => $attachment->url,
@@ -48,7 +48,7 @@ class MessageResource extends JsonResource
                     ])->values()
                     : [],
             ] : null),
-            'attachments' => $this->whenLoaded('attachments', fn () => $this->attachments->map(fn ($attachment) => [
+            'attachments' => $this->whenLoaded('attachments', fn () => $this->isDeletedForEveryone() ? [] : $this->attachments->map(fn ($attachment) => [
                 'id' => $attachment->id,
                 'url' => $attachment->url,
                 'thumbnail_url' => $attachment->thumbnail_url,

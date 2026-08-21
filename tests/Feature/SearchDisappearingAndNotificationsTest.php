@@ -1,8 +1,11 @@
 <?php
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\MessageAttachment;
 use Riwaaq\Chat\Notifications\NewChatMessageNotification;
 use Riwaaq\Chat\Tests\Fixtures\User;
 
@@ -72,6 +75,59 @@ it('prunes disappearing messages once their ttl has elapsed', function () {
 
     $list = $this->actingAs($bob)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
     expect(collect($list->json('data'))->pluck('id'))->not->toContain($messageId);
+});
+
+it("deletes an expired message's attachment file from disk, not just the database rows", function () {
+    Storage::fake('chat');
+
+    $alice = m6User('alice-disappearmedia@example.com');
+    $bob = m6User('bob-disappearmedia@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/conversations/{$conversationId}/disappearing", ['ttl_seconds' => 60])
+        ->assertOk();
+
+    $attachmentId = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->image('vanish.jpg', 200, 200),
+    ])->json('data.id');
+
+    $messageId = $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'image', 'attachment_ids' => [$attachmentId],
+    ])->json('data.id');
+
+    expect(Storage::disk('chat')->allFiles())->toHaveCount(1);
+
+    Message::query()->whereKey($messageId)->update(['expires_at' => now()->subMinute()]);
+
+    Artisan::call('chat:prune-expired-messages');
+
+    expect(Storage::disk('chat')->allFiles())->toHaveCount(0);
+});
+
+it('prunes attachments that were uploaded but never attached to a message', function () {
+    Storage::fake('chat');
+
+    $alice = m6User('alice-orphan@example.com');
+
+    $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->image('never-sent.jpg', 200, 200),
+    ])->assertCreated();
+
+    expect(Storage::disk('chat')->allFiles())->toHaveCount(1);
+
+    // Not old enough yet — chat.media.orphan_ttl_minutes defaults to 1440 (24h).
+    Artisan::call('chat:prune-orphaned-attachments');
+    expect(Storage::disk('chat')->allFiles())->toHaveCount(1);
+
+    MessageAttachment::query()->update(['created_at' => now()->subDays(2)]);
+
+    Artisan::call('chat:prune-orphaned-attachments');
+    expect(Storage::disk('chat')->allFiles())->toHaveCount(0);
 });
 
 it('notifies other participants when a message is sent', function () {

@@ -111,6 +111,15 @@ class MessageService implements MessageServiceInterface
 
     public function deleteForEveryone(Message $message): void
     {
+        $message->loadMissing('attachments');
+        $attachments = $message->attachments;
+
+        // Detach the rows first so deleteOrphanedFiles()'s "is this path still referenced"
+        // check can't see this message's own (about-to-be-gone) rows and wrongly treat the
+        // file as still in use.
+        $message->attachments()->delete();
+        $this->attachments->deleteOrphanedFiles($attachments);
+
         $message->update([
             'deleted_for_everyone_at' => now(),
             'body' => null,

@@ -4,6 +4,8 @@ namespace Riwaaq\Chat\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Riwaaq\Chat\Contracts\AttachmentServiceInterface;
 use Riwaaq\Chat\Contracts\MediaProcessor;
 use Riwaaq\Chat\Models\Message;
@@ -22,6 +24,17 @@ class AttachmentService implements AttachmentServiceInterface
 
         $maxKilobytes = config("chat.media.max_sizes.{$category}");
         abort_if($maxKilobytes && $file->getSize() > $maxKilobytes * 1024, 422, 'File is too large.');
+
+        $quotaMegabytes = config('chat.media.max_storage_per_user_mb');
+
+        if ($quotaMegabytes !== null) {
+            $usedBytes = MessageAttachment::query()
+                ->where('uploader_type', $chatable->getMorphClass())
+                ->where('uploader_id', $chatable->getKey())
+                ->sum('size_bytes');
+
+            abort_if($usedBytes + $file->getSize() > $quotaMegabytes * 1024 * 1024, 422, 'Storage quota exceeded.');
+        }
 
         $disk = config('chat.media.disk', 'chat');
         $path = $file->store("attachments/{$category}", $disk);
@@ -60,8 +73,35 @@ class AttachmentService implements AttachmentServiceInterface
             ->update(['message_id' => $message->id]);
     }
 
-    // Every mime type not explicitly categorized falls back to 'document' — the generic
-    // file-card renderer — so any file type can be shared rather than being rejected.
+    /**
+     * Deletes each attachment's underlying file(s) unless another (still-current) attachment
+     * row references the same disk+path — forward/copyAttachments() clones a row pointing at
+     * the original's file rather than duplicating bytes, so deleting on the strength of one
+     * row alone would break every forwarded copy. Callers must remove/detach the DB rows for
+     * these attachments *before* calling this, so the "still referenced" check only sees rows
+     * that genuinely point elsewhere.
+     *
+     * @param  Collection<int, MessageAttachment>  $attachments
+     */
+    public function deleteOrphanedFiles(Collection $attachments): void
+    {
+        foreach ($attachments as $attachment) {
+            $stillReferenced = MessageAttachment::query()
+                ->where('disk', $attachment->disk)
+                ->where('path', $attachment->path)
+                ->exists();
+
+            if (! $stillReferenced) {
+                Storage::disk($attachment->disk)->delete(array_filter([$attachment->path, $attachment->thumbnail_path]));
+            }
+        }
+    }
+
+    // Mime types are allow-listed via chat.media.mime_types — anything not explicitly
+    // categorized is rejected rather than falling back to the generic 'document' bucket.
+    // A silent fallback previously let text/html and image/svg+xml (neither is listed by
+    // default) through: both get stored on the public disk and served back at a same-origin
+    // URL, so opening the attachment link would execute attacker-controlled script as stored XSS.
     protected function resolveCategory(string $mimeType): string
     {
         foreach (config('chat.media.mime_types', []) as $category => $mimeTypes) {
@@ -70,6 +110,6 @@ class AttachmentService implements AttachmentServiceInterface
             }
         }
 
-        return 'document';
+        abort(422, 'This file type is not allowed.');
     }
 }

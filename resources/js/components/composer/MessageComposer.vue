@@ -267,8 +267,13 @@ async function submit() {
             <button type="button" class="text-riwaaq-textMuted hover:text-riwaaq-text" @click="cancelEdit">✕</button>
         </div>
 
-        <div v-if="linkPreview" class="chat-composer__link-preview mb-2 rounded-chat border border-riwaaq-border p-2 text-xs text-riwaaq-textMuted">
-            Link preview: {{ linkPreview.title || linkPreview.url }}
+        <div v-if="linkPreview" class="chat-composer__link-preview mb-2 flex items-center gap-2 overflow-hidden rounded-chat border border-riwaaq-border p-2 text-xs text-riwaaq-textMuted">
+            <img v-if="linkPreview.image" :src="linkPreview.image" alt="" class="h-16 w-16 shrink-0 rounded object-cover">
+            <div class="min-w-0 flex-1">
+                <p v-if="linkPreview.site_name" class="truncate text-[10px] font-bold uppercase tracking-wide text-riwaaq-textDim">{{ linkPreview.site_name }}</p>
+                <p class="truncate font-medium text-riwaaq-text">{{ linkPreview.title || linkPreview.url }}</p>
+                <p v-if="linkPreview.description" class="truncate">{{ linkPreview.description }}</p>
+            </div>
         </div>
 
         <div v-if="hasStaged" class="chat-composer__staged mb-2 flex items-center gap-2 overflow-x-auto rounded-chat border border-riwaaq-border bg-riwaaq-surfaceHover p-2">
