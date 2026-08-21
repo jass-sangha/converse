@@ -382,12 +382,10 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('chat:sweep-presence')->everyMinute();
 Schedule::command('chat:prune-expired-messages')->everyFiveMinutes();
-Schedule::command('chat:prune-orphaned-attachments')->daily();
 ```
 
 - `chat:sweep-presence` marks users offline once their heartbeat TTL + grace period has elapsed, broadcasting `PresenceChanged` to their active conversations.
-- `chat:prune-expired-messages` permanently deletes disappearing messages whose `expires_at` has passed, including their attachment files (skipped for any file still referenced by a forwarded copy elsewhere).
-- `chat:prune-orphaned-attachments` permanently deletes uploaded files that were never attached to a message (`POST /attachments` without a follow-up send) once `chat.media.orphan_ttl_minutes` has elapsed.
+- `chat:prune-expired-messages` permanently deletes disappearing messages whose `expires_at` has passed, including their attachment files (skipped for any file still referenced by a forwarded copy elsewhere) — and, in the same run, any uploaded attachment that was never attached to a message (`POST /attachments` without a follow-up send) once `chat.media.orphan_ttl_minutes` has elapsed.
 
 ## Extension points
 

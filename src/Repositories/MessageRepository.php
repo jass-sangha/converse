@@ -62,10 +62,10 @@ class MessageRepository implements MessageRepositoryInterface
     }
 
     /**
-     * MySQL/Postgres get a real FULLTEXT/tsvector index (see the add_search_indexes_to_
-     * chat_messages_table migration) instead of a leading-wildcard LIKE scan, which can't use
-     * any index and gets slower as message volume grows. SQLite (used in tests) has no
-     * full-text support, so it falls back to an escaped LIKE — fine at test/tiny-install scale.
+     * MySQL/Postgres get a real FULLTEXT/tsvector index (see create_chat_messages_table)
+     * instead of a leading-wildcard LIKE scan, which can't use any index and gets slower as
+     * message volume grows. SQLite (used in tests) has no full-text support, so it falls back
+     * to an escaped LIKE — fine at test/tiny-install scale.
      */
     protected function matchBody(Builder $builder, string $query): void
     {

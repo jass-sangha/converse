@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -28,12 +29,22 @@ return new class extends Migration
 
             $table->index(['conversation_id', 'created_at']);
             $table->index('expires_at');
+            $table->index('type');
         });
 
         Schema::table($messages, function (Blueprint $table) use ($messages) {
             $table->foreign('reply_to_message_id')->references('id')->on($messages)->nullOnDelete();
             $table->foreign('forwarded_from_message_id')->references('id')->on($messages)->nullOnDelete();
         });
+
+        // SQLite has no FULLTEXT/tsvector support — MessageRepository::search() falls back to
+        // an escaped LIKE scan there (fine for tests/tiny installs), and only gets the real
+        // index on MySQL/Postgres where production-scale message search actually runs.
+        if (in_array(DB::connection()->getDriverName(), ['mysql', 'pgsql'], true)) {
+            Schema::table($messages, function (Blueprint $table) {
+                $table->fullText('body');
+            });
+        }
     }
 
     public function down(): void

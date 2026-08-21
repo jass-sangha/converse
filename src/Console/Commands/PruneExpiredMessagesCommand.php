@@ -3,6 +3,7 @@
 namespace Riwaaq\Chat\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Riwaaq\Chat\Contracts\AttachmentServiceInterface;
 use Riwaaq\Chat\Models\Message;
 use Riwaaq\Chat\Models\MessageAttachment;
@@ -11,7 +12,7 @@ class PruneExpiredMessagesCommand extends Command
 {
     protected $signature = 'chat:prune-expired-messages';
 
-    protected $description = 'Permanently delete disappearing messages whose TTL has elapsed.';
+    protected $description = 'Permanently delete disappearing messages whose TTL has elapsed, and any uploaded attachment that was never attached to a message.';
 
     public function __construct(protected AttachmentServiceInterface $attachments)
     {
@@ -20,13 +21,23 @@ class PruneExpiredMessagesCommand extends Command
 
     public function handle(): int
     {
+        $messageCount = $this->pruneExpiredMessages();
+        $orphanCount = $this->pruneOrphanedAttachments();
+
+        $this->info("Pruned {$messageCount} expired message(s) and {$orphanCount} orphaned attachment(s).");
+
+        return self::SUCCESS;
+    }
+
+    protected function pruneExpiredMessages(): int
+    {
         $count = 0;
 
         Message::query()
             ->whereNotNull('expires_at')
             ->where('expires_at', '<=', now())
             ->with('attachments')
-            ->chunkById(200, function ($messages) use (&$count) {
+            ->chunkById(200, function (Collection $messages) use (&$count) {
                 $attachments = $messages->flatMap->attachments;
 
                 // Delete the attachment rows explicitly rather than relying on the FK's
@@ -45,8 +56,25 @@ class PruneExpiredMessagesCommand extends Command
                 $count += $messages->count();
             });
 
-        $this->info("Pruned {$count} expired message(s).");
+        return $count;
+    }
 
-        return self::SUCCESS;
+    protected function pruneOrphanedAttachments(): int
+    {
+        $cutoff = now()->subMinutes(config('chat.media.orphan_ttl_minutes', 1440));
+        $count = 0;
+
+        MessageAttachment::query()
+            ->whereNull('message_id')
+            ->where('created_at', '<=', $cutoff)
+            ->chunkById(200, function (Collection $attachments) use (&$count) {
+                MessageAttachment::query()->whereIn('id', $attachments->pluck('id'))->delete();
+
+                $this->attachments->deleteOrphanedFiles($attachments);
+
+                $count += $attachments->count();
+            });
+
+        return $count;
     }
 }

@@ -363,6 +363,35 @@ it('lists a link in the media links tab even without a fetched preview', functio
         ->and($links->json('data.0.body'))->toContain('https://example.com/page');
 });
 
+it('persists a link preview attached to a sent text message', function () {
+    $alice = mediaUser('alice-preview-persist@example.com');
+    $bob = mediaUser('bob-preview-persist@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $sent = $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => 'check this out https://example.com',
+        'metadata' => ['link_preview' => [
+            'url' => 'https://example.com',
+            'title' => 'Example Title',
+            'description' => 'Example Desc',
+            'image' => 'https://example.com/og.png',
+            'site_name' => 'Example',
+        ]],
+    ])->assertCreated();
+
+    expect($sent->json('data.metadata.link_preview.title'))->toBe('Example Title')
+        ->and($sent->json('data.metadata.link_preview.image'))->toBe('https://example.com/og.png');
+
+    // Must still be there on re-fetch, not just in the create response.
+    $list = $this->actingAs($bob)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
+    expect($list->json('data.0.metadata.link_preview.title'))->toBe('Example Title');
+});
+
 it('fetches and caches a link preview', function () {
     $alice = mediaUser('alice-preview@example.com');
 

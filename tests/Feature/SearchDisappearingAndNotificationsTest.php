@@ -120,13 +120,15 @@ it('prunes attachments that were uploaded but never attached to a message', func
 
     expect(Storage::disk('chat')->allFiles())->toHaveCount(1);
 
-    // Not old enough yet — chat.media.orphan_ttl_minutes defaults to 1440 (24h).
-    Artisan::call('chat:prune-orphaned-attachments');
+    // Not old enough yet — chat.media.orphan_ttl_minutes defaults to 1440 (24h). The orphan
+    // sweep runs as part of chat:prune-expired-messages (merged so hosts only schedule one
+    // command), not a separate command.
+    Artisan::call('chat:prune-expired-messages');
     expect(Storage::disk('chat')->allFiles())->toHaveCount(1);
 
     MessageAttachment::query()->update(['created_at' => now()->subDays(2)]);
 
-    Artisan::call('chat:prune-orphaned-attachments');
+    Artisan::call('chat:prune-expired-messages');
     expect(Storage::disk('chat')->allFiles())->toHaveCount(0);
 });
 
