@@ -36,6 +36,8 @@ const stagedAttachments = ref([]);
 const showPollModal = ref(false);
 const showEventModal = ref(false);
 let linkDebounce = null;
+let linkFetchUrl = null;
+let linkFetchPromise = null;
 
 const { opened: dropdownOpened, closed: dropdownClosed } = useExclusiveDropdown();
 
@@ -96,19 +98,33 @@ function focusInput() {
     nextTick(() => inputEl.value?.focus());
 }
 
-async function detectLink(value) {
+// Returns the in-flight fetch (or a resolved no-op) rather than firing a redundant duplicate
+// request — submit() awaits this same promise so a fast send doesn't skip the preview just
+// because the 500ms debounce above hadn't fired yet.
+function detectLink(value) {
     const match = value.match(/https?:\/\/\S+/);
+
     if (!match) {
+        linkFetchUrl = null;
+        linkFetchPromise = null;
         linkPreview.value = null;
-        return;
+        return Promise.resolve();
     }
 
-    try {
-        const { data } = await api.post('/link-preview', { url: match[0] });
-        linkPreview.value = data.data;
-    } catch {
-        linkPreview.value = null;
+    if (match[0] === linkFetchUrl && linkFetchPromise) {
+        return linkFetchPromise;
     }
+
+    linkFetchUrl = match[0];
+    linkFetchPromise = api.post('/link-preview', { url: match[0] })
+        .then(({ data }) => {
+            linkPreview.value = data.data;
+        })
+        .catch(() => {
+            linkPreview.value = null;
+        });
+
+    return linkFetchPromise;
 }
 
 function onEmojiPick(emoji) {
@@ -234,6 +250,17 @@ async function submit() {
 
     stopTyping(props.conversationId);
 
+    // A send fired within the 500ms debounce window (e.g. paste-a-link-then-hit-enter) would
+    // otherwise skip the preview entirely, since the debounced fetch hadn't even started yet.
+    // Flush it now and wait briefly for whichever fetch is in flight — capped so a slow/dead
+    // site can't stall sending; if it doesn't resolve in time the message still sends, just
+    // without a preview, same as today.
+    clearTimeout(linkDebounce);
+    await Promise.race([
+        detectLink(trimmed),
+        new Promise((resolve) => setTimeout(resolve, 4000)),
+    ]);
+
     const metadata = linkPreview.value ? { link_preview: linkPreview.value } : null;
 
     await send(props.conversationId, {
@@ -245,6 +272,10 @@ async function submit() {
 
     body.value = '';
     linkPreview.value = null;
+    // Otherwise retyping the same link right after sending would silently reuse the already-
+    // settled promise from before and never re-fetch, leaving linkPreview stuck null.
+    linkFetchUrl = null;
+    linkFetchPromise = null;
     emit('sent');
     emit('dismiss-reply');
 }
@@ -271,10 +302,9 @@ async function submit() {
             <img v-if="linkPreview.image" :src="linkPreview.image" alt="" class="h-16 w-16 shrink-0 rounded object-cover">
             <div class="min-w-0 flex-1">
                 <p v-if="linkPreview.site_name" class="truncate text-[10px] font-bold uppercase tracking-wide text-riwaaq-textDim">{{ linkPreview.site_name }}</p>
-                <p class="truncate font-medium text-riwaaq-text">{{ linkPreview.title || linkPreview.url }}</p>
+                <p v-if="linkPreview.title" class="truncate font-medium text-riwaaq-text">{{ linkPreview.title }}</p>
                 <p v-if="linkPreview.description" class="truncate">{{ linkPreview.description }}</p>
-                <!-- Only shown alongside a real title — otherwise the line above already falls back to the raw url. -->
-                <p v-if="linkPreview.title" class="truncate text-riwaaq-textDim">{{ linkPreview.url }}</p>
+                <p class="truncate text-riwaaq-textDim">{{ linkPreview.url }}</p>
             </div>
         </div>
 
