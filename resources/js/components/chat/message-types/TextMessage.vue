@@ -26,6 +26,11 @@ const segments = computed(() => {
 
 <template>
     <div class="chat-text-message">
+        <LinkPreviewCard
+            v-if="message.metadata?.link_preview"
+            :preview="message.metadata.link_preview"
+            :is-own="isOwn"
+        />
         <p
             class="chat-text-message__body whitespace-pre-wrap break-words text-sm"
         >
@@ -42,10 +47,5 @@ const segments = computed(() => {
                 <template v-else>{{ segment.text }}</template>
             </template>
         </p>
-        <LinkPreviewCard
-            v-if="message.metadata?.link_preview"
-            :preview="message.metadata.link_preview"
-            :is-own="isOwn"
-        />
     </div>
 </template>
