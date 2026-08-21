@@ -32,10 +32,11 @@
     --chat-overlay: 0 0 0;
     --chat-warning: 255 225 208;
     --chat-info: 122 138 94;
-    --chat-radius-sm: 0.75rem;
-    --chat-radius: 1.25rem;
-    --chat-radius-lg: 1.375rem;
-    --chat-radius-xl: 2rem;
+    --chat-radius-sm: 1rem;
+    --chat-radius: 1.5rem;
+    --chat-radius-lg: 1.75rem;
+    --chat-radius-xl: 2.5rem;
+    --chat-radius-tail: 0.625rem;
     --chat-border-width: 1px;
     --chat-font-sans: Figtree, system-ui, ui-sans-serif, sans-serif;
     --chat-font-display: Caprasimo, serif;

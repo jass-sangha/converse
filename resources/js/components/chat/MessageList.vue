@@ -237,7 +237,7 @@ watch(
                     class="chat-animate-fade-in flex items-end justify-start gap-2"
                 >
                     <div
-                        class="chat-typing-bubble inline-flex items-center gap-1 rounded-chat rounded-bl-[8px] bg-riwaaq-bubbleIn px-3.5 py-3 shadow-chat"
+                        class="chat-typing-bubble inline-flex items-center gap-1 rounded-chat rounded-bl-chat-tail bg-riwaaq-bubbleIn px-3.5 py-3 shadow-chat"
                     >
                         <span class="chat-typing-dot" />
                         <span class="chat-typing-dot" />

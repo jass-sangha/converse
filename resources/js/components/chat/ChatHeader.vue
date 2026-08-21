@@ -45,10 +45,10 @@ const avatarUrl = computed(() => {
     return otherParticipant.value ? get(otherParticipant.value).avatar_url : null;
 });
 
-const typingUsers = computed(() => {
-    const set = store.typingByConversation[props.conversation.id];
-    if (!set || !set.size) return [];
-    return Array.from(set).map((key) => get(key).name);
+const isOnline = computed(() => {
+    if (props.conversation.type !== 'private' || !otherParticipant.value) return false;
+    const key = chatableKey(otherParticipant.value.type, otherParticipant.value.id);
+    return !!store.presenceByUser[key]?.is_online;
 });
 
 const subtitle = computed(() => {
@@ -77,11 +77,16 @@ const subtitle = computed(() => {
         </button>
 
         <div class="chat-chat-header__info flex flex-1 cursor-pointer items-center gap-3 overflow-hidden" @click="emit('open-info')">
-            <AvatarPhotoControl :name="displayName" :avatar-url="avatarUrl" :size="44" @click.stop />
+            <div class="relative shrink-0">
+                <AvatarPhotoControl :name="displayName" :avatar-url="avatarUrl" :size="44" @click.stop />
+                <span
+                    v-if="isOnline"
+                    class="pointer-events-none absolute bottom-0 right-0 h-[13px] w-[13px] rounded-full border-[2.5px] border-riwaaq-surface bg-riwaaq-sage"
+                />
+            </div>
             <div class="chat-chat-header__meta min-w-0">
                 <p class="truncate font-medium leading-tight">{{ displayName }}</p>
-                <p v-if="typingUsers.length" class="truncate text-xs text-riwaaq-accent">{{ typingUsers.join(', ') }} typing&hellip;</p>
-                <p v-else-if="subtitle" class="truncate text-xs text-riwaaq-textMuted">{{ subtitle }}</p>
+                <p v-if="subtitle" class="truncate text-xs text-riwaaq-textMuted">{{ subtitle }}</p>
             </div>
         </div>
 
@@ -114,10 +119,10 @@ const subtitle = computed(() => {
             <button
                 type="button"
                 title="Chat info"
-                class="hidden h-9 items-center rounded-full border border-riwaaq-accent/45 px-4 text-sm font-semibold text-riwaaq-accent hover:bg-riwaaq-accent/10 sm:flex"
+                class="flex h-9 w-9 items-center justify-center rounded-full text-riwaaq-textMuted hover:bg-riwaaq-surfaceHover"
                 @click="emit('open-info')"
             >
-                Details
+                <Icon name="more-vertical" :size="19" />
             </button>
         </div>
     </div>

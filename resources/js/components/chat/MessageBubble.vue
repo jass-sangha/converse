@@ -574,8 +574,8 @@ function onMenuAction(key) {
             class="chat-message-bubble__content relative max-w-[min(55%,380px)] rounded-chat p-2 shadow-chat"
             :class="[
                 isOwn
-                    ? 'rounded-br-[8px] bg-riwaaq-bubbleOut'
-                    : 'rounded-bl-[8px] bg-riwaaq-bubbleIn',
+                    ? 'rounded-br-chat-tail bg-riwaaq-bubbleOut'
+                    : 'rounded-bl-chat-tail bg-riwaaq-bubbleIn',
                 message.reactions?.length ? 'mb-3' : '',
             ]"
         >

@@ -60,6 +60,9 @@ export default {
                 chat: 'var(--chat-radius)',
                 'chat-lg': 'var(--chat-radius-lg)',
                 'chat-xl': 'var(--chat-radius-xl)',
+                // The bubble's flat "tail" corner (rounded-{b,t}{l,r}-chat-tail) — kept
+                // separate from the main `chat` radius since it's deliberately tighter.
+                'chat-tail': 'var(--chat-radius-tail)',
             },
             borderWidth: {
                 // Only the bare `border` utility (no numeric suffix) picks this up —
