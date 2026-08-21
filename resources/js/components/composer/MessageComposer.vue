@@ -273,6 +273,8 @@ async function submit() {
                 <p v-if="linkPreview.site_name" class="truncate text-[10px] font-bold uppercase tracking-wide text-riwaaq-textDim">{{ linkPreview.site_name }}</p>
                 <p class="truncate font-medium text-riwaaq-text">{{ linkPreview.title || linkPreview.url }}</p>
                 <p v-if="linkPreview.description" class="truncate">{{ linkPreview.description }}</p>
+                <!-- Only shown alongside a real title — otherwise the line above already falls back to the raw url. -->
+                <p v-if="linkPreview.title" class="truncate text-riwaaq-textDim">{{ linkPreview.url }}</p>
             </div>
         </div>
 
