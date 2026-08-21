@@ -13,6 +13,7 @@ import {
 import { chatableKey } from '../chatable';
 import { useConversations } from './useConversations';
 import { useCall } from './useCall';
+import { useApi } from './useApi';
 
 window.Pusher = Pusher;
 
@@ -82,6 +83,18 @@ export function useEcho() {
             });
         } else {
             echo = noopEcho;
+        }
+
+        if (echo !== noopEcho) {
+            // `broadcast(...)->toOthers()` (poll votes, reactions, RSVPs, typing, etc.) can only
+            // exclude the acting client's own connection if the socket ID is sent back on the
+            // triggering HTTP request. Without this, Laravel has no way to know which socket to
+            // skip, so the actor receives its own broadcast — which races the HTTP response over
+            // a slower path (queue -> websocket) and can arrive after a newer action and revert
+            // it. Bound on 'connected' rather than read once, since it changes on reconnect.
+            echo.connector.pusher.connection.bind('connected', () => {
+                useApi().defaults.headers.common['X-Socket-Id'] = echo.socketId();
+            });
         }
 
         if (echo !== noopEcho && config.chatableType && config.chatableId) {

@@ -3,6 +3,7 @@ import { useChatStore, setMessages, prependMessages, upsertMessage, removeMessag
 
 const cursors = {};
 let localIdCounter = -1;
+const pollVoteRequests = {};
 
 export function useMessages() {
     const api = useApi();
@@ -133,7 +134,19 @@ export function useMessages() {
     }
 
     async function votePoll(messageId, conversationId, optionIndex) {
+        const requestId = (pollVoteRequests[messageId] ?? 0) + 1;
+        pollVoteRequests[messageId] = requestId;
+
         const { data } = await api.post(`/messages/${messageId}/poll/vote`, { option_index: optionIndex });
+
+        // Responses can resolve out of order relative to requests (rapid option switching fires
+        // overlapping requests); only the response to the most recently sent request for this
+        // message is allowed to update the store, so a stale response can't clobber a newer vote
+        // and make the selected option appear to jump back.
+        if (pollVoteRequests[messageId] !== requestId) {
+            return data.data;
+        }
+
         const existing = (store.messagesByConversation[conversationId] ?? []).find((m) => m.id === messageId);
         if (existing) {
             upsertMessage(conversationId, { ...existing, poll: data.data });
