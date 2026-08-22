@@ -1,5 +1,42 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
+
+it('checks conversation participation for a whole list-create request in one query, not one per id', function () {
+    // Total query count isn't the right signal here — sync()'s own pivot insert legitimately
+    // costs a little more as the conversation_ids array grows, same as any real batch insert
+    // would. What must stay flat is specifically the participation check: if
+    // guardAllParticipant() still checked membership one id at a time (the isActiveParticipant()
+    // N+1 this replaced), each additional id would fire one more query against
+    // chat_conversation_participants. Counting only queries against that table isolates the
+    // guard from sync()'s unrelated, legitimately-scaling work.
+    $participantQueryCountFor = function (int $conversationCount) {
+        $alice = socialUser('alice-listbatch-'.$conversationCount.'@example.com');
+
+        $conversationIds = collect(range(1, $conversationCount))->map(
+            fn ($i) => privateConversationBetween($alice, socialUser("listbatch-target-{$conversationCount}-{$i}@example.com"))
+        );
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $this->actingAs($alice)->postJson('/api/chat/lists', [
+            'name' => 'Batch check',
+            'conversation_ids' => $conversationIds->all(),
+        ])->assertCreated();
+        $participantQueries = collect(DB::getQueryLog())->filter(
+            fn ($entry) => str_contains($entry['query'], 'chat_conversation_participants')
+        );
+        DB::disableQueryLog();
+
+        return $participantQueries->count();
+    };
+
+    $withOne = $participantQueryCountFor(1);
+    $withFive = $participantQueryCountFor(5);
+
+    expect($withFive)->toBe($withOne);
+});
+
 it('creates a list with conversations, lists it, and deletes it', function () {
     $alice = socialUser('alice-list@example.com');
     $bob = socialUser('bob-list@example.com');

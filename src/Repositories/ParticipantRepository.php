@@ -54,6 +54,18 @@ class ParticipantRepository implements ParticipantRepositoryInterface
         )->whereNull('left_at')->exists();
     }
 
+    public function activeParticipantConversationIds(array $conversationIds, Model $chatable): array
+    {
+        if ($conversationIds === []) {
+            return [];
+        }
+
+        return Chat::whereChatable(
+            ConversationParticipant::query()->whereIn('conversation_id', $conversationIds),
+            $chatable
+        )->whereNull('left_at')->pluck('conversation_id')->all();
+    }
+
     public function activeChatables(int $conversationId): Collection
     {
         return ConversationParticipant::query()

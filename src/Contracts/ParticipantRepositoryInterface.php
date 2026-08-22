@@ -18,6 +18,15 @@ interface ParticipantRepositoryInterface
     public function isActiveParticipant(int $conversationId, Model $chatable): bool;
 
     /**
+     * Same check as isActiveParticipant(), batched: one query for any number of conversation
+     * ids instead of one per id.
+     *
+     * @param  list<int>  $conversationIds
+     * @return list<int> the subset of $conversationIds the chatable is an active participant of
+     */
+    public function activeParticipantConversationIds(array $conversationIds, Model $chatable): array;
+
+    /**
      * @return Collection<int, Model> The resolved chatable model instances, not repository rows.
      */
     public function activeChatables(int $conversationId): Collection;

@@ -19,9 +19,7 @@ class ChatListService implements ChatListServiceInterface
     public function create(Model $chatable, string $name, array $conversationIds): ChatList
     {
         return DB::transaction(function () use ($chatable, $name, $conversationIds) {
-            foreach ($conversationIds as $conversationId) {
-                $this->guardParticipant($conversationId, $chatable);
-            }
+            $this->guardAllParticipant($conversationIds, $chatable);
 
             $list = ChatList::query()->create([
                 'chatable_type' => $chatable->getMorphClass(),
@@ -79,5 +77,23 @@ class ChatListService implements ChatListServiceInterface
     protected function guardParticipant(int $conversationId, Model $chatable): void
     {
         abort_unless($this->participants->isActiveParticipant($conversationId, $chatable), 403);
+    }
+
+    /**
+     * Same check as guardParticipant(), batched — one query for the whole array instead of one
+     * exists() per id (create() accepts up to 200 conversation_ids per StoreChatListRequest).
+     *
+     * @param  list<int>  $conversationIds
+     */
+    protected function guardAllParticipant(array $conversationIds, Model $chatable): void
+    {
+        if ($conversationIds === []) {
+            return;
+        }
+
+        $unique = array_values(array_unique($conversationIds));
+        $active = $this->participants->activeParticipantConversationIds($unique, $chatable);
+
+        abort_unless(count($active) === count($unique), 403);
     }
 }
