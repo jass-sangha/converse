@@ -4,6 +4,7 @@ namespace Riwaaq\Chat\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Riwaaq\Chat\Models\Conversation;
 use Riwaaq\Chat\Models\Message;
 
@@ -16,7 +17,7 @@ interface MessageServiceInterface
         Model $chatable,
         int $perPage,
         ?int $beforeId = null
-    ): LengthAwarePaginator;
+    ): Paginator;
 
     public function find(int $id): Message;
 
@@ -32,7 +33,7 @@ interface MessageServiceInterface
      */
     public function forward(Message $message, array $conversationIds, Model $chatable): array;
 
-    public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator;
+    public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): Paginator;
 
     public function clearForChatable(Conversation $conversation, Model $chatable): void;
 

@@ -4,6 +4,7 @@ namespace Riwaaq\Chat\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -76,7 +77,7 @@ class MessageService implements MessageServiceInterface
         Model $chatable,
         int $perPage,
         ?int $beforeId = null
-    ): LengthAwarePaginator {
+    ): Paginator {
         return $this->messages->paginateForConversation($conversation, $chatable, $perPage, $beforeId);
     }
 
@@ -85,7 +86,7 @@ class MessageService implements MessageServiceInterface
         return $this->messages->findById($id);
     }
 
-    public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator
+    public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): Paginator
     {
         return $this->messages->search($chatable, $query, $conversationId, $perPage);
     }

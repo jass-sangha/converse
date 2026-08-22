@@ -4,7 +4,7 @@ namespace Riwaaq\Chat\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Riwaaq\Chat\Contracts\MessageServiceInterface;
 use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
@@ -165,7 +165,7 @@ class MessageController extends Controller
     // serialization instead of batched up front. Bounded by conversation headcount (already
     // capped at 200), not by page size, so this is a smaller win than the presence-sweep one,
     // but the same pattern applies for the same reason.
-    protected function preloadReceiptSettings(LengthAwarePaginator $messages, ?Model $viewer): void
+    protected function preloadReceiptSettings(Paginator $messages, ?Model $viewer): void
     {
         $chatables = $messages->getCollection()
             ->pluck('receipts')

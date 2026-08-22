@@ -5,6 +5,7 @@ namespace Riwaaq\Chat\Repositories;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\DB;
 use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Contracts\MessageRepositoryInterface;
@@ -24,12 +25,17 @@ class MessageRepository implements MessageRepositoryInterface
         return Message::query()->findOrFail($id);
     }
 
+    // simplePaginate(), not paginate(): the chat scroll is a before_id cursor UI (see
+    // useMessages.js) that only ever reads data.data and derives its next cursor from the last
+    // message's own id — it never touches total/last_page. paginate()'s extra SELECT COUNT(*)
+    // (through the whereDoesntHave deletions subquery, on every single page load) buys nothing
+    // here, so simplePaginate()'s "fetch perPage+1, no count" is a same-shape, zero-cost swap.
     public function paginateForConversation(
         Conversation $conversation,
         Model $chatable,
         int $perPage,
         ?int $beforeId = null
-    ): LengthAwarePaginator {
+    ): Paginator {
         $query = Message::query()
             ->where('conversation_id', $conversation->id)
             ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
@@ -40,10 +46,12 @@ class MessageRepository implements MessageRepositoryInterface
             $query->where('id', '<', $beforeId);
         }
 
-        return $query->paginate($perPage);
+        return $query->simplePaginate($perPage);
     }
 
-    public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): LengthAwarePaginator
+    // simplePaginate() for the same reason as paginateForConversation() above — search() (see
+    // useMessages.js::search()) also only reads data.data, never total/last_page.
+    public function search(Model $chatable, string $query, ?int $conversationId, int $perPage): Paginator
     {
         $builder = Message::query()
             ->whereHas('conversation.participants', fn ($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
@@ -62,7 +70,7 @@ class MessageRepository implements MessageRepositoryInterface
             $builder->where('conversation_id', $conversationId);
         }
 
-        return $builder->paginate($perPage);
+        return $builder->simplePaginate($perPage);
     }
 
     /**

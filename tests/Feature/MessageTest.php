@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Riwaaq\Chat\Models\Message;
 use Riwaaq\Chat\Tests\Fixtures\User;
 
@@ -73,6 +74,38 @@ it('does not limit message history by age', function () {
     expect(collect($messages->json('data'))->pluck('id'))
         ->toContain($recentId)
         ->toContain($oldId);
+});
+
+it('lists and searches messages without an extra COUNT(*) query', function () {
+    // The chat scroll (before_id cursor) and search results never read total/last_page — see
+    // useMessages.js — so paginateForConversation()/search() use simplePaginate() instead of
+    // paginate(), which would otherwise run a COUNT(*) on every single page load for no reason.
+    $alice = User::query()->create(['name' => 'Alice', 'email' => 'alice-count@example.com', 'password' => bcrypt('secret')]);
+    $bob = User::query()->create(['name' => 'Bob', 'email' => 'bob-count@example.com', 'password' => bcrypt('secret')]);
+
+    $conversationId = createPrivateConversation($alice, $bob);
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => 'findme',
+    ])->assertCreated();
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
+    $listQueries = collect(DB::getQueryLog());
+    DB::disableQueryLog();
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    $this->actingAs($alice)->getJson('/api/chat/messages/search?q=findme')->assertOk();
+    $searchQueries = collect(DB::getQueryLog());
+    DB::disableQueryLog();
+
+    $isCount = fn ($entry) => str_contains(strtolower($entry['query']), 'count(*)');
+
+    expect($listQueries->filter($isCount))->toBeEmpty()
+        ->and($searchQueries->filter($isCount))->toBeEmpty();
 });
 
 it('rejects a message body longer than the configured max length', function () {
