@@ -27,12 +27,19 @@ class MessagePolicy
 
     public function vote(Model $user, Message $message): bool
     {
-        return $this->isActiveParticipant($message, $user);
+        // Without this, a vote on a non-poll message 422s only by accident: PollVoteService
+        // reads $message->metadata['options'] ?? [], and an empty array happens to fail every
+        // option-index bounds check. Explicit here so that behavior isn't load-bearing.
+        return $message->type === MessageType::Poll && $this->isActiveParticipant($message, $user);
     }
 
     public function rsvp(Model $user, Message $message): bool
     {
-        return $this->isActiveParticipant($message, $user);
+        // EventRsvpService::respond() never reads message metadata before writing, so without
+        // this an RSVP on a non-event message would silently succeed and create a real EventRsvp
+        // row against an arbitrary message — not a security hole (still scoped to the caller's
+        // own RSVP on a message they can already see), but a data-integrity gap.
+        return $message->type === MessageType::Event && $this->isActiveParticipant($message, $user);
     }
 
     public function star(Model $user, Message $message): bool
