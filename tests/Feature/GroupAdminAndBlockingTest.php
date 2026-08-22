@@ -45,6 +45,25 @@ it('lets the group admin add and remove members but rejects a non-admin', functi
         ->not->toContain($carol->id);
 });
 
+it('rejects an add-participants request with more than 200 participants', function () {
+    $alice = groupUser('alice-toomany@example.com');
+    $bob = groupUser('bob-toomany@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'group',
+        'name' => 'Too many',
+        'participants' => chatableRefs([$bob]),
+    ])->json('data.id');
+
+    // Validation rejects on array size alone, before touching the DB, so these don't need to
+    // be real users.
+    $participants = collect(range(1, 201))->map(fn ($id) => ['type' => 'user', 'id' => $id])->all();
+
+    $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/participants", ['participants' => $participants])
+        ->assertInvalid(['participants']);
+});
+
 it('prevents the sole admin from demoting themselves or leaving without promoting someone else', function () {
     $alice = groupUser('alice-sole@example.com');
     $bob = groupUser('bob-sole@example.com');

@@ -14,7 +14,7 @@ class ForwardMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'conversation_ids' => ['required', 'array', 'min:1'],
+            'conversation_ids' => ['required', 'array', 'min:1', 'max:200'],
             'conversation_ids.*' => ['integer'],
         ];
     }

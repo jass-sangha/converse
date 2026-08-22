@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Riwaaq\Chat\Tests\Fixtures\User;
 
 function socialUser(string $email): User
@@ -64,6 +65,67 @@ it('replies to a message and forwards it to another conversation', function () {
 
     expect($forwarded->json('data.0.is_forwarded'))->toBeTrue()
         ->and($forwarded->json('data.0.body'))->toBe('original');
+});
+
+it('forwards to several conversations with one batched eager-load, not one per forwarded message', function () {
+    // Forwarding to N conversations necessarily costs real per-target work (an INSERT, receipt
+    // rows, a conversation touch, a broadcast for each), so total query count legitimately
+    // grows with N and can't be asserted flat — comparing it wouldn't isolate the eager-load
+    // step from that unrelated, expected-to-scale creation cost. Instead this counts queries
+    // against five of EAGER's relation tables specifically (starredBy/pinnedIn/pollVotes/
+    // eventRsvps/reactions — tables nothing else in the forward path ever touches): loading
+    // them per forwarded message inside a map() (the bug this replaced) fires one query per
+    // relation per message, so N targets would cost 5xN such queries; a single batched load()
+    // on the whole collection costs 5 regardless of N.
+    $eagerRelationQueryCountFor = function (int $targetCount) {
+        $alice = socialUser('alice-fwdbatch-'.$targetCount.'@example.com');
+        $sourceConvo = privateConversationBetween($alice, socialUser('fwdbatch-source-'.$targetCount.'@example.com'));
+
+        $originalId = $this->actingAs($alice)
+            ->postJson("/api/chat/conversations/{$sourceConvo}/messages", ['type' => 'text', 'body' => 'broadcast me'])
+            ->json('data.id');
+
+        $targets = collect(range(1, $targetCount))->map(
+            fn ($i) => privateConversationBetween($alice, socialUser("fwdbatch-target-{$targetCount}-{$i}@example.com"))
+        );
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $this->actingAs($alice)
+            ->postJson("/api/chat/messages/{$originalId}/forward", ['conversation_ids' => $targets->all()])
+            ->assertOk()
+            ->assertJsonCount($targetCount, 'data');
+        $eagerQueries = collect(DB::getQueryLog())->filter(fn ($entry) => str_contains(
+            $entry['query'],
+            'chat_starred_messages'
+        ) || str_contains($entry['query'], 'chat_pinned_messages')
+            || str_contains($entry['query'], 'chat_poll_votes')
+            || str_contains($entry['query'], 'chat_event_rsvps')
+            || str_contains($entry['query'], 'chat_message_reactions'));
+        DB::disableQueryLog();
+
+        return $eagerQueries->count();
+    };
+
+    $withOne = $eagerRelationQueryCountFor(1);
+    $withFive = $eagerRelationQueryCountFor(5);
+
+    expect($withFive)->toBe($withOne);
+});
+
+it('rejects a forward request with more than 200 target conversations', function () {
+    $alice = socialUser('alice-fwdtoomany@example.com');
+    $sourceConvo = privateConversationBetween($alice, socialUser('fwdtoomany-source@example.com'));
+
+    $originalId = $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$sourceConvo}/messages", ['type' => 'text', 'body' => 'hi'])
+        ->json('data.id');
+
+    // Validation rejects on array size alone, before touching the DB, so these don't need to
+    // be real conversation ids.
+    $this->actingAs($alice)
+        ->postJson("/api/chat/messages/{$originalId}/forward", ['conversation_ids' => range(1, 201)])
+        ->assertInvalid(['conversation_ids']);
 });
 
 it('deletes a message for me without affecting the other participant, and for everyone globally', function () {

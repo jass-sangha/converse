@@ -99,7 +99,12 @@ class MessageController extends Controller
             $request->user(),
         );
 
-        return MessageResource::collection(collect($forwarded)->map(fn (Message $m) => $m->load(self::EAGER)));
+        // newCollection() (not the plain collect() helper, which never returns an Eloquent
+        // collection) so a single load() batches all EAGER relations across every forwarded
+        // message in one query per relation, instead of firing them per message.
+        $forwarded = (new Message)->newCollection($forwarded)->load(self::EAGER);
+
+        return MessageResource::collection($forwarded);
     }
 
     public function clear(Request $request, Conversation $conversation)

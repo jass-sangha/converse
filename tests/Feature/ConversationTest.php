@@ -82,6 +82,20 @@ it('resolves last_message and unread_count for the conversation list without one
     expect($withEight)->toBe($withOne);
 });
 
+it('rejects a conversation create request with more than 200 participants', function () {
+    $alice = chatUser();
+
+    // Validation rejects on array size alone, before touching the DB, so these don't need to
+    // be real users.
+    $participants = collect(range(1, 201))->map(fn ($id) => ['type' => 'user', 'id' => $id])->all();
+
+    $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'group',
+        'name' => 'Too big',
+        'participants' => $participants,
+    ])->assertInvalid(['participants']);
+});
+
 it('prevents a non-participant from viewing a conversation', function () {
     $alice = chatUser();
     $bob = chatUser();
