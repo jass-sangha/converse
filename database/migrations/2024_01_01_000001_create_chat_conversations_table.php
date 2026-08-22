@@ -14,6 +14,14 @@ return new class extends Migration
         Schema::create($conversations, function (Blueprint $table) {
             $table->id();
             $table->string('type')->default('private');
+            // Deterministic sorted "type|id" pair of the two participants, set only for private
+            // conversations (null for group ones — multiple nulls are fine under a unique
+            // index). Backs findOrCreatePrivate()'s DB-level dedupe: its own "does one already
+            // exist" check is app-level and racy under concurrent requests, so this is what
+            // actually stops two simultaneous requests from creating duplicate DM threads for
+            // the same pair — the loser's insert fails the unique constraint and falls back to
+            // the winner's row instead.
+            $table->string('private_pair_key')->nullable();
             $table->string('name')->nullable();
             $table->text('description')->nullable();
             $table->string('avatar_path')->nullable();
@@ -22,6 +30,7 @@ return new class extends Migration
             $table->timestamp('last_activity_at')->nullable();
             $table->timestamps();
 
+            $table->unique('private_pair_key');
             $table->index('last_activity_at');
             $table->index('type');
         });
