@@ -2,8 +2,10 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Riwaaq\Chat\Contracts\PresenceServiceInterface;
 use Riwaaq\Chat\Events\UserTyping;
 use Riwaaq\Chat\Models\ConversationParticipant;
+use Riwaaq\Chat\Models\UserPresence;
 use Riwaaq\Chat\Tests\Fixtures\User;
 
 function presenceUser(string $email): User
@@ -194,4 +196,49 @@ it('debounces presence heartbeat db writes and reports online status', function 
 
     // Second heartbeat within the same debounce window should not touch chat_user_presence again.
     expect($writes)->toHaveCount(0);
+});
+
+it('sweeps a stale heartbeat back to offline via the artisan command', function () {
+    $alice = presenceUser('alice-sweep@example.com');
+
+    $this->actingAs($alice)->postJson('/api/chat/presence/heartbeat')->assertNoContent();
+    expect($this->actingAs($alice)->getJson("/api/chat/users/user/{$alice->id}/presence")->json('data.is_online'))->toBeTrue();
+
+    // Past heartbeat_ttl_seconds + online_grace_seconds (60 + 90 default).
+    $this->travel(151)->seconds();
+
+    $this->artisan('chat:sweep-presence')->assertSuccessful();
+
+    expect($this->actingAs($alice)->getJson("/api/chat/users/user/{$alice->id}/presence")->json('data.is_online'))->toBeFalse();
+});
+
+it('sweeps every stale row across chunk boundaries, not just the first 200', function () {
+    // chunkById(200) advancing past a row it just flipped to is_online = false is exactly the
+    // behavior that could silently drop rows if the chunking were wired wrong (e.g. ordering by
+    // the wrong column, or re-including already-updated rows) — 201 rows forces at least two
+    // chunks, so this only passes if every chunk actually gets processed.
+    $rows = collect(range(1, 201))->map(fn ($i) => [
+        'chatable_type' => 'user',
+        'chatable_id' => 900000 + $i, // no matching user row on purpose — isolates the sweep/chunk
+        'is_online' => true,          // mechanics from the unrelated per-chatable broadcast path.
+        'last_seen_at' => now()->subDays(1),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ])->all();
+    UserPresence::query()->insert($rows);
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    $count = app(PresenceServiceInterface::class)->sweepStale();
+    // A single get() would fetch all 201 rows in one SELECT regardless of correctness; two
+    // chat_user_presence SELECTs (201 rows over a 200-row chunk size) is what actually proves
+    // chunkById() is in effect rather than an unbounded fetch that just happens to still work.
+    $selects = collect(DB::getQueryLog())->filter(
+        fn ($entry) => str_contains($entry['query'], 'chat_user_presence') && str_starts_with(strtolower($entry['query']), 'select')
+    );
+    DB::disableQueryLog();
+
+    expect($count)->toBe(201)
+        ->and(UserPresence::query()->where('is_online', true)->count())->toBe(0)
+        ->and($selects)->toHaveCount(2);
 });

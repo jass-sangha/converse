@@ -3,6 +3,7 @@
 namespace Riwaaq\Chat\Services;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Contracts\PresenceServiceInterface;
@@ -72,40 +73,49 @@ class PresenceService implements PresenceServiceInterface
             config('chat.presence.heartbeat_ttl_seconds', 60) + config('chat.presence.online_grace_seconds', 90)
         );
 
-        $stale = UserPresence::query()
+        $count = 0;
+
+        // Chunked, not get() — same reasoning as PruneExpiredMessagesCommand's chunkById(200):
+        // a mass-disconnect (server restart, network partition, WebSocket bounce) means every
+        // currently-online row goes stale for the same sweep, right as the system is already
+        // under reconnection load. Already-updated rows drop out of the `is_online = true`
+        // filter on their own, so advancing by id this way never re-processes or skips a row.
+        UserPresence::query()
             ->where('is_online', true)
             ->where('last_seen_at', '<', $threshold)
             ->with('chatable')
-            ->get();
+            ->chunkById(200, function (Collection $stale) use (&$count) {
+                foreach ($stale as $presence) {
+                    $chatable = $presence->chatable;
 
-        foreach ($stale as $presence) {
-            $chatable = $presence->chatable;
+                    if ($chatable === null) {
+                        $presence->update(['is_online' => false]);
 
-            if ($chatable === null) {
-                $presence->update(['is_online' => false]);
+                        continue;
+                    }
 
-                continue;
-            }
+                    Cache::forget($this->onlineKey($chatable));
+                    $presence->update(['is_online' => false]);
 
-            Cache::forget($this->onlineKey($chatable));
-            $presence->update(['is_online' => false]);
+                    $conversationIds = Chat::whereChatable(ConversationParticipant::query(), $chatable)
+                        ->whereNull('left_at')
+                        ->pluck('conversation_id')
+                        ->all();
 
-            $conversationIds = Chat::whereChatable(ConversationParticipant::query(), $chatable)
-                ->whereNull('left_at')
-                ->pluck('conversation_id')
-                ->all();
+                    if (! empty($conversationIds)) {
+                        broadcast(new PresenceChanged(
+                            $chatable,
+                            false,
+                            $this->settings->allowsLastSeen($chatable) ? $presence->last_seen_at?->toIso8601String() : null,
+                            $conversationIds,
+                        ));
+                    }
+                }
 
-            if (! empty($conversationIds)) {
-                broadcast(new PresenceChanged(
-                    $chatable,
-                    false,
-                    $this->settings->allowsLastSeen($chatable) ? $presence->last_seen_at?->toIso8601String() : null,
-                    $conversationIds,
-                ));
-            }
-        }
+                $count += $stale->count();
+            });
 
-        return $stale->count();
+        return $count;
     }
 
     protected function markOnlineAndBroadcast(Model $chatable): void
