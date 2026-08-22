@@ -473,6 +473,79 @@ it('persists a link preview attached to a sent text message', function () {
     expect($list->json('data.0.metadata.link_preview.title'))->toBe('Example Title');
 });
 
+it('rejects an oversized link_preview field submitted directly, bypassing the fetcher', function () {
+    $alice = mediaUser('alice-preview-oversized@example.com');
+    $bob = mediaUser('bob-preview-oversized@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    // The composer normally attaches whatever OpenGraphLinkPreviewFetcher (size-capped)
+    // returned, but metadata.link_preview is submitted as plain client data — nothing stops a
+    // client from sending arbitrary-length strings here directly instead.
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => 'check this out https://example.com',
+        'metadata' => ['link_preview' => [
+            'url' => 'https://example.com/'.str_repeat('a', 2048),
+            'title' => str_repeat('a', 501),
+            'description' => str_repeat('a', 501),
+            'image' => 'https://example.com/'.str_repeat('a', 2048),
+            'site_name' => str_repeat('a', 256),
+        ]],
+    ])->assertInvalid([
+        'metadata.link_preview.url',
+        'metadata.link_preview.title',
+        'metadata.link_preview.description',
+        'metadata.link_preview.image',
+        'metadata.link_preview.site_name',
+    ]);
+});
+
+it('rejects more than 30 attachment_ids on a single message', function () {
+    $alice = mediaUser('alice-toomanyattach@example.com');
+    $bob = mediaUser('bob-toomanyattach@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    // Validation rejects on array size alone, before touching the DB, so these don't need to
+    // be real attachment ids.
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'image',
+        'attachment_ids' => range(1, 31),
+    ])->assertInvalid(['attachment_ids']);
+});
+
+it('rejects a call log with more than 200 participants', function () {
+    $alice = mediaUser('alice-callparticipants@example.com');
+    $bob = mediaUser('bob-callparticipants@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $participants = collect(range(1, 201))->map(fn ($id) => ['type' => 'user', 'id' => $id])->all();
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'call',
+        'metadata' => ['duration_seconds' => 30, 'participants' => $participants],
+    ])->assertInvalid(['metadata.participants']);
+});
+
+it('rejects an oversized url when requesting a link preview', function () {
+    $alice = mediaUser('alice-previewurloversized@example.com');
+
+    $this->actingAs($alice)
+        ->postJson('/api/chat/link-preview', ['url' => 'https://example.com/'.str_repeat('a', 2048)])
+        ->assertInvalid(['url']);
+});
+
 it('fetches and caches a link preview', function () {
     $alice = mediaUser('alice-preview@example.com');
 

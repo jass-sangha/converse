@@ -14,7 +14,7 @@ class LinkPreviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'url' => ['required', 'url:http,https'],
+            'url' => ['required', 'url:http,https', 'max:2048'],
         ];
     }
 }

@@ -38,7 +38,7 @@ class StoreMessageRequest extends FormRequest
             // `array` alone (no `required_if`) — an unanswered call legitimately logs with zero
             // participants, and Laravel's `required` family treats an empty array as "missing",
             // which would 422 on exactly that case.
-            'metadata.participants' => ['present_if:type,call', 'array'],
+            'metadata.participants' => ['present_if:type,call', 'array', 'max:200'],
             'metadata.participants.*.type' => ['required_with:metadata.participants.*.id', 'string'],
             'metadata.participants.*.id' => ['required_with:metadata.participants.*.type', 'integer'],
             // The composer attaches the OG-preview it already fetched (see /link-preview) onto a
@@ -46,12 +46,12 @@ class StoreMessageRequest extends FormRequest
             // nested key is silently stripped from the whole metadata array by validated(), not
             // just that key.
             'metadata.link_preview' => ['nullable', 'array'],
-            'metadata.link_preview.url' => ['required_with:metadata.link_preview', 'string'],
-            'metadata.link_preview.title' => ['nullable', 'string'],
-            'metadata.link_preview.description' => ['nullable', 'string'],
-            'metadata.link_preview.image' => ['nullable', 'string'],
-            'metadata.link_preview.site_name' => ['nullable', 'string'],
-            'attachment_ids' => ['required_if:type,image,video,audio,voice,document,gif,sticker', 'sometimes', 'array', 'min:1'],
+            'metadata.link_preview.url' => ['required_with:metadata.link_preview', 'string', 'max:2048'],
+            'metadata.link_preview.title' => ['nullable', 'string', 'max:500'],
+            'metadata.link_preview.description' => ['nullable', 'string', 'max:500'],
+            'metadata.link_preview.image' => ['nullable', 'string', 'max:2048'],
+            'metadata.link_preview.site_name' => ['nullable', 'string', 'max:255'],
+            'attachment_ids' => ['required_if:type,image,video,audio,voice,document,gif,sticker', 'sometimes', 'array', 'min:1', 'max:30'],
             'attachment_ids.*' => ['integer'],
         ];
     }
