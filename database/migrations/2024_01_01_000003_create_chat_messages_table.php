@@ -18,6 +18,10 @@ return new class extends Migration
             $table->nullableMorphs('chatable');
             $table->string('type')->default('text');
             $table->text('body')->nullable();
+            // Computed at write time (see Message::hasLinkInBody(), set in
+            // MessageService::send()/update()) so MessageRepository::media()'s 'links' filter
+            // can use this index instead of a leading-wildcard `body LIKE '%http%'` scan.
+            $table->boolean('has_link')->default(false)->index();
             $table->unsignedBigInteger('reply_to_message_id')->nullable();
             $table->unsignedBigInteger('forwarded_from_message_id')->nullable();
             $table->boolean('is_forwarded')->default(false);
