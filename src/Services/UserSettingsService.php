@@ -10,11 +10,10 @@ class UserSettingsService implements UserSettingsServiceInterface
 {
     /**
      * Memoizes get() per chatable for this instance's lifetime — bound as a singleton (see
-     * ChatServiceProvider) so that lifetime is "one request". Without it, resolving a message
-     * list's read-receipt status calls allowsReadReceipts() once per receipt (see
-     * MessageResource::receiptStatus()), and each call hit firstOrCreate() fresh: 50 messages
-     * in a 10-person group could mean hundreds of identical queries for the same handful of
-     * users' settings on a single response.
+     * ChatServiceProvider), so that's effectively "one request". Without it, resolving a
+     * message list's read-receipt status calls allowsReadReceipts() once per receipt (see
+     * MessageResource::receiptStatus()) and hits firstOrCreate() fresh each time: 50 messages
+     * in a 10-person group could mean hundreds of identical settings queries per response.
      *
      * @var array<string, UserSetting>
      */

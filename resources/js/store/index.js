@@ -61,12 +61,10 @@ export function upsertMessage(conversationId, message) {
 }
 
 // Swaps an optimistic message for its server-confirmed version in place, rather than
-// removeMessage() + upsertMessage() (which drops it and re-pushes to the end of the list).
-// Sending several messages in quick succession fires their requests back to back, and
-// responses don't reliably resolve in that same order — remove-then-push-to-end would let a
-// later message's response "win" the last slot before an earlier one's response arrives,
-// visibly reordering the list. Replacing at the optimistic entry's existing index keeps
-// display order matching send order regardless of which response lands first.
+// removeMessage() + upsertMessage() (which would drop it and re-push to the list's end).
+// Rapid-fire sends can have their responses resolve out of order, so remove-then-push-to-end
+// could let a later message's response jump ahead of an earlier one still in flight — replacing
+// at the optimistic entry's existing index keeps display order matching send order regardless.
 export function replaceMessage(conversationId, oldMessageId, message) {
     const list = state.messagesByConversation[conversationId];
     const index = list ? list.findIndex((m) => m.id === oldMessageId) : -1;

@@ -26,10 +26,9 @@ const { uploadAttachment } = useMessages();
 const imageInput = ref(null);
 const uploadingImage = ref(false);
 
-// Custom color opens as a plain in-DOM dropdown — the same placement mechanism every other menu
-// in the app uses (SettingRow's option lists, the mute-duration menu, etc.) — rather than the
-// browser's own native color-picker dialog, whose on-screen position we have no control over and
-// which clips against a viewport edge this panel is docked flush against.
+// Custom color opens as a plain in-DOM dropdown, the same placement mechanism every other menu
+// uses, rather than the browser's native color-picker dialog — we can't control that dialog's
+// position, and it clips against the viewport edge this panel is docked flush against.
 const colorMenuRoot = ref(null);
 const showColorMenu = ref(false);
 const { opened: colorMenuOpened, closed: colorMenuClosed } = useExclusiveDropdown();
@@ -62,11 +61,9 @@ function pickPattern(patternKey) {
     emit("update:modelValue", encodeWallpaper(patternKey, current.value.colorKeyOrHex));
 }
 
-// null (as opposed to an explicit "default|default" pick) is what actually falls back to the
-// default wallpaper — an explicit pick freezes this chat on today's default even if the default
-// itself changes later (e.g. the global default gets changed in Settings), where resetting stays
-// live and always tracks whatever the default currently is. Only offered once there's something
-// to reset away from, i.e. this chat has ever had its own wallpaper set at all.
+// Resetting stores null rather than an explicit "default|default" pick, so this chat keeps
+// tracking the global default if it changes later instead of freezing on today's value. Only
+// offered once the chat actually has an override to reset away from.
 const hasOverride = computed(() => !!props.modelValue);
 
 function resetToDefault() {

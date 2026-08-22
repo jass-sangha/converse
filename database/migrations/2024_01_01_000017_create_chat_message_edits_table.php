@@ -13,9 +13,8 @@ return new class extends Migration
             $table->foreignId('message_id')
                 ->constrained(config('chat.table_names.messages', 'chat_messages'))
                 ->cascadeOnDelete();
-            // The body as it read *before* this edit overwrote it — the row is the snapshot,
-            // not the change, so the previous version stays readable even after the message
-            // itself has been edited again since.
+            // The body as it read *before* this edit — a snapshot, not a diff — so the
+            // previous version stays readable even after later edits overwrite the message.
             $table->text('previous_body')->nullable();
             $table->timestamp('edited_at');
             $table->timestamps();

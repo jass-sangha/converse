@@ -26,10 +26,9 @@ class CallController extends Controller
             ->reject(fn ($participant) => $participant->chatable_type === $chatable->getMorphClass()
                 && (string) $participant->chatable_id === (string) $chatable->getKey());
 
-        // A group call's peer-to-peer mesh needs offers/answers/ICE candidates routed to one
-        // specific participant, not broadcast to the whole conversation the way a "someone is
-        // joining the call" announcement is — otherwise every member would try to answer an SDP
-        // negotiation that was only ever meant for one of them.
+        // Narrows recipients to one target instead of broadcasting to the whole conversation —
+        // a call's SDP offer/answer/ICE signaling is peer-to-peer, so broadcasting it would make
+        // every other member try to answer a negotiation meant for someone else.
         if (! empty($data['to_type']) && isset($data['to_id'])) {
             $recipients = $recipients->filter(fn ($participant) => $participant->chatable_type === $data['to_type']
                 && (string) $participant->chatable_id === (string) $data['to_id']);

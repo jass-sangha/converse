@@ -40,14 +40,13 @@ class PruneExpiredMessagesCommand extends Command
             ->chunkById(200, function (Collection $messages) use (&$count) {
                 $attachments = $messages->flatMap->attachments;
 
-                // Delete the attachment rows explicitly rather than relying on the FK's
-                // cascadeOnDelete to remove them when the message row goes — SQLite (used in
-                // tests) doesn't enforce foreign keys unless DB_FOREIGN_KEYS is set, so the
-                // cascade silently wouldn't fire there. Doing it up front also means
-                // deleteOrphanedFiles()'s "still referenced" check only sees rows outside this
-                // expiring batch — otherwise two messages sharing a forwarded attachment that
-                // expire in the same run would each see the other's row and wrongly conclude
-                // the file is still in use.
+                // Delete the attachment rows explicitly instead of relying on cascadeOnDelete
+                // when the message row goes — SQLite (used in tests) doesn't enforce foreign
+                // keys unless DB_FOREIGN_KEYS is set, so the cascade wouldn't fire there. Doing
+                // it first also means deleteOrphanedFiles()'s "still referenced" check only sees
+                // rows outside this batch — otherwise two messages sharing a forwarded
+                // attachment that expire in the same run would each see the other's row and
+                // wrongly conclude the file is still in use.
                 MessageAttachment::query()->whereIn('id', $attachments->pluck('id'))->delete();
                 Message::query()->whereIn('id', $messages->pluck('id'))->delete();
 

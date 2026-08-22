@@ -47,10 +47,10 @@ it('creates a group conversation with all participants admin-free except creator
 });
 
 it('resolves last_message and unread_count for the conversation list without one query per conversation', function () {
-    // 1 conversation vs 8, each for a different user — if last_message/unread_count were still
-    // resolved per row (the N+1 this replaced), the 8-conversation request would cost roughly
-    // 2 extra queries per extra conversation. Equal query counts either way proves it's
-    // batched, not per-row.
+    // 1 conversation vs 8, each for a different user — if last_message/unread_count were
+    // still resolved per row (the N+1 this replaced), 8 conversations would cost roughly
+    // 2 extra queries each over 1. Equal query counts either way prove it's batched, not
+    // per-row.
     $countQueriesFor = function (int $conversationCount) {
         $viewer = chatUser();
 

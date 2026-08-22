@@ -15,10 +15,10 @@ class CallSignal implements ShouldBroadcastNow
 
     /**
      * @param  array<string, mixed>  $payload
-     * @param  string[]  $recipientChannels  "chatable.{type}.{id}" names of the other
-     *                                       active participant(s) — the recipient's personal channel, joined at app boot
-     *                                       regardless of which conversation (if any) they currently have open, so an
-     *                                       incoming call reaches them even when this conversation isn't the active one.
+     * @param  string[]  $recipientChannels  "chatable.{type}.{id}" personal channels of the other
+     *                                       participant(s), joined at app boot regardless of which
+     *                                       conversation is open — so an incoming call reaches them
+     *                                       even when this conversation isn't the active one.
      */
     public function __construct(
         public int $conversationId,

@@ -86,14 +86,12 @@ class ChatServiceProvider extends PackageServiceProvider
     ];
 
     /**
-     * Singleton rather than a plain binding: UserSettingsService::get() memoizes per chatable
-     * for the lifetime of the instance (see its docblock) to stop MessageResource's
-     * per-receipt allowsReadReceipts() calls from re-querying the same row over and over on a
-     * single message list response. That memoization only helps if every resolution — the
-     * constructor-injected ones in ProfileController/PresenceService/TypingController and the
-     * ad-hoc app(UserSettingsServiceInterface::class) ones in MessageResource/ChatUserResource —
-     * shares the same instance within a request; a plain bind() would hand each of those a
-     * fresh, empty cache.
+     * Singleton, not a plain binding: UserSettingsService::get() memoizes per chatable for the
+     * instance's lifetime (see its docblock), so MessageResource doesn't re-query the same row
+     * for every receipt on a single message list response. That only works if every resolution
+     * point — constructor-injected (ProfileController, PresenceService, TypingController) and
+     * ad-hoc app()-resolved (MessageResource, ChatUserResource) — shares one instance per
+     * request; a plain bind() would hand each of those a fresh, empty cache.
      */
     public array $singletons = [
         UserSettingsServiceInterface::class => UserSettingsService::class,
@@ -106,14 +104,13 @@ class ChatServiceProvider extends PackageServiceProvider
 
     public function configurePackage(Package $package): void
     {
-        // Spatie's own hasConfigFile() merge (via registerPackageConfigs()) runs after this
-        // method, so the config()-driven gates below would only ever see unpublished defaults
-        // as null without merging it ourselves first. Idempotent — Spatie's later automatic
-        // merge is a no-op once these keys already exist, and a host's own published config
-        // values still win either way (mergeConfigFrom keeps existing keys over defaults). The
-        // gates themselves read env(...) INSIDE config/chat.php (matching chatable_models'
-        // existing convention), not as a config()-read-site fallback — once merged, the config
-        // key always exists, so a fallback given only at the read site would never be reached.
+        // Spatie's hasConfigFile() merge (via registerPackageConfigs()) runs after this method,
+        // so the config()-driven gates below would see unpublished defaults as null without
+        // merging here first. Idempotent — mergeConfigFrom() only fills missing keys, so
+        // Spatie's later merge is a no-op and a host's published config still wins. The env(...)
+        // fallbacks live INSIDE config/chat.php itself (matching chatable_models' convention)
+        // rather than at the config()-read call sites, since a read-site fallback would never
+        // trigger once the key is merged in.
         $this->mergeConfigFrom(__DIR__.'/../config/chat.php', 'chat');
 
         $package->name('chat')->hasConfigFile('chat');
@@ -169,15 +166,14 @@ class ChatServiceProvider extends PackageServiceProvider
 
     /**
      * The bundled chat UI authenticates via Sanctum's session-cookie flow, which needs
-     * EnsureFrontendRequestsAreStateful on the 'api' middleware group. Registering it here
-     * (rather than asking the host app to call $middleware->statefulApi() in bootstrap/app.php)
-     * keeps the package self-contained — installing it is enough, no host wiring required.
+     * EnsureFrontendRequestsAreStateful on the 'api' middleware group. Registered here instead
+     * of via the host's bootstrap/app.php so installing the package is enough — no host wiring
+     * required.
      *
-     * Pushed onto the HTTP Kernel (not the Router) deliberately: the Kernel is the source of
-     * truth for middleware groups and re-syncs its own copy to the Router whenever any provider
-     * booting after us — Sanctum's own service provider included — touches the Kernel's
-     * middleware priority list. A push made directly on the Router gets silently overwritten by
-     * that later re-sync since the Router's array is just a mirror of the Kernel's.
+     * Pushed onto the HTTP Kernel, not the Router: the Kernel is the source of truth for
+     * middleware groups and re-syncs the Router's copy whenever a later-booting provider
+     * (Sanctum's own included) touches its middleware priority list, silently overwriting a
+     * push made directly on the Router.
      */
     protected function registerStatefulApiMiddleware(): void
     {
@@ -201,11 +197,11 @@ class ChatServiceProvider extends PackageServiceProvider
         config(["filesystems.disks.{$disk}" => [
             'driver' => 'local',
             // Defaults nested under app/public (not app/chat) so it resolves through the
-            // standard public/storage symlink — the framework's dev-server storage.local route
-            // 403s any path outside app/public, and there's no other route in this package that
-            // serves media, so avatars/attachments would 403 on any disk root that isn't
-            // reachable that way. A host overriding chat.media.disk_root/disk_url is responsible
-            // for keeping that same guarantee (a symlink or an equivalent serving route).
+            // standard public/storage symlink — Laravel's dev-server storage.local route 403s
+            // anything outside app/public, and this package has no other route serving media, so
+            // attachments would 403 on any unreachable disk root. A host overriding
+            // chat.media.disk_root/disk_url must preserve that same guarantee (a symlink or
+            // equivalent serving route).
             'root' => $root,
             'url' => config('chat.media.disk_url', '/storage/chat'),
             'visibility' => 'public',
@@ -215,17 +211,14 @@ class ChatServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * The disk above only serves anything through the standard public/storage symlink —
-     * without it every avatar/attachment 404s until someone remembers to run
-     * `php artisan storage:link` by hand, which then has to be re-run after every fresh
-     * clone/deploy/container rebuild since the symlink itself isn't committed to git.
-     * Create it automatically on boot instead (idempotent — a no-op once it exists, and
-     * self-healing if something ever removes it again), the same way the artisan command
-     * itself does under the hood (Filesystem::link()).
+     * The disk above only serves through the standard public/storage symlink — without it every
+     * avatar/attachment 404s until someone runs `php artisan storage:link` by hand, and re-runs
+     * it after every fresh clone/deploy/container rebuild since the symlink isn't committed to
+     * git. Create it automatically on boot instead, the same way the artisan command does under
+     * the hood (Filesystem::link()) — idempotent and self-healing if the symlink is ever removed.
      *
-     * Only does this for the untouched default root — a host that customized
-     * chat.media.disk_root/disk_url already opted into managing serving themselves (per
-     * the comment above), so we don't assume their path also wants the public/storage
+     * Only for the untouched default root: a host that customized chat.media.disk_root/disk_url
+     * already opted into managing serving themselves, so we shouldn't assume they also want this
      * symlink.
      */
     protected function ensureStorageLinkExists(string $root): void

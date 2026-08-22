@@ -199,10 +199,10 @@ it('checks orphaned attachment files with one query per disk, not one per attach
     DB::flushQueryLog();
     DB::enableQueryLog();
     $this->actingAs($alice)->deleteJson("/api/chat/messages/{$messageId}")->assertNoContent();
-    // deleteOrphanedFiles() previously ran one exists() query per attachment to check whether
-    // another row still referenced its file — one grouped-by-disk lookup now covers the whole
-    // batch (all 5 share the same 'chat' disk here). Matched specifically by disk+path so this
-    // doesn't also pick up the unrelated "fetch this message's own attachments" query.
+    // deleteOrphanedFiles() used to run one exists() query per attachment to check whether
+    // another row still referenced its file — one grouped-by-disk lookup now covers the
+    // whole batch (all 5 share the 'chat' disk here). Matched by disk+path so this doesn't
+    // also pick up the unrelated "fetch this message's own attachments" query.
     $referenceChecks = collect(DB::getQueryLog())->filter(
         fn ($entry) => str_contains($entry['query'], 'chat_message_attachments')
             && str_contains($entry['query'], '"disk" =')

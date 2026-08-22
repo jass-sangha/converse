@@ -26,10 +26,10 @@ return new class extends Migration
             $table->index('type');
         });
 
-        // Same reasoning as chat_messages.body's FULLTEXT index (see that table's migration):
+        // Same reasoning as chat_messages.body's FULLTEXT index (see that migration):
         // ConversationRepository::getForUser()'s name search was a leading-wildcard
-        // `name LIKE '%term%'` scan, which can't use any index. SQLite (tests/tiny installs)
-        // has no FULLTEXT support and keeps the LIKE fallback.
+        // `LIKE '%term%'` scan that can't use an index. SQLite (tests/tiny installs) has
+        // no FULLTEXT support and keeps the LIKE fallback.
         if (in_array(DB::connection()->getDriverName(), ['mysql', 'pgsql'], true)) {
             Schema::table($conversations, function (Blueprint $table) {
                 $table->fullText('name');

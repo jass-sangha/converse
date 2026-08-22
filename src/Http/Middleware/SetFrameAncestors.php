@@ -7,10 +7,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Applied only to the full-page chat route (riwaaq.chat.page) so it can be
- * deliberately embedded in an <iframe> — nothing else in the app sets a frame
- * policy today, so without this the route's embeddability is an accident of
- * absent headers rather than a guarantee.
+ * Applied only to the full-page chat route (riwaaq.chat.page) so it can be deliberately embedded
+ * in an <iframe> — nothing else in the app sets a frame policy, so without this the route's
+ * embeddability would be an accident of absent headers rather than a guarantee.
  */
 class SetFrameAncestors
 {
@@ -26,9 +25,9 @@ class SetFrameAncestors
 
         $response->headers->set('Content-Security-Policy', "frame-ancestors {$policy}");
 
-        // X-Frame-Options only understands a single origin (or DENY/SAMEORIGIN), so it's only
-        // meaningful — and only added — for the single-origin 'self' case; a custom multi-origin
-        // policy relies on the CSP header above, which every modern browser honors.
+        // X-Frame-Options only supports a single origin (or DENY/SAMEORIGIN), so it's added only
+        // for the 'self' case; a multi-origin policy relies on the CSP header above instead,
+        // which every modern browser honors.
         if ($policy === "'self'") {
             $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         }

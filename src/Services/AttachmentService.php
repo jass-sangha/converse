@@ -115,10 +115,9 @@ class AttachmentService implements AttachmentServiceInterface
     }
 
     // Mime types are allow-listed via chat.media.mime_types — anything not explicitly
-    // categorized is rejected rather than falling back to the generic 'document' bucket.
-    // A silent fallback previously let text/html and image/svg+xml (neither is listed by
-    // default) through: both get stored on the public disk and served back at a same-origin
-    // URL, so opening the attachment link would execute attacker-controlled script as stored XSS.
+    // categorized is rejected rather than falling back to the generic 'document' bucket. A
+    // silent fallback previously let text/html and image/svg+xml through to the public disk,
+    // where opening the attachment's same-origin URL would execute them as stored XSS.
     protected function resolveCategory(string $mimeType): string
     {
         foreach (config('chat.media.mime_types', []) as $category => $mimeTypes) {

@@ -70,11 +70,11 @@ it('memoizes user-settings lookups within a request instead of one query per rec
         ])->assertCreated()->json('data.id');
     }
 
-    // Every message now has a *read* receipt from each of bob/carol/dave (5 messages x 3
-    // receipts = 15 rows), all pointing at only 3 distinct users. receiptStatus() only calls
-    // allowsReadReceipts() on a receipt's chatable once that receipt is actually read (an
-    // undelivered/unread receipt short-circuits before reaching it), so without memoization
-    // this would be up to 15 separate chat_user_settings lookups for the same 3 users.
+    // Each message now has a *read* receipt from bob/carol/dave (5 messages x 3 receipts =
+    // 15 rows) pointing at just 3 distinct users. receiptStatus() only calls
+    // allowsReadReceipts() once a receipt is actually read (undelivered/unread receipts
+    // short-circuit first), so without memoization this would be up to 15 separate
+    // chat_user_settings lookups for those same 3 users.
     foreach ([$bob, $carol, $dave] as $recipient) {
         $this->actingAs($recipient)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", [
             'up_to_message_id' => $lastId,

@@ -5,15 +5,14 @@ namespace Riwaaq\Chat\Tests\Support;
 use Riwaaq\Chat\Tests\TestCase;
 
 /**
- * Route/migration registration happens once, at provider-register time, which —
- * in this Testbench version — runs BEFORE defineEnvironment()'s config overrides
- * are applied (RegisterProviders::bootstrap() precedes the defineEnvironment()
- * call in CreatesApplication::resolveApplicationBootstrappers()). A config()
- * override set there is simply too late to affect ChatServiceProvider::
- * configurePackage(). The env() fallback IS early enough, since it's read from
- * real process environment state set here, before setUp() ever creates the app —
- * exactly the same path a host's own .env file takes in a real, unpublished-config
- * install, so this is testing the same gate a real app would actually hit.
+ * Provider registration (and the route/migration setup it triggers) runs before
+ * defineEnvironment()'s config() overrides apply in this Testbench version —
+ * RegisterProviders::bootstrap() precedes defineEnvironment() in
+ * CreatesApplication::resolveApplicationBootstrappers() — so a config() override
+ * would be too late to affect ChatServiceProvider::configurePackage(). The env()
+ * fallback used here works because it's read from real process environment state
+ * set before setUp() creates the app, the same path a host's own unpublished-config
+ * .env takes — so this exercises the same gate a real app would hit.
  */
 class UiRoutesDisabledTestCase extends TestCase
 {

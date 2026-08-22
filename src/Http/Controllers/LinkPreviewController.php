@@ -20,9 +20,9 @@ class LinkPreviewController extends Controller
         $ttl = config('chat.link_preview.cache_ttl_minutes', 1440) * 60;
         $key = 'chat:link-preview:'.md5($url);
 
-        // Only successful fetches get cached — a transient timeout or a dead site shouldn't
-        // get remembered as "no preview" for a full day; every empty-titled retry costs one
-        // more real request instead, which is the right tradeoff for something this rare.
+        // Only successful fetches get cached — a transient timeout or dead site shouldn't be
+        // remembered as "no preview" for the full TTL; retrying costs one extra request, which
+        // is an acceptable tradeoff since failures are rare.
         $preview = Cache::get($key);
 
         if ($preview === null) {

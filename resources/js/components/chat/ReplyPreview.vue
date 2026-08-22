@@ -59,7 +59,6 @@ const typeLabel = computed(() => {
 const snippet = computed(() => {
     if (props.replyTo.deleted_for_everyone) return 'This message was deleted';
     if (props.replyTo.type === 'text') return props.replyTo.body || '';
-    // Media types show their own caption when there is one, otherwise a type label.
     return props.replyTo.body?.trim() || typeLabel.value;
 });
 </script>

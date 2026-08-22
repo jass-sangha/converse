@@ -47,10 +47,10 @@ class MessageReceiptService implements MessageReceiptServiceInterface
         $alreadyRead = $participant->last_read_message_id !== null
             && $latestId <= $participant->last_read_message_id;
 
-        // A manual "mark as unread" only ever needs clearing here, not advancing further — the
-        // cursor itself may already cover everything (nothing new arrived since it was marked),
-        // which is exactly the $alreadyRead case below that would otherwise return before ever
-        // touching the participant row again.
+        // A manual "mark as unread" only needs clearing here, not advancing the cursor — the
+        // cursor may already cover everything (nothing new arrived since it was set), which is
+        // exactly the $alreadyRead case below that would otherwise return before this flag is
+        // ever touched.
         if ($participant->manually_unread_at) {
             $participant->update(['manually_unread_at' => null]);
         }

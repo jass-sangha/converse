@@ -64,12 +64,11 @@ export function useEcho() {
                 authEndpoint: (config.apiBaseUrl || '/api/chat') + '/broadcasting/auth',
             });
         } else if (driver === 'ably') {
-            // Ably has no dedicated Echo/pusher-js connector — it ships its own realtime SDK
-            // instead — but it does expose a Pusher-protocol-compatible endpoint specifically so
-            // existing Pusher/Echo integrations work unmodified: https://ably.com/docs/broadcast/laravel.
-            // These host/port/cluster values are that endpoint's fixed address, not user config,
-            // which is why only `key` comes from broadcasting.ably.key (an Ably API key) below —
-            // nothing else about this connection is configurable per-app.
+            // Ably has no dedicated Echo/pusher-js connector — it ships its own realtime SDK instead
+            // — but exposes a Pusher-protocol-compatible endpoint so existing Pusher/Echo integrations
+            // work unmodified: https://ably.com/docs/broadcast/laravel. The host/port/cluster below are
+            // that fixed endpoint's address, not user config — only `key` (an Ably API key) is
+            // actually app-specific.
             echo = new Echo({
                 broadcaster: 'pusher',
                 key: broadcasting.key,
@@ -113,13 +112,11 @@ export function useEcho() {
                         useConversations().refresh();
                     }
                 })
-                // Also broadcast here (not just on the per-conversation channel below), since
-                // this personal channel is joined once at boot regardless of which conversation
-                // (if any) is open — without it, a conversation that isn't the currently active
-                // one never updates its sidebar preview/ordering/unread badge until a reload.
-                // Skipped when it IS the active conversation: that case is already handled (message
-                // list + sidebar preview) by the per-conversation listener below, and refetching
-                // here too would just be a redundant request on every single message.
+                // Also broadcast here (not just on the per-conversation channel below): this personal
+                // channel is joined once at boot regardless of which conversation is open, so without
+                // it a background conversation's sidebar preview/order/unread badge wouldn't update
+                // until reload. Skipped for the active conversation — the per-conversation listener
+                // below already handles it, and refetching here too would be redundant on every message.
                 .listen('.message.sent', (payload) => {
                     if (payload.conversation_id !== store.activeConversationId) {
                         useConversations().refreshOne(payload.conversation_id);

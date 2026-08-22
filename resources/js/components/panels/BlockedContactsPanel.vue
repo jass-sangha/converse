@@ -76,13 +76,11 @@ async function onUnblock(row) {
     }
 }
 
-// `store.blockedKeys` is the shared source of truth `block()`/`unblock()` update from anywhere in
-// the app (chat header, group info, ...) — this panel's own `blockedRows` comes from its own
-// paginated fetch instead, so blocking/unblocking someone while this panel stays open otherwise
-// only shows up the next time it's closed and reopened. Diff old vs new keys and only add/remove
-// the ones that actually changed — rebuilding the whole list from blockedKeys on every change
-// would reorder every existing row to match that array's order instead of just the one that
-// changed (the same shuffling bug already fixed for the starred-messages panel).
+// `blockedRows` comes from this panel's own paginated fetch, not `store.blockedKeys` (the shared
+// source `block()`/`unblock()` update from anywhere), so it wouldn't reflect a block/unblock done
+// elsewhere until reopened. Diff old vs new keys and patch in place — rebuilding from
+// `blockedKeys` on every change would reorder the whole list instead of touching just the row
+// that changed (same fix already applied to the starred-messages panel).
 watch(
     () => store.blockedKeys.join(","),
     (newCsv, oldCsv) => {

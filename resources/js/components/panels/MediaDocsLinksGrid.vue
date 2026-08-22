@@ -118,14 +118,11 @@ watch(
 
 loadKind(state.tab, { reset: true });
 
-// This panel's items come from its own paginated fetch, not from the shared message store, so a
-// message arriving while the panel stays open (sent from the composer right next to it, or via
-// realtime) would otherwise only show up the next time the panel is closed and reopened. Mirror
-// new messages in directly instead. The global panel (no conversationId prop — opened from the
-// icon rail) has no single conversation of its own to watch, but the chat window next to it can
-// still be showing (and sending into) whichever conversation is currently active, so fall back
-// to that — it's also the only conversation this session ever receives realtime updates for
-// regardless of which one this panel happens to be scoped to.
+// Items come from this panel's own paginated fetch, not the shared message store, so a new
+// message (sent locally or via realtime) wouldn't show up here until the panel is reopened —
+// mirror it in directly instead. The global panel (no conversationId prop) has no single
+// conversation to watch, so it falls back to whichever one the chat window next to it is
+// currently showing — the only conversation this session gets realtime updates for anyway.
 watch(
     () => {
         const targetId = props.conversationId ?? store.activeConversationId;

@@ -271,10 +271,10 @@ export function useCall() {
         cleanup();
         phase.value = 'idle';
 
-        // Log any call that actually got underway — including one nobody answered (0 duration,
-        // 0 participants) — not just ones that connected. Anything that never left the ringing
-        // phase's own idle-vs-active tracking (declined before we even started, etc.) has nothing
-        // to log in the first place.
+        // Log any call that reached the outgoing/live phase — including one nobody answered (0
+        // duration, 0 participants) — not just ones that connected. A call that never got that far
+        // (e.g. declined while still incoming) never sets wasLive/wasOutgoing, so it's excluded
+        // automatically.
         if (!skipLog && (wasLive || wasOutgoing) && finalConversationId) {
             useMessages().send(finalConversationId, {
                 type: 'call',
@@ -336,9 +336,9 @@ export function useCall() {
                     return;
                 }
 
-                // A fellow participant announcing themselves into a call we're already in (or
-                // starting/awaiting an answer for) — offer them a dedicated connection, unless
-                // it's our own echo or we're already connected to them.
+                // A fellow participant announcing into a call we're already in (or still starting)
+                // gets its own dedicated connection, unless it's our own echo or we're already
+                // connected to them.
                 if (fromKey === useChatStore().currentKey || connections.has(fromKey)) {
                     return;
                 }
@@ -384,11 +384,10 @@ export function useCall() {
 
                 if (connections.has(fromKey)) {
                     removePeer(fromKey);
-                    // A 1:1 call has no "room" to keep sitting in once the only other person is
-                    // gone — a group call does (others may still be in it), so only auto-end here
-                    // for the former. The side that actually clicked "End" already logged the
-                    // call summary and sent us this 'leave' signal — logging again here from our
-                    // own now-empty peer list would just duplicate it.
+                    // A 1:1 call has no "room" left once the only other participant is gone — a
+                    // group call might still have others in it — so only auto-end here for 1:1.
+                    // skipLog avoids a duplicate: the side that clicked "End" already logged the
+                    // call summary before sending us this 'leave' signal.
                     if (!isGroup.value && peers.value.length === 0 && phase.value === 'live') {
                         endCall({ silent: true, skipLog: true });
                     }

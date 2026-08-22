@@ -36,8 +36,8 @@ const stagedAttachments = ref([]);
 const showPollModal = ref(false);
 const showEventModal = ref(false);
 let linkDebounce = null;
-// Keyed by URL rather than "the current one" so a submit() in flight for an earlier message
-// never shares mutable fetch state with whatever the user has typed since — see fetchLinkPreview.
+// Keyed by URL, not "the current one" — an in-flight submit() for an earlier message never
+// shares fetch state with whatever's been typed since. See fetchLinkPreview().
 const linkPreviewCache = new Map();
 
 const { opened: dropdownOpened, closed: dropdownClosed } = useExclusiveDropdown();
@@ -103,9 +103,8 @@ function detectUrl(value) {
     return value.match(/https?:\/\/\S+/)?.[0] ?? null;
 }
 
-// Cached per URL (not per composer state) so concurrent callers — the live-preview watcher
-// below and any number of in-flight submit() calls — reuse the same in-flight request for the
-// same URL without any of them mutating shared state the others depend on.
+// Cached per URL so the live-preview watcher and any in-flight submit() calls share one
+// request per URL instead of each firing their own and stepping on shared state.
 function fetchLinkPreview(url) {
     if (!linkPreviewCache.has(url)) {
         linkPreviewCache.set(
@@ -117,9 +116,8 @@ function fetchLinkPreview(url) {
     return linkPreviewCache.get(url);
 }
 
-// Drives the preview card shown live in the composer while typing. Guarded on completion
-// because the fetch can easily outlive the text that triggered it (user keeps typing, or
-// sends and starts a new message) — applying a stale result would flash the wrong preview.
+// Guarded on completion: the fetch can outlive the text that triggered it (user kept typing,
+// or already sent), so applying a stale result would flash the wrong preview.
 async function updateLivePreview(value) {
     const url = detectUrl(value);
 
@@ -213,19 +211,17 @@ async function sendStagedAttachments() {
     const staged = stagedAttachments.value;
     const replyToId = props.replyTo?.id ?? null;
 
-    // Attachments of different message types (image/video/document/audio) can't share a
-    // single message — group same-type ones together so e.g. 4 photos picked at once
-    // collapse into one message, while a photo + a document still send as two.
+    // Different attachment types (image/video/document/audio) can't share one message, so
+    // group same-type items together — 4 photos become one message, a photo + a document two.
     const groups = new Map();
     for (const item of staged) {
         if (!groups.has(item.type)) groups.set(item.type, []);
         groups.get(item.type).push(item.attachment.id);
     }
 
-    // Clear immediately, not after the sends below finish: this batch's ids are already
-    // captured in `groups` above, so leaving them staged while several sequential sends are in
-    // flight would mean any attachment/caption added meanwhile gets silently wiped out by this
-    // function's own cleanup once it finally completes.
+    // Clear now, not after the sends finish — this batch's ids are already captured in
+    // `groups`, so leaving them staged during the sequential sends would let this function's
+    // own cleanup silently wipe out any attachment/caption added in the meantime.
     stagedAttachments.value = stagedAttachments.value.filter((item) => !staged.includes(item));
     body.value = '';
     emit('dismiss-reply');
@@ -269,22 +265,20 @@ async function submit() {
     stopTyping(props.conversationId);
     clearTimeout(linkDebounce);
 
-    // Clear right away rather than after the awaits below — a slow link-preview fetch or a
-    // slow send must never hold the composer hostage. This is what lets someone type and hit
-    // send again and again back to back: each call snapshots what it needs (trimmed, url,
-    // replyToId) before this point and touches no shared state after it, so a later still-in-
-    // flight call can never stomp on whatever's since been typed into the box.
+    // Clear right away, not after the awaits below — a slow preview fetch or send must never
+    // block the composer. Each call snapshots what it needs (trimmed, url, replyToId) before
+    // this point and touches no shared state after, so rapid back-to-back sends never stomp on
+    // newer typing.
     body.value = '';
     linkPreview.value = null;
     emit('dismiss-reply');
 
-    // A send fired within the 500ms debounce window (e.g. paste-a-link-then-hit-enter) would
-    // otherwise skip the preview entirely, since the debounced fetch hadn't even started yet.
-    // Capped so a slow/dead site can't stall sending; if it doesn't resolve in time the message
-    // still sends, just without a preview, same as today. Passed to send() as a promise rather
-    // than awaited here — awaiting it before calling send() at all would delay this message's
-    // optimistic bubble (and thus its position in the list) by however long the fetch takes,
-    // so a plain-text message sent right after a link one could jump ahead of it.
+    // Fetches now instead of waiting on the debounced watcher — a send inside the 500ms window
+    // (e.g. paste a link, hit enter) would otherwise skip the preview entirely. Capped at 4s so
+    // a slow/dead site can't stall sending; past that it just sends without a preview. Passed
+    // to send() as a promise instead of awaited here — awaiting would delay this message's
+    // optimistic bubble by however long the fetch takes, letting a plain-text message sent
+    // right after jump ahead of it in the list.
     const metadataPromise = url
         ? Promise.race([
             fetchLinkPreview(url),

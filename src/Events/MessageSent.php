@@ -17,12 +17,10 @@ class MessageSent implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
-     * @param  Collection<int, Model>  $recipients  Chatables to also notify on their own personal
-     *                                              "chatable.{type}.{id}" channel — joined once at
-     *                                              app boot regardless of which conversation (if
-     *                                              any) is open, unlike the per-conversation
-     *                                              presence channel below, which only a recipient
-     *                                              actively viewing this conversation has joined.
+     * @param  Collection<int, Model>  $recipients  Chatables also notified on their personal
+     *                                              "chatable.{type}.{id}" channel, joined once at
+     *                                              app boot — unlike the per-conversation channel
+     *                                              below, which only an active viewer has joined.
      *                                              Without this, the sidebar (last message preview,
      *                                              ordering, unread badge) never updates live for a
      *                                              conversation that isn't the one currently open.

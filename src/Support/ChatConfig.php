@@ -49,20 +49,18 @@ class ChatConfig
     public const SUPPORTED_BROADCAST_DRIVERS = ['reverb', 'pusher', 'ably'];
 
     /**
-     * Resolves which broadcaster to hand the frontend, and its connection config, from the
-     * host app's own config/broadcasting.php — never anything chat-package-specific, so
-     * switching driver is purely a host-side .env change (BROADCAST_CONNECTION plus that
-     * driver's own key), with zero code or chat config changes on either end.
+     * Resolves which broadcaster (and its connection config) to hand the frontend from the host
+     * app's own config/broadcasting.php — never anything chat-specific, so switching driver is
+     * purely a host-side .env change (BROADCAST_CONNECTION plus that driver's own key).
      *
-     * config('broadcasting.default') is trusted as-is whenever it names one of
-     * SUPPORTED_BROADCAST_DRIVERS, even without a key configured yet (so a fresh
-     * `php artisan reverb:install`, which sets BROADCAST_CONNECTION=reverb before you've
-     * necessarily set REVERB_APP_KEY, doesn't get silently overridden here). Only an
-     * unrecognized/unset default (Laravel's own out-of-the-box default is 'log' or 'null',
-     * neither of which broadcasts anything real) falls through to auto-detecting whichever
-     * supported driver actually has a key set — reverb first, since it's the first-class
-     * target — so the widget still works the instant credentials for any one of them exist,
-     * with no config('chat.*') broadcasting setting required at all.
+     * config('broadcasting.default') is trusted whenever it names a SUPPORTED_BROADCAST_DRIVERS
+     * entry, even with no key set yet — so `php artisan reverb:install`, which sets
+     * BROADCAST_CONNECTION=reverb before REVERB_APP_KEY necessarily exists, isn't silently
+     * overridden. Only an unrecognized/unset default (Laravel's out-of-the-box 'log'/'null',
+     * neither of which broadcasts) falls through to auto-detecting whichever supported driver
+     * actually has a key set — reverb first, as the first-class target — so the widget works as
+     * soon as any one driver's credentials exist, with no config('chat.*') broadcasting setting
+     * required at all.
      *
      * @return array{0: string, 1: array<string, mixed>}
      */

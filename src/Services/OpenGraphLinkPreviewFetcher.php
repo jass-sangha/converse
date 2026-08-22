@@ -55,11 +55,10 @@ class OpenGraphLinkPreviewFetcher implements LinkPreviewFetcher
             }
 
             $options = [
-                // Tighter than you'd expect for a "just fetch a URL" request: the target is
-                // attacker-controlled, so a slow/hanging server can otherwise tie up a worker
-                // for a long time. Some legitimately slow sites will now come back blank instead
-                // of with a preview — an acceptable trade for not letting an arbitrary URL hold
-                // a connection open. `stream: true` + readBounded() below cap response size
+                // Tighter than you'd expect for a "just fetch a URL" request because the target
+                // is attacker-controlled: a slow/hanging server would otherwise tie up a worker
+                // indefinitely, so some legitimately slow sites will now come back blank instead
+                // of with a preview. `stream: true` + readBounded() below cap response size
                 // without buffering an attacker's response fully into memory first.
                 'allow_redirects' => false,
                 'stream' => true,

@@ -34,14 +34,12 @@ export function useMessages() {
         return data.data;
     }
 
-    // `payload.metadataPromise`, when given, is awaited *after* the optimistic push below —
-    // link previews are the only current use: fetching one can take up to a few seconds, and
-    // awaiting it before calling send() at all (as the composer used to) delayed the optimistic
-    // bubble itself, so a link message could visibly sit there doing nothing for seconds while a
-    // plain-text message sent right after it appeared instantly and out of order. Claiming this
-    // message's slot in the list synchronously, before any await, keeps every send — link or
-    // not — appearing in the order it was actually sent, regardless of how long its own preview
-    // fetch takes.
+    // `payload.metadataPromise` (link previews are the only current use) is awaited *after* the
+    // optimistic push below, not before — fetching a preview can take seconds, and the old
+    // composer behavior of awaiting it before send() ran delayed the optimistic bubble itself,
+    // letting a plain-text message sent right after appear first and out of order. Claiming this
+    // message's list slot synchronously, before any await, keeps display order matching send
+    // order regardless of preview fetch time.
     async function send(conversationId, payload) {
         const optimisticId = localIdCounter--;
         const optimistic = {
@@ -109,11 +107,10 @@ export function useMessages() {
     async function forward(messageId, conversationIds) {
         const { data } = await api.post(`/messages/${messageId}/forward`, { conversation_ids: conversationIds });
 
-        // Nothing else inserts these locally — each forwarded copy lands in a conversation this
-        // client didn't just "have open and type into" the way send() does, so without this the
-        // sender's own sidebar preview/ordering for the target conversation(s) only picks it up
-        // on the next reload, and the message itself wouldn't be there if you switch to one of
-        // those conversations without reloading either.
+        // Nothing else inserts these locally — unlike send(), a forwarded copy lands in a
+        // conversation the client didn't just type into. Without this, the sender's sidebar
+        // preview/order for the target conversation(s) only updates on reload, and the message
+        // itself wouldn't show if you switched there without reloading.
         for (const message of data.data) {
             upsertMessage(message.conversation_id, message);
             const conversation = store.conversations.find((c) => c.id === message.conversation_id);
@@ -148,10 +145,9 @@ export function useMessages() {
 
         const { data } = await api.post(`/messages/${messageId}/poll/vote`, { option_index: optionIndex });
 
-        // Responses can resolve out of order relative to requests (rapid option switching fires
-        // overlapping requests); only the response to the most recently sent request for this
-        // message is allowed to update the store, so a stale response can't clobber a newer vote
-        // and make the selected option appear to jump back.
+        // Responses can resolve out of order (rapid option switching fires overlapping requests)
+        // — only the most recently sent request's response is allowed to update the store, so a
+        // stale response can't clobber a newer vote and make the selection jump back.
         if (pollVoteRequests[messageId] !== requestId) {
             return data.data;
         }

@@ -46,11 +46,10 @@ class ConversationResource extends JsonResource
     }
 
     /**
-     * The eager-loaded `lastMessage` relation is global — it ignores per-viewer
-     * "delete for me" / "clear chat" state, so a viewer who cleared their chat would
-     * still see the old preview. Resolve it fresh per viewer instead, excluding
-     * whatever they've deleted, so a cleared chat shows an empty preview for them
-     * while the other participant's own view is unaffected.
+     * The eager-loaded `lastMessage` relation is global and ignores per-viewer "delete for me" /
+     * "clear chat" state, so a viewer who cleared their chat would still see the old preview.
+     * This resolves it fresh per viewer instead, excluding what they've deleted, so a cleared
+     * chat shows empty for them without affecting the other participant's view.
      */
     protected function resolveLastMessage(?Model $viewer): ?MessageResource
     {
@@ -79,10 +78,9 @@ class ConversationResource extends JsonResource
                 ->orWhere('chatable_id', '!=', $participant->chatable_id))
             ->count();
 
-        // A manual "mark as unread" doesn't move last_read_message_id (that field also drives
-        // read receipts shown to the sender, which this must never touch) — it just floors the
-        // count at 1 so the conversation still shows as unread even when the real cursor-based
-        // count would otherwise be 0.
+        // A manual "mark as unread" doesn't move last_read_message_id, since that field also
+        // drives the read receipts shown to the sender — it just floors the count at 1 so the
+        // conversation still shows unread even when the real cursor-based count is 0.
         if ($participant->manually_unread_at && $count === 0) {
             return 1;
         }

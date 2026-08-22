@@ -18,7 +18,6 @@ it('creates a list with conversations, lists it, and deletes it', function () {
     $index = $this->actingAs($alice)->getJson('/api/chat/lists')->assertOk();
     expect($index->json('data'))->toHaveCount(1);
 
-    // Another user's lists stay private to them.
     $bobsLists = $this->actingAs($bob)->getJson('/api/chat/lists')->assertOk();
     expect($bobsLists->json('data'))->toHaveCount(0);
 

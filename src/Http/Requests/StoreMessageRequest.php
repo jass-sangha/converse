@@ -41,11 +41,10 @@ class StoreMessageRequest extends FormRequest
             'metadata.participants' => ['present_if:type,call', 'array'],
             'metadata.participants.*.type' => ['required_with:metadata.participants.*.id', 'string'],
             'metadata.participants.*.id' => ['required_with:metadata.participants.*.type', 'integer'],
-            // The composer attaches the OG-preview it already fetched (see /link-preview) onto
-            // a plain text message's metadata. Every metadata.* key needs its own rule for
-            // validated() to keep it — an unlisted nested key like this one is silently dropped
-            // from the whole metadata array, not just that key, which is why it showed while
-            // typing but never made it past the request into the stored message.
+            // The composer attaches the OG-preview it already fetched (see /link-preview) onto a
+            // text message's metadata. Every metadata.* key needs its own rule here — an unlisted
+            // nested key is silently stripped from the whole metadata array by validated(), not
+            // just that key.
             'metadata.link_preview' => ['nullable', 'array'],
             'metadata.link_preview.url' => ['required_with:metadata.link_preview', 'string'],
             'metadata.link_preview.title' => ['nullable', 'string'],
