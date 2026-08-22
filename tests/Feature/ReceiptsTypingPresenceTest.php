@@ -283,3 +283,35 @@ it('checks conversation membership and privacy settings for a whole sweep chunk 
     expect($withFive['participants'])->toBe($withOne['participants'])
         ->and($withFive['settings'])->toBe($withOne['settings']);
 });
+
+it('bulk-seeds missing settings rows for a sweep chunk instead of falling through to one firstOrCreate per row', function () {
+    // Deliberately brand-new users with no chat_user_settings row at all — most real users
+    // never touch privacy settings, so this is the common case, not an edge case.
+    // preload()'s own SELECT finds nothing to warm the cache with for them; without a bulk
+    // insertOrIgnore() for the gap, each one would fall through individually to get()'s
+    // firstOrCreate() later in the same chunk loop, right back to one SELECT + one INSERT per
+    // row — the exact N+1 this and the previous commit were both written to eliminate.
+    $settingsQueryCountFor = function (int $staleUserCount) {
+        $rows = collect(range(1, $staleUserCount))->map(function ($i) use ($staleUserCount) {
+            $user = presenceUser("sweepnosettings-{$staleUserCount}-{$i}@example.com");
+            $other = presenceUser("sweepnosettings-other-{$staleUserCount}-{$i}@example.com");
+            privateConversationBetween($user, $other);
+
+            return ['chatable_type' => 'user', 'chatable_id' => $user->id, 'is_online' => true, 'last_seen_at' => now()->subDays(1), 'created_at' => now(), 'updated_at' => now()];
+        });
+        UserPresence::query()->insert($rows->all());
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        app(PresenceServiceInterface::class)->sweepStale();
+        $count = collect(DB::getQueryLog())->filter(fn ($e) => str_contains($e['query'], 'chat_user_settings'))->count();
+        DB::disableQueryLog();
+
+        return $count;
+    };
+
+    $withOne = $settingsQueryCountFor(1);
+    $withFive = $settingsQueryCountFor(5);
+
+    expect($withFive)->toBe($withOne);
+});

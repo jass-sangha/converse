@@ -25,11 +25,7 @@ class UserSettingsService implements UserSettingsServiceInterface
 
         return $this->cache[$key] ??= UserSetting::query()->firstOrCreate(
             ['chatable_type' => $chatable->getMorphClass(), 'chatable_id' => $chatable->getKey()],
-            [
-                'show_last_seen' => config('chat.privacy.last_seen_default', true),
-                'show_read_receipts' => config('chat.privacy.read_receipts_default', true),
-                'show_typing_indicator' => config('chat.privacy.typing_indicator_default', true),
-            ],
+            $this->defaultAttributes(),
         );
     }
 
@@ -40,14 +36,57 @@ class UserSettingsService implements UserSettingsServiceInterface
         foreach ($byType as $type => $group) {
             $ids = $group->map(fn (Model $chatable) => $chatable->getKey())->unique()->values();
 
-            UserSetting::query()
+            $existing = UserSetting::query()
                 ->where('chatable_type', $type)
                 ->whereIn('chatable_id', $ids)
                 ->get()
                 ->each(function (UserSetting $setting) {
                     $this->cache[$setting->chatable_type.':'.$setting->chatable_id] = $setting;
                 });
+
+            $missingIds = $ids->diff($existing->pluck('chatable_id'));
+
+            if ($missingIds->isEmpty()) {
+                continue;
+            }
+
+            // Bulk-seed the rest in one INSERT rather than leaving them to fall through to
+            // get()'s per-row firstOrCreate() later — most real users never touch privacy
+            // settings, so "no row yet" isn't a rare edge case, it's most of any given chunk.
+            // insertOrIgnore (not insert) because chatable_type+chatable_id is unique and a
+            // concurrent request could have created one of these rows since the SELECT above.
+            $now = now();
+            $defaults = $this->defaultAttributes();
+
+            UserSetting::query()->insertOrIgnore(
+                $missingIds->map(fn ($id) => array_merge($defaults, [
+                    'chatable_type' => $type,
+                    'chatable_id' => $id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]))->all()
+            );
+
+            UserSetting::query()
+                ->where('chatable_type', $type)
+                ->whereIn('chatable_id', $missingIds)
+                ->get()
+                ->each(function (UserSetting $setting) {
+                    $this->cache[$setting->chatable_type.':'.$setting->chatable_id] = $setting;
+                });
         }
+    }
+
+    /**
+     * @return array{show_last_seen: bool, show_read_receipts: bool, show_typing_indicator: bool}
+     */
+    protected function defaultAttributes(): array
+    {
+        return [
+            'show_last_seen' => config('chat.privacy.last_seen_default', true),
+            'show_read_receipts' => config('chat.privacy.read_receipts_default', true),
+            'show_typing_indicator' => config('chat.privacy.typing_indicator_default', true),
+        ];
     }
 
     public function update(Model $chatable, array $data): UserSetting
