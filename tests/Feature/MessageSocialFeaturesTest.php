@@ -126,6 +126,22 @@ it('edits a message body within the edit window', function () {
         ->assertForbidden();
 });
 
+it('rejects an edited body longer than the configured max length', function () {
+    config(['chat.message.max_body_length' => 20]);
+
+    $alice = socialUser('alice-edit-maxlen@example.com');
+    $bob = socialUser('bob-edit-maxlen@example.com');
+    $conversationId = privateConversationBetween($alice, $bob);
+
+    $messageId = $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'oops'])
+        ->json('data.id');
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/messages/{$messageId}", ['body' => str_repeat('x', 21)])
+        ->assertInvalid(['body']);
+});
+
 it('records each previous body in edit history, visible to any participant', function () {
     $alice = socialUser('alice-edit-history@example.com');
     $bob = socialUser('bob-edit-history@example.com');

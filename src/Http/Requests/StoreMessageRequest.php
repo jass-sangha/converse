@@ -16,7 +16,7 @@ class StoreMessageRequest extends FormRequest
     {
         return [
             'type' => ['sometimes', Rule::in(['text', 'image', 'video', 'audio', 'voice', 'document', 'location', 'contact', 'gif', 'sticker', 'poll', 'event', 'call'])],
-            'body' => ['required_if:type,text', 'nullable', 'string'],
+            'body' => ['required_if:type,text', 'nullable', 'string', 'max:'.config('chat.message.max_body_length', 4096)],
             'reply_to_message_id' => ['nullable', 'integer'],
             'metadata' => ['nullable', 'array'],
             'metadata.lat' => ['required_if:type,location', 'numeric', 'between:-90,90'],

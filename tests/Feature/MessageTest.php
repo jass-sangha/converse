@@ -74,3 +74,22 @@ it('does not limit message history by age', function () {
         ->toContain($recentId)
         ->toContain($oldId);
 });
+
+it('rejects a message body longer than the configured max length', function () {
+    config(['chat.message.max_body_length' => 20]);
+
+    $alice = User::query()->create(['name' => 'Alice', 'email' => 'alice-maxlen@example.com', 'password' => bcrypt('secret')]);
+    $bob = User::query()->create(['name' => 'Bob', 'email' => 'bob-maxlen@example.com', 'password' => bcrypt('secret')]);
+
+    $conversationId = createPrivateConversation($alice, $bob);
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => str_repeat('x', 21),
+    ])->assertInvalid(['body']);
+
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => str_repeat('x', 20),
+    ])->assertCreated();
+});

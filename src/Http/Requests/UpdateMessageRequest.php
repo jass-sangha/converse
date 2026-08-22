@@ -14,7 +14,7 @@ class UpdateMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'body' => ['required', 'string'],
+            'body' => ['required', 'string', 'max:'.config('chat.message.max_body_length', 4096)],
         ];
     }
 }

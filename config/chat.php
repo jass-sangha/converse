@@ -72,7 +72,10 @@ return [
     'register_routes' => env('CHAT_REGISTER_ROUTES', true),
     'run_migrations' => env('CHAT_RUN_MIGRATIONS', true),
     'route_prefix' => 'api/chat',
-    'middleware' => ['api', 'auth:sanctum'],
+    // General ceiling for every route in this group (messages, typing, presence heartbeat,
+    // attachments, etc.) — none of them had any rate limit before this, unlike link-preview's
+    // own tighter throttle:10,1. A host can override this array to change or drop it.
+    'middleware' => ['api', 'auth:sanctum', 'throttle:120,1'],
 
     /*
     |--------------------------------------------------------------------------
@@ -229,6 +232,10 @@ return [
     'message' => [
         'edit_window_minutes' => 15,
         'delete_for_everyone_window_minutes' => 5,
+        // Bounds body length on both send and edit. chat_messages.body is a TEXT column
+        // (~64KB) with no other cap, so without this an authenticated participant could send
+        // arbitrarily large bodies, each broadcast in real time to every other participant.
+        'max_body_length' => 4096,
     ],
 
     /*
