@@ -2,10 +2,13 @@
 
 namespace Riwaaq\Chat\Http\Controllers;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Contracts\ConversationServiceInterface;
+use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
 use Riwaaq\Chat\Http\Requests\MuteConversationRequest;
 use Riwaaq\Chat\Http\Requests\StoreConversationRequest;
 use Riwaaq\Chat\Http\Requests\UpdateConversationRequest;
@@ -17,6 +20,7 @@ class ConversationController extends Controller
 {
     public function __construct(
         protected ConversationServiceInterface $conversations,
+        protected UserSettingsServiceInterface $settings,
     ) {}
 
     public function index(Request $request)
@@ -38,7 +42,27 @@ class ConversationController extends Controller
             $filters,
         );
 
+        $this->preloadReceiptSettings($conversations, $request->user());
+
         return ConversationResource::collection($conversations);
+    }
+
+    // Same pattern as MessageController::preloadReceiptSettings(): each conversation's
+    // eager-loaded lastMessage.receipts.chatable (see ConversationRepository::lastMessagesFor())
+    // drives MessageResource::receiptStatus() during serialization, which otherwise resolves
+    // one settings row at a time via UserSettingsService — unbatched, on the endpoint every app
+    // load hits first.
+    protected function preloadReceiptSettings(Collection $conversations, ?Model $viewer): void
+    {
+        $chatables = $conversations
+            ->pluck('lastMessage.receipts')
+            ->filter()
+            ->flatten()
+            ->pluck('chatable')
+            ->push($viewer)
+            ->filter();
+
+        $this->settings->preload($chatables);
     }
 
     public function store(StoreConversationRequest $request)

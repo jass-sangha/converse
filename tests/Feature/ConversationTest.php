@@ -82,6 +82,51 @@ it('resolves last_message and unread_count for the conversation list without one
     expect($withEight)->toBe($withOne);
 });
 
+it('batches receipt-settings lookups across the conversation list instead of one per distinct participant', function () {
+    // Viewer sends the last message in every conversation, and each conversation's distinct
+    // *other* participant marks it read — so receiptStatus()'s countsAsRead() actually reaches
+    // settings->allowsReadReceipts($receipt->chatable) per conversation instead of
+    // short-circuiting on read_at === null. That's the shape the previous test's "same viewer
+    // every time, nothing ever marked read" setup never exercised, since a lookup for the
+    // viewer alone stays memoized by the container-scoped service regardless of whether
+    // ConversationController preloads anything.
+    $settingsQueriesFor = function (int $conversationCount) {
+        $viewer = chatUser();
+
+        for ($i = 0; $i < $conversationCount; $i++) {
+            $other = chatUser();
+            $conversationId = $this->actingAs($viewer)->postJson('/api/chat/conversations', [
+                'type' => 'private',
+                'participants' => [chatableRef($other)],
+            ])->json('data.id');
+
+            $messageId = $this->actingAs($viewer)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+                'type' => 'text',
+                'body' => 'hey',
+            ])->assertCreated()->json('data.id');
+
+            $this->actingAs($other)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", [
+                'up_to_message_id' => $messageId,
+            ])->assertNoContent();
+        }
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $this->actingAs($viewer)->getJson('/api/chat/conversations')->assertOk()->assertJsonCount($conversationCount, 'data');
+        $count = collect(DB::getQueryLog())->filter(
+            fn ($entry) => str_contains($entry['query'], 'chat_user_settings') && str_starts_with(strtolower($entry['query']), 'select')
+        )->count();
+        DB::disableQueryLog();
+
+        return $count;
+    };
+
+    $withOne = $settingsQueriesFor(1);
+    $withEight = $settingsQueriesFor(8);
+
+    expect($withEight)->toBe($withOne);
+});
+
 it('rejects a conversation create request with more than 200 participants', function () {
     $alice = chatUser();
 
