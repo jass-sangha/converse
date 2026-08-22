@@ -5,6 +5,7 @@ namespace Riwaaq\Chat\Services;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Riwaaq\Chat\Contracts\AttachmentServiceInterface;
 use Riwaaq\Chat\Contracts\MediaProcessor;
@@ -58,19 +59,24 @@ class AttachmentService implements AttachmentServiceInterface
 
     public function attachToMessage(array $attachmentIds, Message $message, Model $chatable): void
     {
-        $attachments = MessageAttachment::query()->whereIn('id', array_unique($attachmentIds))->get();
+        DB::transaction(function () use ($attachmentIds, $message, $chatable) {
+            $attachments = MessageAttachment::query()
+                ->whereIn('id', array_unique($attachmentIds))
+                ->lockForUpdate()
+                ->get();
 
-        foreach ($attachments as $attachment) {
-            $uploadedByChatable = $attachment->uploader_type === $chatable->getMorphClass()
-                && $attachment->uploader_id === $chatable->getKey();
+            foreach ($attachments as $attachment) {
+                $uploadedByChatable = $attachment->uploader_type === $chatable->getMorphClass()
+                    && $attachment->uploader_id === $chatable->getKey();
 
-            abort_if(! $uploadedByChatable, 403);
-            abort_if($attachment->message_id !== null, 422, 'Attachment already attached to a message.');
-        }
+                abort_if(! $uploadedByChatable, 403);
+                abort_if($attachment->message_id !== null, 422, 'Attachment already attached to a message.');
+            }
 
-        MessageAttachment::query()
-            ->whereIn('id', $attachments->pluck('id'))
-            ->update(['message_id' => $message->id]);
+            MessageAttachment::query()
+                ->whereIn('id', $attachments->pluck('id'))
+                ->update(['message_id' => $message->id]);
+        });
     }
 
     /**

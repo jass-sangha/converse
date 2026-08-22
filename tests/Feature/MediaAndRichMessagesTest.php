@@ -41,6 +41,12 @@ it('uploads an attachment and sends it as an image message', function () {
         'type' => 'image',
         'attachment_ids' => [$attachmentId],
     ])->assertStatus(403);
+
+    // Alice herself cannot reattach the same file to a second message either.
+    $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'image',
+        'attachment_ids' => [$attachmentId],
+    ])->assertStatus(422);
 });
 
 it('forwards a media message with its attachment intact', function () {
