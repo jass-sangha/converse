@@ -85,22 +85,33 @@ class ChatServiceProvider extends PackageServiceProvider
         EventRsvpServiceInterface::class => EventRsvpService::class,
     ];
 
-    /**
-     * Singleton, not a plain binding: UserSettingsService::get() memoizes per chatable for the
-     * instance's lifetime (see its docblock), so MessageResource doesn't re-query the same row
-     * for every receipt on a single message list response. That only works if every resolution
-     * point — constructor-injected (ProfileController, PresenceService, TypingController) and
-     * ad-hoc app()-resolved (MessageResource, ChatUserResource) — shares one instance per
-     * request; a plain bind() would hand each of those a fresh, empty cache.
-     */
-    public array $singletons = [
-        UserSettingsServiceInterface::class => UserSettingsService::class,
-    ];
-
     protected array $policies = [
         Conversation::class => ConversationPolicy::class,
         Message::class => MessagePolicy::class,
     ];
+
+    /**
+     * UserSettingsService::get() memoizes per chatable for the instance's lifetime (see its
+     * docblock), so MessageResource doesn't re-query the same row for every receipt on a single
+     * message list response. That only works if every resolution point — constructor-injected
+     * (ProfileController, PresenceService, TypingController) and ad-hoc app()-resolved
+     * (MessageResource, ChatUserResource) — shares one instance per request; a plain bind()
+     * would hand each of those a fresh, empty cache.
+     *
+     * scoped(), not singleton(): singleton() ties the instance to the container's lifetime, not
+     * the request's — those only coincide under classic PHP-FPM. Under Octane or a persistent
+     * queue worker (this package ships a ShouldQueue notification), a plain singleton() would
+     * keep serving one process's first-resolved cache of every chatable's settings forever,
+     * growing unbounded and going stale the moment settings change anywhere else. scoped() gives
+     * the same one-instance-per-resolution-chain memoization but is flushed automatically
+     * between Octane requests and after every queue job.
+     */
+    public function register(): void
+    {
+        parent::register();
+
+        $this->app->scoped(UserSettingsServiceInterface::class, UserSettingsService::class);
+    }
 
     public function configurePackage(Package $package): void
     {
