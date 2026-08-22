@@ -4,6 +4,7 @@ import Avatar from '../shared/Avatar.vue';
 import Modal from '../shared/Modal.vue';
 import Icon from '../shared/Icon.vue';
 import { useUsers } from '../../composables/useUsers';
+import { useMessages } from '../../composables/useMessages';
 import { useChatStore } from '../../store';
 import { chatableKey } from '../../chatable';
 
@@ -15,10 +16,15 @@ const emit = defineEmits(['close']);
 
 const store = useChatStore();
 const { resolve, get } = useUsers();
+const { receipts } = useMessages();
 
 const loading = ref(true);
 
-const details = computed(() => props.message.receipt_details ?? []);
+// Fetched on demand (GET /messages/{id}/receipts) rather than read off props.message —
+// per-receipt delivered_at/read_at detail is no longer included in the timeline response
+// itself, since this modal was its only consumer but every page load was paying to compute
+// and ship it for every message regardless of whether anyone ever opened "message info".
+const details = ref([]);
 const readRows = computed(() => details.value
     .filter((d) => d.read_at)
     .sort((a, b) => new Date(b.read_at) - new Date(a.read_at)));
@@ -35,6 +41,10 @@ const isCall = computed(() => props.message.type === 'call');
 const callParticipants = computed(() => props.message.metadata?.participants ?? []);
 
 onMounted(async () => {
+    if (!isCall.value) {
+        details.value = await receipts(props.message.id);
+    }
+
     const refs = isCall.value
         ? callParticipants.value.map((p) => ({ type: p.type, id: p.id }))
         : details.value.map((d) => ({ type: d.chatable_type, id: d.chatable_id }));

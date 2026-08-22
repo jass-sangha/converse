@@ -91,6 +91,11 @@ export function useMessages() {
         return data.data;
     }
 
+    async function receipts(messageId) {
+        const { data } = await api.get(`/messages/${messageId}/receipts`);
+        return data.data;
+    }
+
     async function deleteForEveryone(messageId, conversationId) {
         await api.delete(`/messages/${messageId}`);
         const existing = (store.messagesByConversation[conversationId] ?? []).find((m) => m.id === messageId);
@@ -221,6 +226,7 @@ export function useMessages() {
         send,
         update,
         editHistory,
+        receipts,
         deleteForEveryone,
         deleteForMe,
         forward,

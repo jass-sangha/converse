@@ -48,4 +48,12 @@ interface ParticipantRepositoryInterface
     public function clearHiddenForOthers(int $conversationId, Model $except): void;
 
     public function adminCount(int $conversationId): int;
+
+    public function activeCount(int $conversationId): int;
+
+    /**
+     * Whether $a and $b are both currently active participants of at least one common
+     * conversation.
+     */
+    public function shareActiveConversation(Model $a, Model $b): bool;
 }

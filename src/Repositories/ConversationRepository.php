@@ -3,6 +3,7 @@
 namespace Riwaaq\Chat\Repositories;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Riwaaq\Chat\Chat;
@@ -19,7 +20,7 @@ class ConversationRepository implements ConversationRepositoryInterface
         protected ParticipantRepositoryInterface $participants,
     ) {}
 
-    public function getForUser(Model $chatable, array $filters = []): Collection
+    public function getForUser(Model $chatable, array $filters = [], int $perPage = 30): Paginator
     {
         $participantTable = (new ConversationParticipant)->getTable();
         $conversationTable = (new Conversation)->getTable();
@@ -90,7 +91,7 @@ class ConversationRepository implements ConversationRepositoryInterface
             ->orderByRaw('my_participation.pinned_at IS NULL')
             ->orderByDesc('my_participation.pinned_at')
             ->orderByDesc("{$conversationTable}.last_activity_at")
-            ->get();
+            ->simplePaginate($perPage);
     }
 
     public function lastMessagesFor(array $conversationIds, Model $viewer): array

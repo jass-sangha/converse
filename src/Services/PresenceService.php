@@ -52,9 +52,18 @@ class PresenceService implements PresenceServiceInterface
 
         $viewerIsSelf = $viewer !== null && Chat::identify($viewer) === Chat::identify($chatable);
 
+        // Privacy settings alone used to be the only gate here, which let any authenticated user
+        // look up any other chatable's presence by id/type — an enumeration and stalking vector
+        // unrelated to the two ever having interacted. Mirrors this app's WhatsApp-style model
+        // elsewhere (mute/pin/archive scoped per-participant): last-seen is only ever shared
+        // with someone you actually share a conversation with, not globally.
         $sharingAllowed = $viewer === null
             || $viewerIsSelf
-            || ($this->settings->allowsLastSeen($chatable) && $this->settings->allowsLastSeen($viewer));
+            || (
+                $this->settings->allowsLastSeen($chatable)
+                && $this->settings->allowsLastSeen($viewer)
+                && $this->participants->shareActiveConversation($viewer, $chatable)
+            );
 
         if (! $sharingAllowed) {
             return [

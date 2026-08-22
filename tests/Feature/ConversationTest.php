@@ -127,6 +127,43 @@ it('batches receipt-settings lookups across the conversation list instead of one
     expect($withEight)->toBe($withOne);
 });
 
+it('paginates the conversation list instead of returning every conversation at once', function () {
+    // ConversationRepository::getForUser() used to end in a plain get() — chat.pagination.
+    // conversations_per_page existed in config but nothing actually consulted it, so a user
+    // with thousands of conversations paid for all of them (eager loads, the unread-count CASE
+    // built across every one) on every single sidebar load. simplePaginate() bounds that per
+    // request, and useConversations.js's loadMore() fetches subsequent pages on demand.
+    config(['chat.pagination.conversations_per_page' => 3]);
+
+    $alice = chatUser();
+
+    foreach (range(1, 5) as $i) {
+        $other = chatUser();
+        $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+            'type' => 'private',
+            'participants' => [chatableRef($other)],
+        ])->json('data.id');
+
+        $this->actingAs($other)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+            'type' => 'text',
+            'body' => "hey {$i}",
+        ])->assertCreated();
+    }
+
+    $first = $this->actingAs($alice)->getJson('/api/chat/conversations')->assertOk();
+    expect($first->json('data'))->toHaveCount(3)
+        ->and($first->json('links.next'))->not->toBeNull();
+
+    $second = $this->actingAs($alice)->getJson('/api/chat/conversations?page=2')->assertOk();
+    expect($second->json('data'))->toHaveCount(2)
+        ->and($second->json('links.next'))->toBeNull();
+
+    // No overlap between pages.
+    $firstIds = collect($first->json('data'))->pluck('id');
+    $secondIds = collect($second->json('data'))->pluck('id');
+    expect($firstIds->intersect($secondIds))->toBeEmpty();
+});
+
 it('rejects a conversation create request with more than 200 participants', function () {
     $alice = chatUser();
 

@@ -4,6 +4,7 @@ namespace Riwaaq\Chat\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
@@ -20,6 +21,14 @@ class ParticipantService implements ParticipantServiceInterface
 {
     use SendsSystemMessages;
 
+    // StoreConversationRequest/AddParticipantsRequest cap a single request's participants array
+    // at this same number, but that only bounds one call — nothing stopped repeated
+    // add-participants calls from pushing a conversation's *total* membership past it, silently
+    // reintroducing the receipt/broadcast fan-out cost (one MessageReceipt row and one
+    // receipts.chatable eager load per participant per message) the cap exists to bound. This
+    // is the actual enforcement point; the request rules are just an early, cheap rejection.
+    public const MAX_PARTICIPANTS_PER_CONVERSATION = 200;
+
     public function __construct(
         protected ParticipantRepositoryInterface $participants,
     ) {}
@@ -28,17 +37,32 @@ class ParticipantService implements ParticipantServiceInterface
     {
         $chatables = $chatables->unique(fn (Model $chatable) => Chat::identify($chatable))->values();
 
-        $this->participants->addMany($conversation->id, $chatables);
+        return DB::transaction(function () use ($conversation, $chatables, $actor) {
+            // Locks the conversation row so two concurrent add-participants calls on the same
+            // conversation serialize instead of both reading the same pre-add active count and
+            // both landing under the cap.
+            Conversation::query()->whereKey($conversation->id)->lockForUpdate()->first();
 
-        $message = $this->sendSystemMessage($conversation, 'participant_added', [
-            'actor_type' => $actor->getMorphClass(),
-            'actor_id' => $actor->getKey(),
-            'targets' => $chatables->map(fn (Model $c) => ['type' => $c->getMorphClass(), 'id' => $c->getKey()])->values()->all(),
-        ]);
+            $activeCount = $this->participants->activeCount($conversation->id);
 
-        broadcast(new ParticipantAdded($conversation->id, $chatables, $actor))->toOthers();
+            abort_if(
+                $activeCount + $chatables->count() > self::MAX_PARTICIPANTS_PER_CONVERSATION,
+                422,
+                'A conversation cannot have more than '.self::MAX_PARTICIPANTS_PER_CONVERSATION.' participants.'
+            );
 
-        return $message;
+            $this->participants->addMany($conversation->id, $chatables);
+
+            $message = $this->sendSystemMessage($conversation, 'participant_added', [
+                'actor_type' => $actor->getMorphClass(),
+                'actor_id' => $actor->getKey(),
+                'targets' => $chatables->map(fn (Model $c) => ['type' => $c->getMorphClass(), 'id' => $c->getKey()])->values()->all(),
+            ]);
+
+            broadcast(new ParticipantAdded($conversation->id, $chatables, $actor))->toOthers();
+
+            return $message;
+        });
     }
 
     public function removeParticipant(Conversation $conversation, Model $target, Model $actor): Message

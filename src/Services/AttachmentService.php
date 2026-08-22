@@ -26,29 +26,50 @@ class AttachmentService implements AttachmentServiceInterface
         $maxKilobytes = config("chat.media.max_sizes.{$category}");
         abort_if($maxKilobytes && $file->getSize() > $maxKilobytes * 1024, 422, 'File is too large.');
 
-        $quotaMegabytes = config('chat.media.max_storage_per_user_mb');
-
-        if ($quotaMegabytes !== null) {
-            $usedBytes = MessageAttachment::query()
-                ->where('uploader_type', $chatable->getMorphClass())
-                ->where('uploader_id', $chatable->getKey())
-                ->sum('size_bytes');
-
-            abort_if($usedBytes + $file->getSize() > $quotaMegabytes * 1024 * 1024, 422, 'Storage quota exceeded.');
-        }
-
         $disk = config('chat.media.disk', 'chat');
+        // Stored before the quota check/row is locked, not after: the check-then-insert below
+        // needs to hold a row lock for as short a time as possible, and disk I/O (especially a
+        // remote disk) is the slow part of this whole method — better to pay that cost outside
+        // the lock and roll back the file on the rare rejection than hold the lock through it.
         $path = $file->store("attachments/{$category}", $disk);
 
-        $attachment = MessageAttachment::query()->create([
-            'uploader_type' => $chatable->getMorphClass(),
-            'uploader_id' => $chatable->getKey(),
-            'disk' => $disk,
-            'path' => $path,
-            'original_filename' => $file->getClientOriginalName(),
-            'mime_type' => $mimeType,
-            'size_bytes' => $file->getSize(),
-        ]);
+        try {
+            $attachment = DB::transaction(function () use ($chatable, $file, $mimeType, $disk, $path) {
+                $quotaMegabytes = config('chat.media.max_storage_per_user_mb');
+
+                if ($quotaMegabytes !== null) {
+                    // Locks the uploader's own row so two concurrent uploads from the same
+                    // chatable serialize on the quota check instead of each reading the same
+                    // pre-upload usedBytes and both landing under the limit — the same race
+                    // shape as PinnedMessageService's cap, closed the same way.
+                    $chatable::query()->whereKey($chatable->getKey())->lockForUpdate()->first();
+
+                    $usedBytes = MessageAttachment::query()
+                        ->where('uploader_type', $chatable->getMorphClass())
+                        ->where('uploader_id', $chatable->getKey())
+                        ->sum('size_bytes');
+
+                    abort_if($usedBytes + $file->getSize() > $quotaMegabytes * 1024 * 1024, 422, 'Storage quota exceeded.');
+                }
+
+                return MessageAttachment::query()->create([
+                    'uploader_type' => $chatable->getMorphClass(),
+                    'uploader_id' => $chatable->getKey(),
+                    'disk' => $disk,
+                    'path' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'mime_type' => $mimeType,
+                    'size_bytes' => $file->getSize(),
+                ]);
+            });
+        } catch (\Throwable $e) {
+            // No MessageAttachment row was ever created for this path, so nothing else could
+            // reference it yet — a direct delete is safe, unlike deleteOrphanedFiles()'s
+            // still-referenced check which exists for exactly the case this isn't.
+            Storage::disk($disk)->delete($path);
+
+            throw $e;
+        }
 
         if ($this->mediaProcessor->supports($mimeType)) {
             $attachment->update($this->mediaProcessor->process($attachment));

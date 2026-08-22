@@ -14,7 +14,13 @@ class CallController extends Controller
         Gate::authorize('view', $conversation);
 
         $data = $request->validate([
-            'payload' => ['required', 'array'],
+            'payload' => ['required', 'array', function ($attribute, $value, $fail) {
+                $maxBytes = config('chat.calls.max_payload_bytes', 65536);
+
+                if (strlen(json_encode($value)) > $maxBytes) {
+                    $fail("The {$attribute} must not exceed {$maxBytes} bytes when serialized.");
+                }
+            }],
             'to_type' => ['nullable', 'string'],
             'to_id' => ['nullable', 'integer'],
         ]);

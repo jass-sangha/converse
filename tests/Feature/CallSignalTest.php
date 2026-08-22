@@ -88,3 +88,29 @@ it('refuses to relay a call signal for a non-participant', function () {
         ])
         ->assertForbidden();
 });
+
+it('rejects a call signal payload larger than the configured byte limit', function () {
+    // A real SDP offer/answer or ICE candidate is a few KB at most — nothing previously bounded
+    // 'payload' beyond "must be an array", so an arbitrarily large nested structure would get
+    // broadcast to another participant's channel on every call.
+    $alice = callSignalUser('alice-call-3@example.com');
+    $bob = callSignalUser('bob-call-3@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $oversized = ['sdp' => str_repeat('x', config('chat.calls.max_payload_bytes', 65536) + 1)];
+
+    $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/call/signal", ['payload' => $oversized])
+        ->assertInvalid(['payload']);
+
+    // A payload right at the limit still goes through.
+    $atLimit = ['sdp' => str_repeat('x', config('chat.calls.max_payload_bytes', 65536) - 20)];
+
+    $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/call/signal", ['payload' => $atLimit])
+        ->assertNoContent();
+});

@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Riwaaq\Chat\Tests\Fixtures\User;
 
 function searchUser(string $name, string $email): User
@@ -47,4 +48,22 @@ it('caps per_page within the allowed range', function () {
     $alice = searchUser('Alice Cap', 'alice-cap@example.com');
 
     $this->actingAs($alice)->getJson('/api/chat/users?per_page=999')->assertUnprocessable();
+});
+
+it('returns an empty page for a query under the configured minimum length instead of scanning', function () {
+    $alice = searchUser('Alice Min', 'alice-min@example.com');
+    searchUser('Andy Min', 'andy-min@example.com');
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    $results = $this->actingAs($alice)->getJson('/api/chat/users?q=A')->assertOk();
+    $userQueries = collect(DB::getQueryLog())->filter(fn ($e) => str_contains($e['query'], 'from "users"'));
+    DB::disableQueryLog();
+
+    expect($results->json('data'))->toBe([])
+        ->and($userQueries)->toBeEmpty();
+
+    // A blank/omitted q is a different case (browse-all) and must still return results.
+    $browseAll = $this->actingAs($alice)->getJson('/api/chat/users')->assertOk();
+    expect(collect($browseAll->json('data'))->pluck('name'))->toContain('Andy Min');
 });

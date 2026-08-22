@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Contracts\MessageRepositoryInterface;
@@ -148,22 +149,25 @@ class MessageRepository implements MessageRepositoryInterface
 
     public function clearForChatable(Conversation $conversation, Model $chatable): void
     {
-        $ids = Message::query()
+        // chunkById(200), not pluck() over the whole conversation then map() into an
+        // equally-sized array of upsert rows: a conversation with hundreds of thousands of
+        // messages would otherwise hold every id, then every row, in memory at once before a
+        // single query runs. Advancing by id never re-processes or skips a row here — each
+        // chunk's own upsert gives its messages a deletion row for this chatable, which is
+        // exactly what whereDoesntHave('deletions', ...) already excludes them on, so the next
+        // chunk's query naturally never sees them again.
+        Message::query()
             ->where('conversation_id', $conversation->id)
             ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
-            ->pluck('id');
+            ->chunkById(200, function (Collection $messages) use ($chatable) {
+                $rows = $messages->map(fn (Message $message) => [
+                    'message_id' => $message->id,
+                    'chatable_type' => $chatable->getMorphClass(),
+                    'chatable_id' => $chatable->getKey(),
+                    'deleted_at' => now(),
+                ])->all();
 
-        if ($ids->isEmpty()) {
-            return;
-        }
-
-        $rows = $ids->map(fn (int $id) => [
-            'message_id' => $id,
-            'chatable_type' => $chatable->getMorphClass(),
-            'chatable_id' => $chatable->getKey(),
-            'deleted_at' => now(),
-        ])->all();
-
-        MessageDeletion::query()->upsert($rows, ['message_id', 'chatable_type', 'chatable_id'], ['deleted_at']);
+                MessageDeletion::query()->upsert($rows, ['message_id', 'chatable_type', 'chatable_id'], ['deleted_at']);
+            });
     }
 }

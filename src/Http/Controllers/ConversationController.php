@@ -4,7 +4,7 @@ namespace Riwaaq\Chat\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Contracts\ConversationServiceInterface;
@@ -37,9 +37,12 @@ class ConversationController extends Controller
             $filters['q'] = $request->string('q')->toString();
         }
 
+        $perPage = (int) config('chat.pagination.conversations_per_page', 30);
+
         $conversations = $this->conversations->listForUser(
             $request->user(),
             $filters,
+            $perPage,
         );
 
         $this->preloadReceiptSettings($conversations, $request->user());
@@ -52,7 +55,7 @@ class ConversationController extends Controller
     // drives MessageResource::receiptStatus() during serialization, which otherwise resolves
     // one settings row at a time via UserSettingsService — unbatched, on the endpoint every app
     // load hits first.
-    protected function preloadReceiptSettings(Collection $conversations, ?Model $viewer): void
+    protected function preloadReceiptSettings(Paginator $conversations, ?Model $viewer): void
     {
         $chatables = $conversations
             ->pluck('lastMessage.receipts')

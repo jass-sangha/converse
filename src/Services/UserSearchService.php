@@ -15,6 +15,14 @@ class UserSearchService implements UserSearchServiceInterface
         $model = Chat::modelForAlias($type);
         $nameField = Chat::nameFieldFor($type);
 
+        // A query under the configured minimum is short enough (e.g. a single keystroke) that
+        // the 'contains' strategy's leading-wildcard LIKE would scan a large fraction of the
+        // table for very little signal — return an empty page rather than run it. Distinct from
+        // an *absent* q (browse-all), which is intentionally unfiltered.
+        if ($q !== null && mb_strlen($q) < (int) config('chat.user_search.min_length', 2)) {
+            return new LengthAwarePaginator([], 0, $perPage);
+        }
+
         $query = $model::query();
 
         if ($model === $exclude::class) {

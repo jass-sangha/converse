@@ -4,6 +4,18 @@ use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Tests\Fixtures\Agent;
 use Riwaaq\Chat\Tests\Fixtures\User;
 
+it('caps matchingChatablePairs() at chat.user_search.max_matching_ids instead of pulling every match', function () {
+    config(['chat.user_search.max_matching_ids' => 5]);
+
+    foreach (range(1, 10) as $i) {
+        User::query()->create(['name' => "Capped Match {$i}", 'email' => "capped-match-{$i}@example.com", 'password' => bcrypt('secret')]);
+    }
+
+    $pairs = Chat::matchingChatablePairs('Capped Match');
+
+    expect($pairs)->toHaveCount(5);
+});
+
 it('resolves the per-alias name_field for an array-shaped chatable_models entry', function () {
     // TestCase::defineEnvironment() already configures 'agent' with an explicit
     // name_field of 'full_name' (array shape) alongside 'user' (plain-string shape).

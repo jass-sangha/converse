@@ -135,4 +135,24 @@ class ParticipantRepository implements ParticipantRepositoryInterface
             ->where('role', ParticipantRole::Admin->value)
             ->count();
     }
+
+    public function activeCount(int $conversationId): int
+    {
+        return ConversationParticipant::query()
+            ->where('conversation_id', $conversationId)
+            ->whereNull('left_at')
+            ->count();
+    }
+
+    public function shareActiveConversation(Model $a, Model $b): bool
+    {
+        $bConversationIds = Chat::whereChatable(ConversationParticipant::query(), $b)
+            ->whereNull('left_at')
+            ->select('conversation_id');
+
+        return Chat::whereChatable(ConversationParticipant::query(), $a)
+            ->whereNull('left_at')
+            ->whereIn('conversation_id', $bConversationIds)
+            ->exists();
+    }
 }

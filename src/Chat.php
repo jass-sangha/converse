@@ -138,14 +138,20 @@ class Chat
     public static function matchingChatablePairs(string $term): array
     {
         $pairs = [];
+        $limit = (int) config('chat.user_search.max_matching_ids', 500);
 
         foreach (array_keys(static::chatableModels()) as $morphType) {
+            if (count($pairs) >= $limit) {
+                break;
+            }
+
             $model = static::modelForAlias($morphType);
             $instance = new $model;
             $nameField = static::nameFieldFor($morphType);
 
             $model::query()
                 ->where($nameField, 'like', static::nameSearchPattern($term))
+                ->limit($limit - count($pairs))
                 ->pluck($instance->getKeyName())
                 ->each(function ($id) use ($morphType, &$pairs) {
                     $pairs[] = [$morphType, $id];

@@ -41,7 +41,9 @@ class MessageService implements MessageServiceInterface
     {
         $this->guardAgainstBlockedPrivateSend($conversation, $chatable);
 
-        return DB::transaction(function () use ($conversation, $chatable, $data) {
+        $replyToId = $this->validatedReplyToId($conversation, $data['reply_to_message_id'] ?? null);
+
+        return DB::transaction(function () use ($conversation, $chatable, $data, $replyToId) {
             $message = $this->messages->create([
                 'conversation_id' => $conversation->id,
                 'chatable_type' => $chatable->getMorphClass(),
@@ -49,7 +51,7 @@ class MessageService implements MessageServiceInterface
                 'type' => $data['type'] ?? MessageType::Text->value,
                 'body' => $data['body'] ?? null,
                 'has_link' => Message::hasLinkInBody($data['body'] ?? null),
-                'reply_to_message_id' => $data['reply_to_message_id'] ?? null,
+                'reply_to_message_id' => $replyToId,
                 'metadata' => $data['metadata'] ?? null,
                 'expires_at' => $this->resolveExpiry($conversation),
             ]);
@@ -93,6 +95,19 @@ class MessageService implements MessageServiceInterface
 
     public function update(Message $message, string $body): Message
     {
+        // The edit window bounds how long a message stays editable, not how many times within
+        // that window — without this, repeated edits inside the window could accumulate an
+        // unbounded number of chat_message_edits rows for one message.
+        $maxEdits = config('chat.message.max_edits');
+
+        if ($maxEdits !== null) {
+            abort_if(
+                $message->edits()->count() >= $maxEdits,
+                422,
+                'This message has reached the maximum number of edits.'
+            );
+        }
+
         // Snapshot what it said *before* this edit overwrites it — a plain "edited_at" timestamp
         // alone has nothing to show if someone wants to see the earlier version.
         MessageEdit::query()->create([
@@ -156,24 +171,30 @@ class MessageService implements MessageServiceInterface
             abort(422, 'Cannot forward a deleted message.');
         }
 
-        return DB::transaction(function () use ($message, $conversationIds, $chatable) {
-            $forwarded = [];
+        // One transaction per destination, not one wrapping the whole loop: forwarding to up to
+        // 200 conversations (ForwardMessageRequest's cap) used to mean up to 200 sequential
+        // message creates + receipt inserts + broadcasts + notification dispatches all inside a
+        // single still-open transaction — held locks and an ever-growing undo/redo log for the
+        // whole request, on a request whose failure mode (one destination the forwarder lost
+        // access to mid-request) shouldn't roll back every *other* destination's already-good
+        // send anyway. Each destination now commits independently as soon as its own send() +
+        // is_forwarded flag + attachment copy are done.
+        $forwarded = [];
 
-            foreach (array_unique($conversationIds) as $conversationId) {
-                $conversation = $this->conversations->findById($conversationId);
+        foreach (array_unique($conversationIds) as $conversationId) {
+            $conversation = $this->conversations->findById($conversationId);
 
-                abort_unless(
-                    $this->participants->isActiveParticipant($conversationId, $chatable),
-                    403
-                );
+            abort_unless(
+                $this->participants->isActiveParticipant($conversationId, $chatable),
+                403
+            );
 
-                $forwarded[] = $this->send($conversation, $chatable, [
+            $forwarded[] = DB::transaction(function () use ($message, $conversation, $chatable) {
+                $forwardedMessage = $this->send($conversation, $chatable, [
                     'type' => $message->type->value,
                     'body' => $message->body,
                     'metadata' => $message->metadata,
                 ]);
-
-                $forwardedMessage = $forwarded[array_key_last($forwarded)];
 
                 $forwardedMessage->update([
                     'is_forwarded' => true,
@@ -181,10 +202,12 @@ class MessageService implements MessageServiceInterface
                 ]);
 
                 $this->copyAttachments($message, $forwardedMessage, $chatable);
-            }
 
-            return $forwarded;
-        });
+                return $forwardedMessage;
+            });
+        }
+
+        return $forwarded;
     }
 
     /**
@@ -282,5 +305,25 @@ class MessageService implements MessageServiceInterface
         }
 
         return now()->addSeconds($conversation->disappearing_messages_ttl);
+    }
+
+    // StoreMessageRequest only validates reply_to_message_id as an integer — nothing ties it to
+    // the conversation being posted into. Without this, MessageResource's replyTo block (body
+    // excerpt, metadata, attachment URLs/filenames) would render whatever message that id
+    // happens to belong to, including one in a conversation the sender was never a participant
+    // of — a cross-conversation content leak, not just a broken reference.
+    protected function validatedReplyToId(Conversation $conversation, ?int $replyToId): ?int
+    {
+        if ($replyToId === null) {
+            return null;
+        }
+
+        abort_unless(
+            Message::query()->where('id', $replyToId)->where('conversation_id', $conversation->id)->exists(),
+            422,
+            'The message being replied to does not belong to this conversation.'
+        );
+
+        return $replyToId;
     }
 }

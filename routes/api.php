@@ -45,6 +45,7 @@ Route::middleware(config('chat.middleware', ['api', 'auth:sanctum']))
 
         Route::patch('messages/{message}', [MessageController::class, 'update']);
         Route::get('messages/{message}/edits', [MessageController::class, 'edits']);
+        Route::get('messages/{message}/receipts', [MessageController::class, 'receipts']);
         Route::delete('messages/{message}', [MessageController::class, 'destroy']);
         Route::delete('messages/{message}/me', [MessageController::class, 'destroyForMe']);
         Route::post('messages/{message}/forward', [MessageController::class, 'forward']);

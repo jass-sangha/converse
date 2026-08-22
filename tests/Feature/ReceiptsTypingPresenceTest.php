@@ -101,7 +101,10 @@ it('memoizes user-settings lookups within a request instead of one query per rec
     expect($settingsQueries)->toHaveCount(2);
 });
 
-it('exposes per-recipient delivered/read detail for message info', function () {
+it('exposes per-recipient delivered/read detail via the dedicated receipts endpoint, not the timeline', function () {
+    // Per-receipt detail moved off the message list response (see MessageResource) onto
+    // GET /messages/{message}/receipts — fetched on demand only when "message info" is opened,
+    // rather than computed and shipped for every message on every page load.
     $alice = presenceUser('alice-info@example.com');
     $bob = presenceUser('bob-info@example.com');
 
@@ -114,8 +117,11 @@ it('exposes per-recipient delivered/read detail for message info', function () {
         ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'seen?'])
         ->json('data.id');
 
-    $before = $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
-    $beforeDetail = collect($before->json('data'))->firstWhere('id', $messageId)['receipt_details'][0];
+    $listed = $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
+    expect(collect($listed->json('data'))->firstWhere('id', $messageId))->not->toHaveKey('receipt_details');
+
+    $before = $this->actingAs($alice)->getJson("/api/chat/messages/{$messageId}/receipts")->assertOk();
+    $beforeDetail = $before->json('data.0');
     expect($beforeDetail['chatable_id'])->toBe($bob->id)
         ->and($beforeDetail['delivered_at'])->toBeNull()
         ->and($beforeDetail['read_at'])->toBeNull();
@@ -125,11 +131,15 @@ it('exposes per-recipient delivered/read detail for message info', function () {
         'up_to_message_id' => $messageId,
     ])->assertNoContent();
 
-    $after = $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
-    $afterDetail = collect($after->json('data'))->firstWhere('id', $messageId)['receipt_details'][0];
+    $after = $this->actingAs($alice)->getJson("/api/chat/messages/{$messageId}/receipts")->assertOk();
+    $afterDetail = $after->json('data.0');
     expect($afterDetail['chatable_id'])->toBe($bob->id)
         ->and($afterDetail['delivered_at'])->not->toBeNull()
         ->and($afterDetail['read_at'])->not->toBeNull();
+
+    // A non-participant must not be able to read another conversation's receipt detail.
+    $eve = presenceUser('eve-info@example.com');
+    $this->actingAs($eve)->getJson("/api/chat/messages/{$messageId}/receipts")->assertForbidden();
 });
 
 it('never writes to the database when broadcasting a typing indicator', function () {
@@ -201,6 +211,30 @@ it('debounces presence heartbeat db writes and reports online status', function 
 
     // Second heartbeat within the same debounce window should not touch chat_user_presence again.
     expect($writes)->toHaveCount(0);
+});
+
+it('hides presence from a viewer who does not share a conversation with the target', function () {
+    // Privacy settings alone used to be the only gate — any authenticated user could look up
+    // any other chatable's presence by id/type as long as both had last-seen sharing on,
+    // regardless of whether they'd ever interacted. Presence must only be shared with someone
+    // the target actually shares a conversation with.
+    $alice = presenceUser('alice-presence-shared@example.com');
+    $stranger = presenceUser('stranger-presence-shared@example.com');
+
+    $this->actingAs($alice)->postJson('/api/chat/presence/heartbeat')->assertNoContent();
+
+    $status = $this->actingAs($stranger)->getJson("/api/chat/users/user/{$alice->id}/presence")->assertOk();
+    expect($status->json('data.is_online'))->toBeFalse()
+        ->and($status->json('data.last_seen_at'))->toBeNull();
+
+    // A participant of a shared conversation still sees the real status.
+    $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($stranger)],
+    ])->assertCreated();
+
+    $sharedStatus = $this->actingAs($stranger)->getJson("/api/chat/users/user/{$alice->id}/presence")->assertOk();
+    expect($sharedStatus->json('data.is_online'))->toBeTrue();
 });
 
 it('sweeps a stale heartbeat back to offline via the artisan command', function () {

@@ -68,13 +68,10 @@ class MessageResource extends JsonResource
                     'chatables' => $group->map(fn (MessageReaction $r) => ['type' => $r->chatable_type, 'id' => $r->chatable_id])->values(),
                 ])
                 ->values()),
+            // Per-receipt delivered_at/read_at detail lives at GET /messages/{message}/receipts
+            // instead, fetched on demand only when a user opens "message info" for one message —
+            // not shipped for every message on every page load. See that endpoint's docblock.
             'status' => $this->whenLoaded('receipts', fn () => $this->receiptStatus($viewer)),
-            'receipt_details' => $this->whenLoaded('receipts', fn () => $this->receipts->map(fn (MessageReceipt $r) => [
-                'chatable_type' => $r->chatable_type,
-                'chatable_id' => $r->chatable_id,
-                'delivered_at' => $r->delivered_at,
-                'read_at' => $r->read_at,
-            ])),
             'is_starred_by_me' => $this->whenLoaded('starredBy', fn () => $viewer !== null
                 && $this->starredBy->contains(fn (StarredMessage $s) => $this->isChatable($s, $viewer))),
             'is_pinned' => $this->whenLoaded('pinnedIn', fn () => $this->pinnedIn !== null, false),

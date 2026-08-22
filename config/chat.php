@@ -141,6 +141,15 @@ return [
         // (narrower matching, but index-friendly if the host adds a normal index on that
         // column) for a deployment that needs search to hold up at scale.
         'strategy' => 'contains',
+        // A 1-character query under the 'contains' strategy can match a large fraction of a
+        // big users table via an unindexable scan. Below this length, UserSearchService::search()
+        // returns an empty page instead of running the query at all.
+        'min_length' => 2,
+        // Chat::matchingChatablePairs() (used by conversation/message search's "does this match
+        // a participant's name" clause) pulls every matching id into PHP before building an OR
+        // condition from them — this caps how many it will collect per search, regardless of how
+        // broadly the term matches.
+        'max_matching_ids' => 500,
     ],
 
     /*
@@ -243,6 +252,24 @@ return [
         // (~64KB) with no other cap, so without this an authenticated participant could send
         // arbitrarily large bodies, each broadcast in real time to every other participant.
         'max_body_length' => 4096,
+        // Each edit snapshots the previous body into its own chat_message_edits row (see
+        // MessageService::update()) — edit_window_minutes above bounds how long a message stays
+        // editable, but not how many times within that window, so without this a message could
+        // otherwise accumulate an unbounded number of edit-history rows.
+        'max_edits' => 100,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Call Signaling
+    |--------------------------------------------------------------------------
+    */
+    'calls' => [
+        // Bounds the WebRTC signaling payload (SDP offer/answer, ICE candidates) broadcast
+        // through CallController::signal(). A real SDP negotiation is a few KB at most — without
+        // this, 'payload' => ['array'] alone accepts an arbitrarily large nested structure that
+        // gets broadcast to another participant's channel on every call.
+        'max_payload_bytes' => 65536,
     ],
 
     /*

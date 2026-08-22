@@ -14,7 +14,7 @@ import { useChatStore } from "../../store";
 import { chatableKey } from "../../chatable";
 
 const store = useChatStore();
-const { refresh, setActive } = useConversations();
+const { refresh, loadMore, hasMorePages, setActive } = useConversations();
 const { search: searchMessages } = useMessages();
 const { resolve, get } = useUsers();
 const { view, filter, setFilter, setView } = useSidebarUi();
@@ -31,6 +31,9 @@ const searchQuery = ref("");
 const messageHits = ref([]);
 const searching = ref(false);
 const listRoot = ref(null);
+const listSentinel = ref(null);
+const loadingMore = ref(false);
+let observer = null;
 
 async function scrollActiveIntoView({ block = "nearest" } = {}) {
     const conversationId = store.activeConversationId;
@@ -41,14 +44,35 @@ async function scrollActiveIntoView({ block = "nearest" } = {}) {
         ?.scrollIntoView({ block, behavior: "smooth" });
 }
 
+async function onSentinelIntersect(entries) {
+    if (entries[0].isIntersecting && !loadingMore.value && hasMorePages.value) {
+        loadingMore.value = true;
+        try {
+            await loadMore();
+        } finally {
+            loadingMore.value = false;
+        }
+    }
+}
+
+function setupObserver() {
+    observer?.disconnect();
+    if (listSentinel.value && listRoot.value) {
+        observer = new IntersectionObserver(onSentinelIntersect, { root: listRoot.value });
+        observer.observe(listSentinel.value);
+    }
+}
+
 onMounted(async () => {
     await refresh(showArchived.value ? { archived: true } : {});
     // A freshly created chat/group sorts first — land the list at the top to show it.
     await scrollActiveIntoView({ block: "start" });
+    nextTick(setupObserver);
 });
 
-watch(showArchived, (archived) => {
-    refresh(archived ? { archived: true } : {});
+watch(showArchived, async (archived) => {
+    await refresh(archived ? { archived: true } : {});
+    nextTick(setupObserver);
 });
 
 watch(
@@ -122,14 +146,42 @@ const filteredConversations = computed(() => {
     }
 });
 
+// The conversation list is paginated server-side (see useConversations' loadMore), so
+// filteredConversations only ever sees whatever pages have been fetched so far. A tab like
+// Unread/Favourites/Groups can have zero matches on the loaded page(s) while more conversations
+// (potentially matching ones) still sit on later pages — without this, that tab would show
+// "No conversations here" even though a scroll-triggered load never happens, since a near-empty
+// filtered list doesn't overflow the container enough to reach the bottom sentinel.
+watch(
+    () => [filteredConversations.value.length, hasMorePages.value],
+    async () => {
+        if (!loadingMore.value && !filteredConversations.value.length && hasMorePages.value) {
+            loadingMore.value = true;
+            try {
+                await loadMore();
+            } finally {
+                loadingMore.value = false;
+            }
+        }
+    },
+);
+
 async function onSearchQuery(q) {
     searchQuery.value = q;
 
     if (!q) {
         messageHits.value = [];
         await refresh();
+        // The results view (v-if="searchQuery") and the normal list (v-else, holding listRoot/
+        // listSentinel) are toggled by v-if/v-else, so clearing search remounts a fresh <ul> —
+        // the observer from before search was entered is watching detached nodes by now.
+        nextTick(setupObserver);
         return;
     }
+
+    // Entering search unmounts listRoot/listSentinel (the v-else branch) in favor of the
+    // results view — nothing left for the observer to watch until search is cleared.
+    observer?.disconnect();
 
     searching.value = true;
     try {
@@ -333,6 +385,7 @@ function openHit(hit) {
             >
                 No conversations here.
             </li>
+            <li ref="listSentinel" class="chat-conversation-list__sentinel h-1" />
         </ul>
     </div>
 </template>

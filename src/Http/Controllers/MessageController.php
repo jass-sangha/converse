@@ -12,6 +12,7 @@ use Riwaaq\Chat\Http\Requests\ForwardMessageRequest;
 use Riwaaq\Chat\Http\Requests\StoreMessageRequest;
 use Riwaaq\Chat\Http\Requests\UpdateMessageRequest;
 use Riwaaq\Chat\Http\Resources\MessageEditResource;
+use Riwaaq\Chat\Http\Resources\MessageReceiptResource;
 use Riwaaq\Chat\Http\Resources\MessageResource;
 use Riwaaq\Chat\Models\Conversation;
 use Riwaaq\Chat\Models\Message;
@@ -75,6 +76,17 @@ class MessageController extends Controller
         return MessageEditResource::collection(
             $message->edits()->orderByDesc('edited_at')->get()
         );
+    }
+
+    // Split out from MessageResource's timeline payload on purpose: per-receipt delivered_at/
+    // read_at detail is only ever consumed by the "message info" modal for one message a user
+    // explicitly opened, but was previously being computed and shipped for every message on
+    // every page load — up to participant-cap-many rows per message, times a page of messages.
+    public function receipts(Message $message)
+    {
+        Gate::authorize('view', $message->conversation);
+
+        return MessageReceiptResource::collection($message->receipts);
     }
 
     public function destroy(Message $message)

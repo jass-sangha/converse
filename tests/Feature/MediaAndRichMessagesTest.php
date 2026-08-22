@@ -98,6 +98,31 @@ it('rejects an oversized attachment upload', function () {
     ])->assertStatus(422);
 });
 
+it('rejects an upload that would exceed the per-user storage quota, and does not leave the file on disk', function () {
+    Storage::fake('chat');
+    config(['chat.media.max_storage_per_user_mb' => 1]);
+
+    $alice = mediaUser('alice-quota@example.com');
+
+    $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->create('first.jpg', 900, 'image/jpeg'), // ~0.9MB, under quota
+    ])->assertCreated();
+
+    $filesAfterFirstUpload = count(Storage::disk('chat')->allFiles());
+
+    $rejected = $this->actingAs($alice)->postJson('/api/chat/attachments', [
+        'file' => UploadedFile::fake()->create('second.jpg', 300, 'image/jpeg'), // pushes past 1MB
+    ])->assertStatus(422);
+
+    expect($rejected->json('message'))->toContain('Storage quota exceeded');
+
+    // store() names files by a random hash, not the original filename, so the only reliable way
+    // to prove the rejected upload's file didn't stick around is the file count: it's written to
+    // disk (for the quota check's own consistency, see AttachmentService::upload()) before the
+    // DB check runs, and must be deleted again on rejection rather than left orphaned.
+    expect(count(Storage::disk('chat')->allFiles()))->toBe($filesAfterFirstUpload);
+});
+
 it('rejects a file whose mime type is not on the allow-list', function () {
     Storage::fake('chat');
 

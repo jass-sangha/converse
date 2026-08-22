@@ -4,12 +4,13 @@ namespace Riwaaq\Chat\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Riwaaq\Chat\Models\Conversation;
 
 interface ConversationServiceInterface
 {
-    public function listForUser(Model $chatable, array $filters = []): Collection;
+    public function listForUser(Model $chatable, array $filters = [], int $perPage = 30): Paginator;
 
     public function find(int $id): Conversation;
 

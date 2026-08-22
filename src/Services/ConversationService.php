@@ -5,6 +5,7 @@ namespace Riwaaq\Chat\Services;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Riwaaq\Chat\Chat;
@@ -25,9 +26,9 @@ class ConversationService implements ConversationServiceInterface
         protected ParticipantRepositoryInterface $participants,
     ) {}
 
-    public function listForUser(Model $chatable, array $filters = []): Collection
+    public function listForUser(Model $chatable, array $filters = [], int $perPage = 30): Paginator
     {
-        $conversations = $this->conversations->getForUser($chatable, $filters);
+        $conversations = $this->conversations->getForUser($chatable, $filters, $perPage);
 
         // Pre-computed here (one query pair for last messages, one for unread counts — see
         // ConversationRepository) rather than left for ConversationResource to resolve per
@@ -92,6 +93,17 @@ class ConversationService implements ConversationServiceInterface
             ->push($creator)
             ->unique(fn (Model $chatable) => Chat::identify($chatable))
             ->values();
+
+        // Backstop, not the primary enforcement — StoreConversationRequest already caps the
+        // request array at this same limit. A brand-new conversation has no existing members to
+        // race against (unlike ParticipantService::addParticipants(), which is the actual
+        // bypass this constant exists to close), so this only guards a caller that skips the
+        // FormRequest's validation.
+        abort_if(
+            $participants->count() > ParticipantService::MAX_PARTICIPANTS_PER_CONVERSATION,
+            422,
+            'A conversation cannot have more than '.ParticipantService::MAX_PARTICIPANTS_PER_CONVERSATION.' participants.'
+        );
 
         $conversation = $this->conversations->create($data, $participants, $creator);
 

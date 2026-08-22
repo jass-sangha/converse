@@ -3,6 +3,7 @@
 namespace Riwaaq\Chat\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Riwaaq\Chat\Models\Conversation;
 use Riwaaq\Chat\Models\ConversationParticipant;
@@ -10,7 +11,7 @@ use Riwaaq\Chat\Models\Message;
 
 interface ConversationRepositoryInterface
 {
-    public function getForUser(Model $chatable, array $filters = []): Collection;
+    public function getForUser(Model $chatable, array $filters = [], int $perPage = 30): Paginator;
 
     public function findById(int $id): Conversation;
 

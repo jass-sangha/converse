@@ -1,5 +1,13 @@
+import { ref } from 'vue';
 import { useApi } from './useApi';
 import { useChatStore, upsertConversation, removeConversation } from '../store';
+
+// Module-scoped (shared across every useConversations() call, like useMessages.js's `cursors`)
+// rather than local state inside the composable — the sidebar and any other consumer need to
+// see the same "is there another page" answer.
+let currentFilters = {};
+const hasMorePages = ref(false);
+let nextPage = 2;
 
 export function useConversations() {
     const api = useApi();
@@ -15,7 +23,29 @@ export function useConversations() {
         if (active && !store.conversations.some((c) => c.id === active.id)) {
             store.conversations.push(active);
         }
+        currentFilters = filters;
+        hasMorePages.value = !!data.links?.next;
+        nextPage = 2;
         return store.conversations;
+    }
+
+    // The list endpoint is paginated (chat.pagination.conversations_per_page) rather than
+    // returning every conversation the user has — this fetches the next page and appends,
+    // rather than the initial full-list fetch refresh() does.
+    async function loadMore() {
+        if (!hasMorePages.value) return [];
+
+        const { data } = await api.get('/conversations', { params: { ...currentFilters, page: nextPage } });
+
+        for (const conversation of data.data) {
+            if (!store.conversations.some((c) => c.id === conversation.id)) {
+                store.conversations.push(conversation);
+            }
+        }
+
+        hasMorePages.value = !!data.links?.next;
+        nextPage += 1;
+        return data.data;
     }
 
     async function refreshOne(conversationId) {
@@ -116,6 +146,8 @@ export function useConversations() {
 
     return {
         refresh,
+        loadMore,
+        hasMorePages,
         refreshOne,
         createPrivate,
         createGroup,

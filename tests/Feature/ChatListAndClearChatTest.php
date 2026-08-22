@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
+use Riwaaq\Chat\Models\Message;
+use Riwaaq\Chat\Models\MessageDeletion;
 
 it('checks conversation participation for a whole list-create request in one query, not one per id', function () {
     // Total query count isn't the right signal here — sync()'s own pivot insert legitimately
@@ -148,4 +150,35 @@ it('clears a chat for one participant without affecting the other', function () 
 
     $bobsList = $this->actingAs($bob)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
     expect($bobsList->json('data'))->toHaveCount(2);
+});
+
+it('clears every message across chunk boundaries, not just the first 200', function () {
+    // clearForChatable() used to pluck() every message id in the conversation and map() them
+    // into an equally-sized array of upsert rows in one shot — a memory bomb for a large
+    // conversation. It now chunks by id(200); this proves the chunking still covers every row,
+    // not just the first chunk, the same shape of bug the presence-sweep chunking test guards.
+    $alice = socialUser('alice-clearchunk@example.com');
+    $bob = socialUser('bob-clearchunk@example.com');
+    $conversationId = privateConversationBetween($alice, $bob);
+
+    $now = now();
+    Message::query()->insert(collect(range(1, 201))->map(fn ($i) => [
+        'conversation_id' => $conversationId,
+        'chatable_type' => 'user',
+        'chatable_id' => $bob->id,
+        'type' => 'text',
+        'body' => "msg {$i}",
+        'created_at' => $now,
+        'updated_at' => $now,
+    ])->all());
+
+    $this->actingAs($alice)
+        ->deleteJson("/api/chat/conversations/{$conversationId}/messages")
+        ->assertNoContent();
+
+    $alicesList = $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
+    expect($alicesList->json('data'))->toHaveCount(0);
+
+    expect(MessageDeletion::query()->where('chatable_type', 'user')->where('chatable_id', $alice->id)->count())->toBe(201)
+        ->and(MessageDeletion::query()->where('chatable_type', 'user')->where('chatable_id', $bob->id)->exists())->toBeFalse();
 });

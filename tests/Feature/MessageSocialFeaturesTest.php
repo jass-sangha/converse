@@ -67,6 +67,72 @@ it('replies to a message and forwards it to another conversation', function () {
         ->and($forwarded->json('data.0.body'))->toBe('original');
 });
 
+it('rejects replying to a message that belongs to a different conversation', function () {
+    // StoreMessageRequest only validates reply_to_message_id as an integer, so this must be
+    // enforced server-side: MessageResource's replyTo block exposes the referenced message's
+    // body excerpt, metadata, and attachments, so accepting a cross-conversation id would leak
+    // content from a conversation the poster (or, worse, its other participants reading the
+    // reply) was never part of.
+    $alice = socialUser('alice-replyleak@example.com');
+    $bob = socialUser('bob-replyleak@example.com');
+    $eve = socialUser('eve-replyleak@example.com');
+
+    $convoAB = privateConversationBetween($alice, $bob);
+    $convoAE = privateConversationBetween($alice, $eve);
+
+    $secretId = $this->actingAs($bob)
+        ->postJson("/api/chat/conversations/{$convoAB}/messages", ['type' => 'text', 'body' => 'secret between alice and bob'])
+        ->json('data.id');
+
+    $response = $this->actingAs($alice)->postJson("/api/chat/conversations/{$convoAE}/messages", [
+        'type' => 'text',
+        'body' => 'trying to leak',
+        'reply_to_message_id' => $secretId,
+    ])->assertStatus(422);
+
+    expect($response->json('message'))->toContain('does not belong to this conversation');
+
+    // Eve must never see the secret message's content, whether via the rejected message's own
+    // (never-created) reply_to or by fetching the conversation afterward.
+    $messages = $this->actingAs($eve)->getJson("/api/chat/conversations/{$convoAE}/messages")->assertOk();
+    expect(collect($messages->json('data'))->pluck('body'))->not->toContain('secret between alice and bob');
+});
+
+it('keeps earlier successful forwards committed when a later destination in the same request fails', function () {
+    // forward() used to wrap every destination in one shared transaction, so a permission
+    // failure partway through a multi-destination forward rolled back every destination that
+    // had already succeeded in that same request — discarding real, already-broadcast sends for
+    // no reason related to those destinations. Each destination now commits independently, so a
+    // later failure no longer undoes earlier successes.
+    $alice = socialUser('alice-fwdpartial@example.com');
+    $bob = socialUser('bob-fwdpartial@example.com');
+    $carol = socialUser('carol-fwdpartial@example.com');
+    $dave = socialUser('dave-fwdpartial@example.com');
+    $eve = socialUser('eve-fwdpartial@example.com');
+
+    $sourceConvo = privateConversationBetween($alice, $bob);
+    $goodTargetA = privateConversationBetween($alice, $carol);
+    $goodTargetB = privateConversationBetween($alice, $dave);
+    // Alice is deliberately not a participant here — forwarding to it must 403.
+    $forbiddenTarget = privateConversationBetween($eve, $dave);
+
+    $originalId = $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$sourceConvo}/messages", ['type' => 'text', 'body' => 'partial forward'])
+        ->json('data.id');
+
+    $this->actingAs($alice)
+        ->postJson("/api/chat/messages/{$originalId}/forward", [
+            'conversation_ids' => [$goodTargetA, $goodTargetB, $forbiddenTarget],
+        ])
+        ->assertForbidden();
+
+    $inA = $this->actingAs($alice)->getJson("/api/chat/conversations/{$goodTargetA}/messages")->assertOk();
+    $inB = $this->actingAs($alice)->getJson("/api/chat/conversations/{$goodTargetB}/messages")->assertOk();
+
+    expect(collect($inA->json('data'))->pluck('body'))->toContain('partial forward')
+        ->and(collect($inB->json('data'))->pluck('body'))->toContain('partial forward');
+});
+
 it('forwards to several conversations with one batched eager-load, not one per forwarded message', function () {
     // Forwarding to N conversations necessarily costs real per-target work (an INSERT, receipt
     // rows, a conversation touch, a broadcast for each), so total query count legitimately
@@ -202,6 +268,31 @@ it('rejects an edited body longer than the configured max length', function () {
     $this->actingAs($alice)
         ->patchJson("/api/chat/messages/{$messageId}", ['body' => str_repeat('x', 21)])
         ->assertInvalid(['body']);
+});
+
+it('caps the number of edits a single message can accumulate', function () {
+    // edit_window_minutes bounds how long a message stays editable, not how many times within
+    // that window — without max_edits, repeated edits inside the window could otherwise leave a
+    // message with an unbounded number of chat_message_edits history rows.
+    config(['chat.message.max_edits' => 2]);
+
+    $alice = socialUser('alice-edit-cap@example.com');
+    $bob = socialUser('bob-edit-cap@example.com');
+    $conversationId = privateConversationBetween($alice, $bob);
+
+    $messageId = $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'v1'])
+        ->json('data.id');
+
+    $this->actingAs($alice)->patchJson("/api/chat/messages/{$messageId}", ['body' => 'v2'])->assertOk();
+    $this->actingAs($alice)->patchJson("/api/chat/messages/{$messageId}", ['body' => 'v3'])->assertOk();
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/messages/{$messageId}", ['body' => 'v4'])
+        ->assertStatus(422);
+
+    $history = $this->actingAs($alice)->getJson("/api/chat/messages/{$messageId}/edits")->assertOk();
+    expect($history->json('data'))->toHaveCount(2);
 });
 
 it('records each previous body in edit history, visible to any participant', function () {
