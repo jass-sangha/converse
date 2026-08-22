@@ -66,9 +66,20 @@ class MessageService implements MessageServiceInterface
 
             $conversation->forceFill(['last_activity_at' => now()])->save();
 
-            broadcast(new MessageSent($message, $others))->toOthers();
+            // Deferred to actually run after commit, not just moved after the DB work in this
+            // closure — MessageSent implements ShouldBroadcast and NewChatMessageNotification
+            // implements ShouldQueue, and Laravel's queue connections default to
+            // after_commit=false, so dispatching them from inside a still-open transaction risks
+            // a worker picking the job up and querying this message before it's visible to any
+            // other connection (or processing a notification for a send that then rolls back).
+            // DB::afterCommit() also correctly waits for the *outermost* transaction when send()
+            // is itself called from within another one (forward()'s per-destination transaction),
+            // not just this method's own — a bare "move it after the transaction() call" wouldn't.
+            DB::afterCommit(function () use ($message, $others) {
+                broadcast(new MessageSent($message, $others))->toOthers();
 
-            $this->notifyOthers($message, $others);
+                $this->notifyOthers($message, $others);
+            });
 
             return $message;
         });
@@ -163,6 +174,11 @@ class MessageService implements MessageServiceInterface
     public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage, ?string $search = null): LengthAwarePaginator
     {
         return $this->messages->media($chatable, $kind, $conversationId, $perPage, $search);
+    }
+
+    public function receiptSummariesFor(array $messageIds): array
+    {
+        return $this->messages->receiptSummariesFor($messageIds);
     }
 
     public function forward(Message $message, array $conversationIds, Model $chatable): array

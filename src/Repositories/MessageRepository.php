@@ -13,6 +13,8 @@ use Riwaaq\Chat\Contracts\MessageRepositoryInterface;
 use Riwaaq\Chat\Models\Conversation;
 use Riwaaq\Chat\Models\Message;
 use Riwaaq\Chat\Models\MessageDeletion;
+use Riwaaq\Chat\Models\MessageReceipt;
+use Riwaaq\Chat\Models\UserSetting;
 
 class MessageRepository implements MessageRepositoryInterface
 {
@@ -40,7 +42,10 @@ class MessageRepository implements MessageRepositoryInterface
         $query = Message::query()
             ->where('conversation_id', $conversation->id)
             ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
-            ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps'])
+            // receipts.chatable deliberately absent — see receiptSummariesFor() and
+            // MessageController::index(), which attach a batched per-message summary instead of
+            // eager-loading every receipt row for a whole page of messages.
+            ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps'])
             ->orderByDesc('id');
 
         if ($beforeId !== null) {
@@ -62,7 +67,8 @@ class MessageRepository implements MessageRepositoryInterface
             // reads chatable_type/chatable_id off of it (to build the frontend's
             // chatableKey()), so there's no reason to pull role/muted_until/archived_at/etc.
             // for every participant of every conversation a search result happens to land in.
-            ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps', 'conversation', 'conversation.participants:id,conversation_id,chatable_type,chatable_id'])
+            // receipts.chatable deliberately absent — see receiptSummariesFor().
+            ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps', 'conversation', 'conversation.participants:id,conversation_id,chatable_type,chatable_id'])
             ->orderByDesc('id');
 
         $this->matchBody($builder, $query);
@@ -169,5 +175,101 @@ class MessageRepository implements MessageRepositoryInterface
 
                 MessageDeletion::query()->upsert($rows, ['message_id', 'chatable_type', 'chatable_id'], ['deleted_at']);
             });
+    }
+
+    /**
+     * Per-message recipient/delivered/read counts instead of the full receipt rows (each with
+     * its chatable model) MessageResource::receiptStatus() used to need to derive sent/
+     * delivered/read — a 50-message page in a 200-participant conversation used to mean loading
+     * up to ~10,000 receipt+chatable rows just to answer three counts per message.
+     *
+     * @param  list<int>  $messageIds
+     * @return array<int, array{recipient_count: int, delivered_count: int, read_count: int}>
+     */
+    public function receiptSummariesFor(array $messageIds): array
+    {
+        if ($messageIds === []) {
+            return [];
+        }
+
+        $receiptsTable = (new MessageReceipt)->getTable();
+
+        // recipient_count/delivered_count don't depend on any privacy setting, so one grouped
+        // aggregate covers every message in the batch — no chatable model needed at all.
+        $counts = DB::table($receiptsTable)
+            ->whereIn('message_id', $messageIds)
+            ->select('message_id')
+            ->selectRaw('COUNT(*) as recipient_count')
+            ->selectRaw('SUM(CASE WHEN delivered_at IS NOT NULL THEN 1 ELSE 0 END) as delivered_count')
+            ->groupBy('message_id')
+            ->get()
+            ->keyBy('message_id');
+
+        $readCounts = $this->readCountsRespectingPrivacy($messageIds);
+
+        $summaries = [];
+
+        foreach ($messageIds as $id) {
+            $row = $counts->get($id);
+
+            $summaries[$id] = [
+                'recipient_count' => $row ? (int) $row->recipient_count : 0,
+                'delivered_count' => $row ? (int) $row->delivered_count : 0,
+                'read_count' => $readCounts[$id] ?? 0,
+            ];
+        }
+
+        return $summaries;
+    }
+
+    /**
+     * A receipt only "counts as read" if the recipient's *current* read-receipts privacy
+     * setting allows it (UserSetting::readReceiptsVisible() — a boolean plus a "hidden until"
+     * timestamp override) — not something worth re-deriving across three DB drivers in raw SQL,
+     * so this reuses the real model method instead of duplicating its logic. Only loads the
+     * receipts that are actually read (bounded by how many recipients have read the page's
+     * messages, not by total recipients) and only the small chat_user_settings row per distinct
+     * chatable, grouped by morph type the same way UserSettingsService::preload() batches it —
+     * never a full chatable model.
+     *
+     * @param  list<int>  $messageIds
+     * @return array<int, int> read count keyed by message_id
+     */
+    protected function readCountsRespectingPrivacy(array $messageIds): array
+    {
+        $readReceipts = MessageReceipt::query()
+            ->whereIn('message_id', $messageIds)
+            ->whereNotNull('read_at')
+            ->get(['message_id', 'chatable_type', 'chatable_id']);
+
+        if ($readReceipts->isEmpty()) {
+            return [];
+        }
+
+        $settingsByKey = [];
+
+        foreach ($readReceipts->groupBy('chatable_type') as $type => $group) {
+            UserSetting::query()
+                ->where('chatable_type', $type)
+                ->whereIn('chatable_id', $group->pluck('chatable_id')->unique())
+                ->get()
+                ->each(function (UserSetting $setting) use (&$settingsByKey) {
+                    $settingsByKey[$setting->chatable_type.'|'.$setting->chatable_id] = $setting;
+                });
+        }
+
+        $default = (bool) config('chat.privacy.read_receipts_default', true);
+        $counts = [];
+
+        foreach ($readReceipts as $receipt) {
+            $key = $receipt->chatable_type.'|'.$receipt->chatable_id;
+            $allows = isset($settingsByKey[$key]) ? $settingsByKey[$key]->readReceiptsVisible() : $default;
+
+            if ($allows) {
+                $counts[$receipt->message_id] = ($counts[$receipt->message_id] ?? 0) + 1;
+            }
+        }
+
+        return $counts;
     }
 }

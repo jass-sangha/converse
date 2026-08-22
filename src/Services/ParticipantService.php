@@ -59,7 +59,11 @@ class ParticipantService implements ParticipantServiceInterface
                 'targets' => $chatables->map(fn (Model $c) => ['type' => $c->getMorphClass(), 'id' => $c->getKey()])->values()->all(),
             ]);
 
-            broadcast(new ParticipantAdded($conversation->id, $chatables, $actor))->toOthers();
+            // Deferred to after commit — ParticipantAdded is ShouldBroadcast, and this transaction
+            // exists specifically to hold the conversation-row lock through the participant-cap
+            // check, so broadcasting from inside it risks a worker seeing this event before the
+            // new participant rows are visible to any other connection.
+            DB::afterCommit(fn () => broadcast(new ParticipantAdded($conversation->id, $chatables, $actor))->toOthers());
 
             return $message;
         });

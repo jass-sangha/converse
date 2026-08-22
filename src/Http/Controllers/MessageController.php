@@ -2,12 +2,10 @@
 
 namespace Riwaaq\Chat\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Riwaaq\Chat\Contracts\MessageServiceInterface;
-use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
 use Riwaaq\Chat\Http\Requests\ForwardMessageRequest;
 use Riwaaq\Chat\Http\Requests\StoreMessageRequest;
 use Riwaaq\Chat\Http\Requests\UpdateMessageRequest;
@@ -23,7 +21,6 @@ class MessageController extends Controller
 
     public function __construct(
         protected MessageServiceInterface $messages,
-        protected UserSettingsServiceInterface $settings,
     ) {}
 
     public function index(Request $request, Conversation $conversation)
@@ -40,7 +37,7 @@ class MessageController extends Controller
             $beforeId,
         );
 
-        $this->preloadReceiptSettings($messages, $request->user());
+        $this->attachReceiptSummaries($messages);
 
         return MessageResource::collection($messages);
     }
@@ -148,7 +145,7 @@ class MessageController extends Controller
             $perPage,
         );
 
-        $this->preloadReceiptSettings($messages, $request->user());
+        $this->attachReceiptSummaries($messages);
 
         return MessageResource::collection($messages);
     }
@@ -171,21 +168,25 @@ class MessageController extends Controller
         return MessageResource::collection($messages);
     }
 
-    // MessageResource::receiptStatus() calls allowsReadReceipts() once per receipt on every
-    // message — memoized on the UserSettingsService singleton, but only after each distinct
-    // participant's first occurrence, which without this happens interleaved with response
-    // serialization instead of batched up front. Bounded by conversation headcount (already
-    // capped at 200), not by page size, so this is a smaller win than the presence-sweep one,
-    // but the same pattern applies for the same reason.
-    protected function preloadReceiptSettings(Paginator $messages, ?Model $viewer): void
+    // The timeline/search queries deliberately don't eager-load receipts.chatable (see
+    // MessageRepository::paginateForConversation()/search()) — a 50-message page in a
+    // 200-participant conversation would mean loading up to ~10,000 receipt+chatable rows just
+    // to derive a sent/delivered/read status per message. This attaches the batched
+    // recipient/delivered/read counts (one aggregate query pair for the whole page, see
+    // receiptSummariesFor()) as a virtual receipt_summary attribute instead — same pattern as
+    // ConversationService::listForUser()'s unread_count — which MessageResource reads in place
+    // of the receipts relation.
+    protected function attachReceiptSummaries(Paginator $messages): void
     {
-        $chatables = $messages->getCollection()
-            ->pluck('receipts')
-            ->flatten()
-            ->pluck('chatable')
-            ->push($viewer)
-            ->filter();
+        $collection = $messages->getCollection();
+        $summaries = $this->messages->receiptSummariesFor($collection->pluck('id')->all());
 
-        $this->settings->preload($chatables);
+        $collection->each(function (Message $message) use ($summaries) {
+            $message->receipt_summary = $summaries[$message->id] ?? [
+                'recipient_count' => 0,
+                'delivered_count' => 0,
+                'read_count' => 0,
+            ];
+        });
     }
 }

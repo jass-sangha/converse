@@ -30,4 +30,14 @@ interface MessageRepositoryInterface
      * @param  string|null  $search  Matches attachment filename, conversation name, or participant name.
      */
     public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage, ?string $search = null): LengthAwarePaginator;
+
+    /**
+     * Per-message recipient/delivered/read counts, batched for a whole page of messages at
+     * once — see MessageRepository's implementation for why this replaces loading full receipt
+     * rows (with their chatable models) just to derive a sent/delivered/read status.
+     *
+     * @param  list<int>  $messageIds
+     * @return array<int, array{recipient_count: int, delivered_count: int, read_count: int}>
+     */
+    public function receiptSummariesFor(array $messageIds): array;
 }

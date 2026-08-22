@@ -102,10 +102,14 @@ it('lists and searches messages without an extra COUNT(*) query', function () {
     $searchQueries = collect(DB::getQueryLog());
     DB::disableQueryLog();
 
-    $isCount = fn ($entry) => str_contains(strtolower($entry['query']), 'count(*)');
+    // A grouped COUNT(*) (receiptSummariesFor()'s recipient/delivered aggregate, "group by
+    // message_id") is a different, legitimate query from paginate()'s own ungrouped
+    // "select count(*) as aggregate" — only the latter is what this test guards against.
+    $isPaginationCount = fn ($entry) => str_contains(strtolower($entry['query']), 'count(*)')
+        && ! str_contains(strtolower($entry['query']), 'group by');
 
-    expect($listQueries->filter($isCount))->toBeEmpty()
-        ->and($searchQueries->filter($isCount))->toBeEmpty();
+    expect($listQueries->filter($isPaginationCount))->toBeEmpty()
+        ->and($searchQueries->filter($isPaginationCount))->toBeEmpty();
 });
 
 it('rejects a message body longer than the configured max length', function () {

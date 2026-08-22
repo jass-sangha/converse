@@ -53,6 +53,98 @@ it('marks messages delivered and read, and never regresses on an earlier read ca
     expect($participant->last_read_message_id)->toBe($ids[9]);
 });
 
+it('derives sent/delivered/read status from the batched receipt summary for a group conversation', function () {
+    // Proves correctness of the aggregate path (MessageRepository::receiptSummariesFor()) that
+    // replaced loading every receipt row (with its chatable) just to derive this one field —
+    // including the reciprocity rule (a recipient with read receipts turned off never counts
+    // toward "read", even if they genuinely have read it).
+    $alice = presenceUser('alice-groupstatus@example.com');
+    $bob = presenceUser('bob-groupstatus@example.com');
+    $carol = presenceUser('carol-groupstatus@example.com');
+    $dave = presenceUser('dave-groupstatus@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'group',
+        'name' => 'Status check',
+        'participants' => chatableRefs([$bob, $carol, $dave]),
+    ])->json('data.id');
+
+    $this->actingAs($carol)->patchJson('/api/chat/profile/settings', ['show_read_receipts' => false])->assertOk();
+
+    $messageId = $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'hello group'])
+        ->json('data.id');
+
+    $statusFor = fn () => collect(
+        $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->json('data')
+    )->firstWhere('id', $messageId)['status'];
+
+    expect($statusFor())->toBe('sent');
+
+    $this->actingAs($bob)->postJson("/api/chat/conversations/{$conversationId}/receipts/delivered")->assertNoContent();
+    $this->actingAs($carol)->postJson("/api/chat/conversations/{$conversationId}/receipts/delivered")->assertNoContent();
+    $this->actingAs($dave)->postJson("/api/chat/conversations/{$conversationId}/receipts/delivered")->assertNoContent();
+
+    expect($statusFor())->toBe('delivered');
+
+    $this->actingAs($bob)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", ['up_to_message_id' => $messageId])->assertNoContent();
+    $this->actingAs($carol)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", ['up_to_message_id' => $messageId])->assertNoContent();
+    $this->actingAs($dave)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", ['up_to_message_id' => $messageId])->assertNoContent();
+
+    // All three have genuinely read it, but Carol's own read-receipt sharing is off — her
+    // receipt can never contribute to read_count, so recipient_count === read_count is
+    // unreachable and the status stays capped at delivered.
+    expect($statusFor())->toBe('delivered');
+});
+
+it('keeps message-list query count flat regardless of conversation participant count', function () {
+    // The actual claim behind receiptSummariesFor(): a 50-participant conversation used to mean
+    // loading roughly as many receipt+chatable rows per message as there are participants, on
+    // every page load. This proves total query count for listing messages no longer scales with
+    // how many people are in the conversation.
+    $queryCountFor = function (int $participantCount) {
+        $alice = presenceUser("alice-scale-{$participantCount}@example.com");
+        $others = collect(range(1, $participantCount))->map(
+            fn ($i) => presenceUser("scale-{$participantCount}-{$i}@example.com")
+        );
+
+        $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+            'type' => 'group',
+            'name' => 'Scale check',
+            'participants' => chatableRefs($others),
+        ])->json('data.id');
+
+        $messageId = $this->actingAs($alice)
+            ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => 'hi'])
+            ->json('data.id');
+
+        // Half read, half only delivered — exercises both branches of the aggregate, not just
+        // the all-read or all-undelivered edge cases.
+        $others->values()->each(function ($user, $index) use ($conversationId, $messageId) {
+            $this->actingAs($user)->postJson("/api/chat/conversations/{$conversationId}/receipts/delivered")->assertNoContent();
+
+            if ($index % 2 === 0) {
+                $this->actingAs($user)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", [
+                    'up_to_message_id' => $messageId,
+                ])->assertNoContent();
+            }
+        });
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
+        $count = count(DB::getQueryLog());
+        DB::disableQueryLog();
+
+        return $count;
+    };
+
+    $withFew = $queryCountFor(3);
+    $withMany = $queryCountFor(50);
+
+    expect($withMany)->toBe($withFew);
+});
+
 it('memoizes user-settings lookups within a request instead of one query per receipt', function () {
     $alice = presenceUser('alice-settingsn1@example.com');
     $bob = presenceUser('bob-settingsn1@example.com');
@@ -92,13 +184,12 @@ it('memoizes user-settings lookups within a request instead of one query per rec
     );
     DB::disableQueryLog();
 
-    // MessageController::index() now calls UserSettingsService::preload() up front for every
-    // distinct chatable across the page's receipts (alice/bob/carol/dave — 4), instead of
-    // resolving each lazily via receiptStatus() as it's encountered. That's 2 queries
-    // regardless of receipt count (15 here): one batched lookup for all 4, one refetch for
-    // whichever of them still needed a settings row seeded — not one query per distinct
-    // chatable (4) and nowhere near one per receipt (15).
-    expect($settingsQueries)->toHaveCount(2);
+    // receiptSummariesFor()'s read_count no longer goes through UserSettingsService at all —
+    // it queries chat_user_settings directly for the distinct chatables behind *actually read*
+    // receipts, grouped by morph type (bob/carol/dave, all 'user' — one group). That's 1 query
+    // regardless of receipt count (15 here) or page size, not one per distinct chatable and
+    // nowhere near one per receipt.
+    expect($settingsQueries)->toHaveCount(1);
 });
 
 it('exposes per-recipient delivered/read detail via the dedicated receipts endpoint, not the timeline', function () {

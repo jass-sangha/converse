@@ -42,4 +42,10 @@ interface MessageServiceInterface
      * @param  string|null  $search  Matches attachment filename, conversation name, or participant name.
      */
     public function media(Model $chatable, string $kind, ?int $conversationId, int $perPage, ?string $search = null): LengthAwarePaginator;
+
+    /**
+     * @param  list<int>  $messageIds
+     * @return array<int, array{recipient_count: int, delivered_count: int, read_count: int}>
+     */
+    public function receiptSummariesFor(array $messageIds): array;
 }

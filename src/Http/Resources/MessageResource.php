@@ -71,7 +71,7 @@ class MessageResource extends JsonResource
             // Per-receipt delivered_at/read_at detail lives at GET /messages/{message}/receipts
             // instead, fetched on demand only when a user opens "message info" for one message —
             // not shipped for every message on every page load. See that endpoint's docblock.
-            'status' => $this->whenLoaded('receipts', fn () => $this->receiptStatus($viewer)),
+            'status' => $this->resolveReceiptStatus($viewer),
             'is_starred_by_me' => $this->whenLoaded('starredBy', fn () => $viewer !== null
                 && $this->starredBy->contains(fn (StarredMessage $s) => $this->isChatable($s, $viewer))),
             'is_pinned' => $this->whenLoaded('pinnedIn', fn () => $this->pinnedIn !== null, false),
@@ -134,6 +134,49 @@ class MessageResource extends JsonResource
                 'respondents' => $group->map(fn (EventRsvp $r) => ['type' => $r->chatable_type, 'id' => $r->chatable_id])->values(),
             ]];
         })->put('my_status', $myStatus)->toArray();
+    }
+
+    /**
+     * Prefers the batched receipt_summary counts (see MessageRepository::receiptSummariesFor())
+     * set on the model as a virtual attribute — same pattern as unread_count on conversations —
+     * over loading the full receipts relation, which the timeline/search/conversation-list
+     * endpoints no longer eager-load for exactly this reason. Falls back to the row-based
+     * whenLoaded('receipts') path for the single-message responses (store/update/forward, and
+     * this resource's other consumers) that still eager-load the relation directly.
+     */
+    protected function resolveReceiptStatus(?Model $viewer): mixed
+    {
+        if (isset($this->receipt_summary)) {
+            return $this->receiptStatusFromSummary($this->receipt_summary, $viewer);
+        }
+
+        return $this->whenLoaded('receipts', fn () => $this->receiptStatus($viewer));
+    }
+
+    /**
+     * @param  array{recipient_count: int, delivered_count: int, read_count: int}  $summary
+     */
+    protected function receiptStatusFromSummary(array $summary, ?Model $viewer): string
+    {
+        if ($summary['recipient_count'] === 0) {
+            return 'sent';
+        }
+
+        $settings = app(UserSettingsServiceInterface::class);
+
+        // Reciprocity: if the viewer has turned off their own read-receipt sharing,
+        // WhatsApp caps everything they see at "delivered" regardless of actual reads.
+        $viewerAllowsReadReceipts = $viewer === null || $settings->allowsReadReceipts($viewer);
+
+        if ($viewerAllowsReadReceipts && $summary['read_count'] === $summary['recipient_count']) {
+            return 'read';
+        }
+
+        if ($summary['delivered_count'] === $summary['recipient_count']) {
+            return 'delivered';
+        }
+
+        return 'sent';
     }
 
     protected function receiptStatus(?Model $viewer): string

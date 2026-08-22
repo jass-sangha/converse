@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Riwaaq\Chat\Chat;
 use Riwaaq\Chat\Contracts\ConversationRepositoryInterface;
+use Riwaaq\Chat\Contracts\MessageRepositoryInterface;
 use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
 use Riwaaq\Chat\Enums\ConversationType;
 use Riwaaq\Chat\Models\Conversation;
@@ -18,6 +19,7 @@ class ConversationRepository implements ConversationRepositoryInterface
 {
     public function __construct(
         protected ParticipantRepositoryInterface $participants,
+        protected MessageRepositoryInterface $messages,
     ) {}
 
     public function getForUser(Model $chatable, array $filters = [], int $perPage = 30): Paginator
@@ -115,12 +117,27 @@ class ConversationRepository implements ConversationRepositoryInterface
             return [];
         }
 
-        return Message::query()
+        // receipts.chatable deliberately absent — 30 conversations x 200 participants would
+        // otherwise mean loading up to 6,000 receipt+chatable rows just to derive each
+        // conversation's last-message status. A batched aggregate (recipient/delivered/read
+        // counts, see receiptSummariesFor()) attached as a virtual attribute replaces it —
+        // MessageResource reads that in place of the receipts relation.
+        $messages = Message::query()
             ->whereIn('id', $lastIds)
-            ->with('receipts.chatable')
             ->get()
-            ->keyBy('conversation_id')
-            ->all();
+            ->keyBy('conversation_id');
+
+        $summaries = $this->messages->receiptSummariesFor($messages->pluck('id')->all());
+
+        $messages->each(function (Message $message) use ($summaries) {
+            $message->receipt_summary = $summaries[$message->id] ?? [
+                'recipient_count' => 0,
+                'delivered_count' => 0,
+                'read_count' => 0,
+            ];
+        });
+
+        return $messages->all();
     }
 
     public function unreadCountsFor(array $myParticipantByConversationId, Model $viewer): array
