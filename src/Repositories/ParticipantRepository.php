@@ -66,6 +66,27 @@ class ParticipantRepository implements ParticipantRepositoryInterface
         )->whereNull('left_at')->pluck('conversation_id')->all();
     }
 
+    public function activeConversationIdsForChatables(iterable $chatables): array
+    {
+        $byType = collect($chatables)->groupBy(fn (Model $chatable) => $chatable->getMorphClass());
+        $result = [];
+
+        foreach ($byType as $type => $group) {
+            $ids = $group->map(fn (Model $chatable) => $chatable->getKey())->unique()->values();
+
+            ConversationParticipant::query()
+                ->where('chatable_type', $type)
+                ->whereIn('chatable_id', $ids)
+                ->whereNull('left_at')
+                ->get(['chatable_id', 'conversation_id'])
+                ->each(function (ConversationParticipant $row) use (&$result, $type) {
+                    $result["{$type}|{$row->chatable_id}"][] = $row->conversation_id;
+                });
+        }
+
+        return $result;
+    }
+
     public function activeChatables(int $conversationId): Collection
     {
         return ConversationParticipant::query()

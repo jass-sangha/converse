@@ -33,6 +33,23 @@ class UserSettingsService implements UserSettingsServiceInterface
         );
     }
 
+    public function preload(iterable $chatables): void
+    {
+        $byType = collect($chatables)->groupBy(fn (Model $chatable) => $chatable->getMorphClass());
+
+        foreach ($byType as $type => $group) {
+            $ids = $group->map(fn (Model $chatable) => $chatable->getKey())->unique()->values();
+
+            UserSetting::query()
+                ->where('chatable_type', $type)
+                ->whereIn('chatable_id', $ids)
+                ->get()
+                ->each(function (UserSetting $setting) {
+                    $this->cache[$setting->chatable_type.':'.$setting->chatable_id] = $setting;
+                });
+        }
+    }
+
     public function update(Model $chatable, array $data): UserSetting
     {
         $setting = $this->get($chatable);

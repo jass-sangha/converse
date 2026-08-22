@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Riwaaq\Chat\Chat;
+use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
 use Riwaaq\Chat\Contracts\PresenceServiceInterface;
 use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
 use Riwaaq\Chat\Events\PresenceChanged;
@@ -16,6 +17,7 @@ class PresenceService implements PresenceServiceInterface
 {
     public function __construct(
         protected UserSettingsServiceInterface $settings,
+        protected ParticipantRepositoryInterface $participants,
     ) {}
 
     public function heartbeat(Model $chatable): void
@@ -85,6 +87,16 @@ class PresenceService implements PresenceServiceInterface
             ->where('last_seen_at', '<', $threshold)
             ->with('chatable')
             ->chunkById(200, function (Collection $stale) use (&$count) {
+                $chatables = $stale->map(fn (UserPresence $presence) => $presence->chatable)->filter()->values();
+
+                // Both batched once per chunk (up to 200 distinct chatables) instead of once per
+                // row: allowsLastSeen() below would otherwise hit UserSettingsService::get()'s
+                // firstOrCreate() per row (memoized within one call, but every row here is a
+                // different chatable, so memoization alone doesn't help), and the conversation-id
+                // lookup would otherwise be one query per row too.
+                $this->settings->preload($chatables);
+                $conversationIdsByChatable = $this->participants->activeConversationIdsForChatables($chatables);
+
                 foreach ($stale as $presence) {
                     $chatable = $presence->chatable;
 
@@ -97,10 +109,7 @@ class PresenceService implements PresenceServiceInterface
                     Cache::forget($this->onlineKey($chatable));
                     $presence->update(['is_online' => false]);
 
-                    $conversationIds = Chat::whereChatable(ConversationParticipant::query(), $chatable)
-                        ->whereNull('left_at')
-                        ->pluck('conversation_id')
-                        ->all();
+                    $conversationIds = $conversationIdsByChatable[Chat::identify($chatable)] ?? [];
 
                     if (! empty($conversationIds)) {
                         broadcast(new PresenceChanged(

@@ -27,6 +27,16 @@ interface ParticipantRepositoryInterface
     public function activeParticipantConversationIds(array $conversationIds, Model $chatable): array;
 
     /**
+     * The inverse batch: each active conversation id per chatable, for a whole group of
+     * chatables in one query per morph type (typically one query total) instead of one query
+     * per chatable.
+     *
+     * @param  iterable<Model>  $chatables
+     * @return array<string, list<int>> keyed by Chat::identify($chatable)
+     */
+    public function activeConversationIdsForChatables(iterable $chatables): array;
+
+    /**
      * @return Collection<int, Model> The resolved chatable model instances, not repository rows.
      */
     public function activeChatables(int $conversationId): Collection;

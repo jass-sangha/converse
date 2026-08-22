@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Riwaaq\Chat\Contracts\PresenceServiceInterface;
+use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
 use Riwaaq\Chat\Events\UserTyping;
 use Riwaaq\Chat\Models\ConversationParticipant;
 use Riwaaq\Chat\Models\UserPresence;
@@ -241,4 +242,44 @@ it('sweeps every stale row across chunk boundaries, not just the first 200', fun
     expect($count)->toBe(201)
         ->and(UserPresence::query()->where('is_online', true)->count())->toBe(0)
         ->and($selects)->toHaveCount(2);
+});
+
+it('checks conversation membership and privacy settings for a whole sweep chunk in one query each', function () {
+    // 1 stale user vs 5 — allowsLastSeen() and the conversation-id lookup used to run once per
+    // stale row inside the chunk loop; batching both per chunk means query count against
+    // chat_conversation_participants / chat_user_settings stays flat regardless of how many
+    // distinct users went stale in the same sweep, instead of growing by one query each per row.
+    $tableQueryCountsFor = function (int $staleUserCount) {
+        $rows = collect(range(1, $staleUserCount))->map(function ($i) use ($staleUserCount) {
+            $user = presenceUser("sweepn1-{$staleUserCount}-{$i}@example.com");
+            $other = presenceUser("sweepn1-other-{$staleUserCount}-{$i}@example.com");
+            privateConversationBetween($user, $other);
+
+            // Pre-seed a real settings row — a brand-new user with none yet always falls through
+            // to a per-row firstOrCreate() no matter how the sweep batches things (preload() has
+            // nothing existing to warm the cache with), which would test that fallback path
+            // instead of the steady-state one this batching actually optimizes for.
+            app(UserSettingsServiceInterface::class)->get($user);
+
+            return ['chatable_type' => 'user', 'chatable_id' => $user->id, 'is_online' => true, 'last_seen_at' => now()->subDays(1), 'created_at' => now(), 'updated_at' => now()];
+        });
+        UserPresence::query()->insert($rows->all());
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        app(PresenceServiceInterface::class)->sweepStale();
+        $log = collect(DB::getQueryLog());
+        DB::disableQueryLog();
+
+        return [
+            'participants' => $log->filter(fn ($e) => str_contains($e['query'], 'chat_conversation_participants') && str_starts_with(strtolower($e['query']), 'select'))->count(),
+            'settings' => $log->filter(fn ($e) => str_contains($e['query'], 'chat_user_settings') && str_starts_with(strtolower($e['query']), 'select'))->count(),
+        ];
+    };
+
+    $withOne = $tableQueryCountsFor(1);
+    $withFive = $tableQueryCountsFor(5);
+
+    expect($withFive['participants'])->toBe($withOne['participants'])
+        ->and($withFive['settings'])->toBe($withOne['settings']);
 });
