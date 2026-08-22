@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Riwaaq\Chat\Tests\Fixtures\User;
 
 function chatUser(): User
@@ -43,6 +44,42 @@ it('creates a group conversation with all participants admin-free except creator
 
     expect($response->json('data.name'))->toBe('Trip planning')
         ->and($response->json('data.participants'))->toHaveCount(3);
+});
+
+it('resolves last_message and unread_count for the conversation list without one query per conversation', function () {
+    // 1 conversation vs 8, each for a different user — if last_message/unread_count were still
+    // resolved per row (the N+1 this replaced), the 8-conversation request would cost roughly
+    // 2 extra queries per extra conversation. Equal query counts either way proves it's
+    // batched, not per-row.
+    $countQueriesFor = function (int $conversationCount) {
+        $viewer = chatUser();
+
+        for ($i = 0; $i < $conversationCount; $i++) {
+            $sender = chatUser();
+            $conversationId = $this->actingAs($viewer)->postJson('/api/chat/conversations', [
+                'type' => 'private',
+                'participants' => [chatableRef($sender)],
+            ])->json('data.id');
+
+            $this->actingAs($sender)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+                'type' => 'text',
+                'body' => 'hey',
+            ])->assertCreated();
+        }
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $this->actingAs($viewer)->getJson('/api/chat/conversations')->assertOk()->assertJsonCount($conversationCount, 'data');
+        $count = count(DB::getQueryLog());
+        DB::disableQueryLog();
+
+        return $count;
+    };
+
+    $withOne = $countQueriesFor(1);
+    $withEight = $countQueriesFor(8);
+
+    expect($withEight)->toBe($withOne);
 });
 
 it('prevents a non-participant from viewing a conversation', function () {

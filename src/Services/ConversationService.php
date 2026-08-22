@@ -26,7 +26,34 @@ class ConversationService implements ConversationServiceInterface
 
     public function listForUser(Model $chatable, array $filters = []): Collection
     {
-        return $this->conversations->getForUser($chatable, $filters);
+        $conversations = $this->conversations->getForUser($chatable, $filters);
+
+        // Pre-computed here (one query pair for last messages, one for unread counts — see
+        // ConversationRepository) rather than left for ConversationResource to resolve per
+        // conversation: that used to mean two extra queries per row on the conversation list,
+        // the endpoint every app load hits first.
+        $conversationIds = $conversations->pluck('id')->all();
+        $lastMessages = $this->conversations->lastMessagesFor($conversationIds, $chatable);
+
+        $myParticipantByConversationId = [];
+        foreach ($conversations as $conversation) {
+            $me = $conversation->participants->first(
+                fn (ConversationParticipant $p) => $p->chatable_type === $chatable->getMorphClass() && $p->chatable_id === $chatable->getKey()
+            );
+
+            if ($me) {
+                $myParticipantByConversationId[$conversation->id] = $me;
+            }
+        }
+
+        $unreadCounts = $this->conversations->unreadCountsFor($myParticipantByConversationId, $chatable);
+
+        foreach ($conversations as $conversation) {
+            $conversation->setRelation('lastMessage', $lastMessages[$conversation->id] ?? null);
+            $conversation->unread_count = $unreadCounts[$conversation->id] ?? 0;
+        }
+
+        return $conversations;
     }
 
     public function find(int $id): Conversation

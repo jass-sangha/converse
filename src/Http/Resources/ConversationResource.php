@@ -27,9 +27,11 @@ class ConversationResource extends JsonResource
             'avatar_url' => $this->avatar_path ? Storage::disk(config('chat.media.disk'))->url($this->avatar_path) : null,
             'disappearing_messages_ttl' => $this->disappearing_messages_ttl,
             'last_activity_at' => $this->last_activity_at,
-            'last_message' => $this->resolveLastMessage($viewer),
+            'last_message' => $this->relationLoaded('lastMessage')
+                ? ($this->lastMessage ? new MessageResource($this->lastMessage) : null)
+                : $this->resolveLastMessage($viewer),
             'participants' => ParticipantResource::collection($this->whenLoaded('participants')),
-            'unread_count' => $me ? $this->unreadCountFor($me) : 0,
+            'unread_count' => $this->getAttribute('unread_count') ?? ($me ? $this->unreadCountFor($me) : 0),
             'me' => $me ? [
                 'role' => $me->role?->value,
                 'muted_until' => $me->muted_until,

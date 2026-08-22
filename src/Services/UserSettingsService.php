@@ -8,9 +8,23 @@ use Riwaaq\Chat\Models\UserSetting;
 
 class UserSettingsService implements UserSettingsServiceInterface
 {
+    /**
+     * Memoizes get() per chatable for this instance's lifetime — bound as a singleton (see
+     * ChatServiceProvider) so that lifetime is "one request". Without it, resolving a message
+     * list's read-receipt status calls allowsReadReceipts() once per receipt (see
+     * MessageResource::receiptStatus()), and each call hit firstOrCreate() fresh: 50 messages
+     * in a 10-person group could mean hundreds of identical queries for the same handful of
+     * users' settings on a single response.
+     *
+     * @var array<string, UserSetting>
+     */
+    protected array $cache = [];
+
     public function get(Model $chatable): UserSetting
     {
-        return UserSetting::query()->firstOrCreate(
+        $key = $chatable->getMorphClass().':'.$chatable->getKey();
+
+        return $this->cache[$key] ??= UserSetting::query()->firstOrCreate(
             ['chatable_type' => $chatable->getMorphClass(), 'chatable_id' => $chatable->getKey()],
             [
                 'show_last_seen' => config('chat.privacy.last_seen_default', true),

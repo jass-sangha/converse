@@ -85,15 +85,32 @@ class AttachmentService implements AttachmentServiceInterface
      */
     public function deleteOrphanedFiles(Collection $attachments): void
     {
-        foreach ($attachments as $attachment) {
-            $stillReferenced = MessageAttachment::query()
-                ->where('disk', $attachment->disk)
-                ->where('path', $attachment->path)
-                ->exists();
+        if ($attachments->isEmpty()) {
+            return;
+        }
 
-            if (! $stillReferenced) {
-                Storage::disk($attachment->disk)->delete(array_filter([$attachment->path, $attachment->thumbnail_path]));
+        // One query per distinct disk in the batch (normally just one disk) instead of one
+        // exists() query per attachment — chat:prune-expired-messages calls this with batches
+        // of up to 200.
+        $stillReferenced = [];
+
+        foreach ($attachments->groupBy('disk') as $disk => $group) {
+            $paths = MessageAttachment::query()
+                ->where('disk', $disk)
+                ->whereIn('path', $group->pluck('path')->unique())
+                ->pluck('path');
+
+            foreach ($paths as $path) {
+                $stillReferenced["{$disk}\0{$path}"] = true;
             }
+        }
+
+        foreach ($attachments as $attachment) {
+            if (isset($stillReferenced["{$attachment->disk}\0{$attachment->path}"])) {
+                continue;
+            }
+
+            Storage::disk($attachment->disk)->delete(array_filter([$attachment->path, $attachment->thumbnail_path]));
         }
     }
 

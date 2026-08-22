@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Riwaaq\Chat\Tests\Fixtures\User;
@@ -169,6 +170,48 @@ it('deletes an attachment file from disk when the message is deleted for everyon
 
     $list = $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
     expect($list->json('data.0.attachments'))->toBe([]);
+});
+
+it('checks orphaned attachment files with one query per disk, not one per attachment', function () {
+    Storage::fake('chat');
+
+    $alice = mediaUser('alice-delfilebatch@example.com');
+    $bob = mediaUser('bob-delfilebatch@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $attachmentIds = collect(range(1, 5))->map(
+        fn ($i) => $this->actingAs($alice)->postJson('/api/chat/attachments', [
+            'file' => UploadedFile::fake()->image("photo{$i}.jpg", 200, 200),
+        ])->json('data.id')
+    )->all();
+
+    $messageId = $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'image',
+        'attachment_ids' => $attachmentIds,
+    ])->json('data.id');
+
+    expect(Storage::disk('chat')->allFiles())->toHaveCount(5);
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    $this->actingAs($alice)->deleteJson("/api/chat/messages/{$messageId}")->assertNoContent();
+    // deleteOrphanedFiles() previously ran one exists() query per attachment to check whether
+    // another row still referenced its file — one grouped-by-disk lookup now covers the whole
+    // batch (all 5 share the same 'chat' disk here). Matched specifically by disk+path so this
+    // doesn't also pick up the unrelated "fetch this message's own attachments" query.
+    $referenceChecks = collect(DB::getQueryLog())->filter(
+        fn ($entry) => str_contains($entry['query'], 'chat_message_attachments')
+            && str_contains($entry['query'], '"disk" =')
+            && str_contains($entry['query'], '"path" in')
+    );
+    DB::disableQueryLog();
+
+    expect($referenceChecks)->toHaveCount(1)
+        ->and(Storage::disk('chat')->allFiles())->toHaveCount(0);
 });
 
 it('keeps a forwarded attachment file on disk when only the original is deleted for everyone', function () {

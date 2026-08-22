@@ -34,6 +34,14 @@ export function useMessages() {
         return data.data;
     }
 
+    // `payload.metadataPromise`, when given, is awaited *after* the optimistic push below —
+    // link previews are the only current use: fetching one can take up to a few seconds, and
+    // awaiting it before calling send() at all (as the composer used to) delayed the optimistic
+    // bubble itself, so a link message could visibly sit there doing nothing for seconds while a
+    // plain-text message sent right after it appeared instantly and out of order. Claiming this
+    // message's slot in the list synchronously, before any await, keeps every send — link or
+    // not — appearing in the order it was actually sent, regardless of how long its own preview
+    // fetch takes.
     async function send(conversationId, payload) {
         const optimisticId = localIdCounter--;
         const optimistic = {
@@ -43,7 +51,7 @@ export function useMessages() {
             chatable_id: store.currentId,
             type: payload.type ?? 'text',
             body: payload.body ?? null,
-            metadata: payload.metadata ?? null,
+            metadata: payload.metadataPromise ? null : (payload.metadata ?? null),
             reply_to: payload.replyTo ?? null,
             attachments: payload.attachments ?? [],
             reactions: [],
@@ -55,11 +63,13 @@ export function useMessages() {
         upsertMessage(conversationId, optimistic);
 
         try {
+            const metadata = payload.metadataPromise ? await payload.metadataPromise : (payload.metadata ?? null);
+
             const { data } = await api.post(`/conversations/${conversationId}/messages`, {
                 type: payload.type ?? 'text',
                 body: payload.body ?? null,
                 reply_to_message_id: payload.reply_to_message_id ?? null,
-                metadata: payload.metadata ?? null,
+                metadata,
                 attachment_ids: payload.attachment_ids ?? undefined,
             });
 

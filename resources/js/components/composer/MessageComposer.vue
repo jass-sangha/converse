@@ -281,18 +281,21 @@ async function submit() {
     // A send fired within the 500ms debounce window (e.g. paste-a-link-then-hit-enter) would
     // otherwise skip the preview entirely, since the debounced fetch hadn't even started yet.
     // Capped so a slow/dead site can't stall sending; if it doesn't resolve in time the message
-    // still sends, just without a preview, same as today.
-    const preview = url
-        ? await Promise.race([
+    // still sends, just without a preview, same as today. Passed to send() as a promise rather
+    // than awaited here — awaiting it before calling send() at all would delay this message's
+    // optimistic bubble (and thus its position in the list) by however long the fetch takes,
+    // so a plain-text message sent right after a link one could jump ahead of it.
+    const metadataPromise = url
+        ? Promise.race([
             fetchLinkPreview(url),
             new Promise((resolve) => setTimeout(() => resolve(null), 4000)),
-        ])
+        ]).then((preview) => (preview ? { link_preview: preview } : null))
         : null;
 
     await send(props.conversationId, {
         type: 'text',
         body: trimmed,
-        metadata: preview ? { link_preview: preview } : null,
+        metadataPromise,
         reply_to_message_id: replyToId,
     });
 

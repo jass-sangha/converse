@@ -50,6 +50,50 @@ it('marks messages delivered and read, and never regresses on an earlier read ca
     expect($participant->last_read_message_id)->toBe($ids[9]);
 });
 
+it('memoizes user-settings lookups within a request instead of one query per receipt', function () {
+    $alice = presenceUser('alice-settingsn1@example.com');
+    $bob = presenceUser('bob-settingsn1@example.com');
+    $carol = presenceUser('carol-settingsn1@example.com');
+    $dave = presenceUser('dave-settingsn1@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'group',
+        'name' => 'N+1 check',
+        'participants' => chatableRefs([$bob, $carol, $dave]),
+    ])->json('data.id');
+
+    $lastId = null;
+    foreach (range(1, 5) as $i) {
+        $lastId = $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+            'type' => 'text',
+            'body' => "msg {$i}",
+        ])->assertCreated()->json('data.id');
+    }
+
+    // Every message now has a *read* receipt from each of bob/carol/dave (5 messages x 3
+    // receipts = 15 rows), all pointing at only 3 distinct users. receiptStatus() only calls
+    // allowsReadReceipts() on a receipt's chatable once that receipt is actually read (an
+    // undelivered/unread receipt short-circuits before reaching it), so without memoization
+    // this would be up to 15 separate chat_user_settings lookups for the same 3 users.
+    foreach ([$bob, $carol, $dave] as $recipient) {
+        $this->actingAs($recipient)->postJson("/api/chat/conversations/{$conversationId}/receipts/read", [
+            'up_to_message_id' => $lastId,
+        ])->assertNoContent();
+    }
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    $this->actingAs($alice)->getJson("/api/chat/conversations/{$conversationId}/messages")->assertOk();
+    $settingsQueries = collect(DB::getQueryLog())->filter(
+        fn ($entry) => str_contains($entry['query'], 'chat_user_settings') && str_starts_with(strtolower($entry['query']), 'select')
+    );
+    DB::disableQueryLog();
+
+    // One lookup per distinct chatable this GET actually needed settings for (bob/carol/dave —
+    // alice's own is already warm from sending the messages above), not one per receipt (15).
+    expect($settingsQueries)->toHaveCount(3);
+});
+
 it('exposes per-recipient delivered/read detail for message info', function () {
     $alice = presenceUser('alice-info@example.com');
     $bob = presenceUser('bob-info@example.com');

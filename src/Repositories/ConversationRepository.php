@@ -11,6 +11,7 @@ use Riwaaq\Chat\Contracts\ParticipantRepositoryInterface;
 use Riwaaq\Chat\Enums\ConversationType;
 use Riwaaq\Chat\Models\Conversation;
 use Riwaaq\Chat\Models\ConversationParticipant;
+use Riwaaq\Chat\Models\Message;
 
 class ConversationRepository implements ConversationRepositoryInterface
 {
@@ -81,6 +82,80 @@ class ConversationRepository implements ConversationRepositoryInterface
             ->orderByDesc('my_participation.pinned_at')
             ->orderByDesc("{$conversationTable}.last_activity_at")
             ->get();
+    }
+
+    public function lastMessagesFor(array $conversationIds, Model $viewer): array
+    {
+        if ($conversationIds === []) {
+            return [];
+        }
+
+        // Two queries total regardless of how many conversations: one to find each
+        // conversation's latest non-viewer-deleted message id, one to fetch those specific
+        // rows (with their eager loads) by id — versus the one-query-per-conversation this
+        // replaces in ConversationResource::resolveLastMessage().
+        $lastIds = Message::query()
+            ->whereIn('conversation_id', $conversationIds)
+            ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $viewer))
+            ->selectRaw('conversation_id, MAX(id) as id')
+            ->groupBy('conversation_id')
+            ->pluck('id');
+
+        if ($lastIds->isEmpty()) {
+            return [];
+        }
+
+        return Message::query()
+            ->whereIn('id', $lastIds)
+            ->with('receipts.chatable')
+            ->get()
+            ->keyBy('conversation_id')
+            ->all();
+    }
+
+    public function unreadCountsFor(array $myParticipantByConversationId, Model $viewer): array
+    {
+        if ($myParticipantByConversationId === []) {
+            return [];
+        }
+
+        // The unread cutoff (last_read_message_id) is per conversation, not a single shared
+        // value, so it can't be a plain WHERE — the CASE picks the right cutoff per row inside
+        // one grouped query instead of running a separate COUNT per conversation. Every branch
+        // resolves to a boolean (id > ? / FALSE), which stays portable across MySQL/Postgres/
+        // SQLite in a WHERE position.
+        $cases = [];
+        $bindings = [];
+
+        foreach ($myParticipantByConversationId as $conversationId => $participant) {
+            $cases[] = 'WHEN conversation_id = ? THEN id > ?';
+            $bindings[] = $conversationId;
+            $bindings[] = $participant->last_read_message_id ?? 0;
+        }
+
+        $counts = Message::query()
+            ->whereIn('conversation_id', array_keys($myParticipantByConversationId))
+            ->where(fn ($q) => $q
+                ->where('chatable_type', '!=', $viewer->getMorphClass())
+                ->orWhere('chatable_id', '!=', $viewer->getKey()))
+            ->whereRaw('CASE '.implode(' ', $cases).' ELSE FALSE END', $bindings)
+            ->selectRaw('conversation_id, COUNT(*) as aggregate')
+            ->groupBy('conversation_id')
+            ->pluck('aggregate', 'conversation_id')
+            ->map(fn ($count) => (int) $count);
+
+        $result = [];
+
+        foreach ($myParticipantByConversationId as $conversationId => $participant) {
+            $count = $counts[$conversationId] ?? 0;
+
+            // A manual "mark as unread" doesn't move last_read_message_id (see
+            // ConversationResource's original comment) — it just floors the count at 1 so the
+            // conversation still shows as unread even when the real cursor-based count is 0.
+            $result[$conversationId] = ($participant->manually_unread_at && $count === 0) ? 1 : $count;
+        }
+
+        return $result;
     }
 
     public function findById(int $id): Conversation

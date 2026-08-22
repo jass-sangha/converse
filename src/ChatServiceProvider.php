@@ -80,10 +80,23 @@ class ChatServiceProvider extends PackageServiceProvider
         LinkPreviewFetcher::class => OpenGraphLinkPreviewFetcher::class,
         UserSearchServiceInterface::class => UserSearchService::class,
         PinnedMessageServiceInterface::class => PinnedMessageService::class,
-        UserSettingsServiceInterface::class => UserSettingsService::class,
         ChatListServiceInterface::class => ChatListService::class,
         PollVoteServiceInterface::class => PollVoteService::class,
         EventRsvpServiceInterface::class => EventRsvpService::class,
+    ];
+
+    /**
+     * Singleton rather than a plain binding: UserSettingsService::get() memoizes per chatable
+     * for the lifetime of the instance (see its docblock) to stop MessageResource's
+     * per-receipt allowsReadReceipts() calls from re-querying the same row over and over on a
+     * single message list response. That memoization only helps if every resolution — the
+     * constructor-injected ones in ProfileController/PresenceService/TypingController and the
+     * ad-hoc app(UserSettingsServiceInterface::class) ones in MessageResource/ChatUserResource —
+     * shares the same instance within a request; a plain bind() would hand each of those a
+     * fresh, empty cache.
+     */
+    public array $singletons = [
+        UserSettingsServiceInterface::class => UserSettingsService::class,
     ];
 
     protected array $policies = [
