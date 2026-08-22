@@ -92,9 +92,13 @@ it('memoizes user-settings lookups within a request instead of one query per rec
     );
     DB::disableQueryLog();
 
-    // One lookup per distinct chatable this GET actually needed settings for (bob/carol/dave —
-    // alice's own is already warm from sending the messages above), not one per receipt (15).
-    expect($settingsQueries)->toHaveCount(3);
+    // MessageController::index() now calls UserSettingsService::preload() up front for every
+    // distinct chatable across the page's receipts (alice/bob/carol/dave — 4), instead of
+    // resolving each lazily via receiptStatus() as it's encountered. That's 2 queries
+    // regardless of receipt count (15 here): one batched lookup for all 4, one refetch for
+    // whichever of them still needed a settings row seeded — not one query per distinct
+    // chatable (4) and nowhere near one per receipt (15).
+    expect($settingsQueries)->toHaveCount(2);
 });
 
 it('exposes per-recipient delivered/read detail for message info', function () {

@@ -2,9 +2,12 @@
 
 namespace Riwaaq\Chat\Http\Controllers;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Riwaaq\Chat\Contracts\MessageServiceInterface;
+use Riwaaq\Chat\Contracts\UserSettingsServiceInterface;
 use Riwaaq\Chat\Http\Requests\ForwardMessageRequest;
 use Riwaaq\Chat\Http\Requests\StoreMessageRequest;
 use Riwaaq\Chat\Http\Requests\UpdateMessageRequest;
@@ -19,6 +22,7 @@ class MessageController extends Controller
 
     public function __construct(
         protected MessageServiceInterface $messages,
+        protected UserSettingsServiceInterface $settings,
     ) {}
 
     public function index(Request $request, Conversation $conversation)
@@ -34,6 +38,8 @@ class MessageController extends Controller
             $perPage,
             $beforeId,
         );
+
+        $this->preloadReceiptSettings($messages, $request->user());
 
         return MessageResource::collection($messages);
     }
@@ -130,6 +136,8 @@ class MessageController extends Controller
             $perPage,
         );
 
+        $this->preloadReceiptSettings($messages, $request->user());
+
         return MessageResource::collection($messages);
     }
 
@@ -149,5 +157,23 @@ class MessageController extends Controller
         );
 
         return MessageResource::collection($messages);
+    }
+
+    // MessageResource::receiptStatus() calls allowsReadReceipts() once per receipt on every
+    // message — memoized on the UserSettingsService singleton, but only after each distinct
+    // participant's first occurrence, which without this happens interleaved with response
+    // serialization instead of batched up front. Bounded by conversation headcount (already
+    // capped at 200), not by page size, so this is a smaller win than the presence-sweep one,
+    // but the same pattern applies for the same reason.
+    protected function preloadReceiptSettings(LengthAwarePaginator $messages, ?Model $viewer): void
+    {
+        $chatables = $messages->getCollection()
+            ->pluck('receipts')
+            ->flatten()
+            ->pluck('chatable')
+            ->push($viewer)
+            ->filter();
+
+        $this->settings->preload($chatables);
     }
 }
