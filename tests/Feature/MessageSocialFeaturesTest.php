@@ -258,6 +258,30 @@ it('stars and unstars a message', function () {
     expect($starredAfter->json('data'))->toHaveCount(0);
 });
 
+it('pins and unpins a message, and rejects pinning beyond the per-conversation cap', function () {
+    $alice = socialUser('alice-pin@example.com');
+    $bob = socialUser('bob-pin@example.com');
+    $conversationId = privateConversationBetween($alice, $bob);
+
+    $messageIds = collect(range(1, 4))->map(fn ($n) => $this->actingAs($alice)
+        ->postJson("/api/chat/conversations/{$conversationId}/messages", ['type' => 'text', 'body' => "msg {$n}"])
+        ->json('data.id'));
+
+    $messageIds->take(3)->each(
+        fn ($messageId) => $this->actingAs($bob)->postJson("/api/chat/messages/{$messageId}/pin")->assertNoContent()
+    );
+
+    $pinned = $this->actingAs($bob)->getJson("/api/chat/conversations/{$conversationId}/pinned-messages")->assertOk();
+    expect($pinned->json('data'))->toHaveCount(3);
+
+    $this->actingAs($bob)->postJson("/api/chat/messages/{$messageIds->last()}/pin")->assertStatus(422);
+
+    $this->actingAs($bob)->deleteJson("/api/chat/messages/{$messageIds->first()}/pin")->assertNoContent();
+
+    $pinnedAfter = $this->actingAs($bob)->getJson("/api/chat/conversations/{$conversationId}/pinned-messages")->assertOk();
+    expect($pinnedAfter->json('data'))->toHaveCount(2);
+});
+
 it('mutes, archives, and pins a conversation for the requesting participant only', function () {
     $alice = socialUser('alice-flags@example.com');
     $bob = socialUser('bob-flags@example.com');
