@@ -197,6 +197,7 @@ class ConversationRepository implements ConversationRepositoryInterface
             $conversation = Conversation::query()->create([
                 ...$data,
                 'type' => $type,
+                'private_pair_key' => $type === ConversationType::Private ? $this->privatePairKey($participants) : null,
                 'name' => $type === ConversationType::Group ? ($data['name'] ?? null) : null,
                 'creator_type' => $creator->getMorphClass(),
                 'creator_id' => $creator->getKey(),
@@ -207,6 +208,18 @@ class ConversationRepository implements ConversationRepositoryInterface
 
             return $conversation->load(['participants' => fn ($query) => $query->whereNull('left_at')]);
         });
+    }
+
+    /**
+     * Deterministic regardless of argument order, so both directions of a 1:1 request collide
+     * on the same unique index value (see the private_pair_key migration).
+     */
+    protected function privatePairKey(Collection $participants): string
+    {
+        return $participants
+            ->map(fn (Model $chatable) => Chat::identify($chatable))
+            ->sort()
+            ->implode('||');
     }
 
     public function update(Conversation $conversation, array $data): Conversation

@@ -3,6 +3,7 @@
 namespace Riwaaq\Chat\Services;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -71,7 +72,14 @@ class ConversationService implements ConversationServiceInterface
 
         $participants = collect([$chatable, $other]);
 
-        $conversation = $this->conversations->create([], $participants, $chatable);
+        try {
+            $conversation = $this->conversations->create([], $participants, $chatable);
+        } catch (UniqueConstraintViolationException) {
+            // Another concurrent request for the same pair won the race (private_pair_key's
+            // unique index, see its migration) and already committed its conversation +
+            // participants — fall back to that one instead of erroring.
+            return ['conversation' => $this->conversations->findPrivateBetween($chatable, $other), 'created' => false];
+        }
 
         broadcast(new ConversationCreated($conversation->id, $participants))->toOthers();
 

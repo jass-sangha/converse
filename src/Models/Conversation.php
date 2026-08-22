@@ -17,6 +17,7 @@ class Conversation extends Model
 
     protected $fillable = [
         'type',
+        'private_pair_key',
         'name',
         'description',
         'avatar_path',
