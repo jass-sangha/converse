@@ -53,6 +53,45 @@ it('adds and removes a conversation from a list', function () {
     expect($afterRemove->json('data.0.conversation_ids'))->toBe([]);
 });
 
+it('rejects creating a list with a conversation the user is not a participant of', function () {
+    $alice = socialUser('alice-list-outsider@example.com');
+    $bob = socialUser('bob-list-outsider@example.com');
+    $carol = socialUser('carol-list-outsider@example.com');
+
+    // A conversation alice has no part in — carol and bob's, not hers.
+    $othersConversationId = privateConversationBetween($bob, $carol);
+
+    $this->actingAs($alice)->postJson('/api/chat/lists', [
+        'name' => 'Snooping',
+        'conversation_ids' => [$othersConversationId],
+    ])->assertForbidden();
+});
+
+it('rejects adding a conversation the user is not a participant of to their own list', function () {
+    $alice = socialUser('alice-list-add-outsider@example.com');
+    $bob = socialUser('bob-list-add-outsider@example.com');
+    $carol = socialUser('carol-list-add-outsider@example.com');
+
+    $othersConversationId = privateConversationBetween($bob, $carol);
+
+    $listId = $this->actingAs($alice)
+        ->postJson('/api/chat/lists', ['name' => 'Snooping'])
+        ->json('data.id');
+
+    $this->actingAs($alice)
+        ->postJson("/api/chat/lists/{$listId}/conversations", ['conversation_id' => $othersConversationId])
+        ->assertForbidden();
+});
+
+it('rejects a create-list request with more than 200 conversation_ids', function () {
+    $alice = socialUser('alice-list-toomany@example.com');
+
+    $this->actingAs($alice)->postJson('/api/chat/lists', [
+        'name' => 'Too many',
+        'conversation_ids' => range(1, 201),
+    ])->assertInvalid(['conversation_ids']);
+});
+
 it('clears a chat for one participant without affecting the other', function () {
     $alice = socialUser('alice-clear@example.com');
     $bob = socialUser('bob-clear@example.com');

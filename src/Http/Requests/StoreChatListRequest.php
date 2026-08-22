@@ -15,7 +15,7 @@ class StoreChatListRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'conversation_ids' => ['sometimes', 'array'],
+            'conversation_ids' => ['sometimes', 'array', 'max:200'],
             'conversation_ids.*' => ['integer'],
         ];
     }
