@@ -1,5 +1,5 @@
 import { useApi } from './useApi';
-import { useChatStore, setMessages, prependMessages, upsertMessage, removeMessage, upsertConversation } from '../store';
+import { useChatStore, setMessages, prependMessages, upsertMessage, replaceMessage, removeMessage, upsertConversation } from '../store';
 
 const cursors = {};
 let localIdCounter = -1;
@@ -63,8 +63,7 @@ export function useMessages() {
                 attachment_ids: payload.attachment_ids ?? undefined,
             });
 
-            removeMessage(conversationId, optimisticId);
-            upsertMessage(conversationId, data.data);
+            replaceMessage(conversationId, optimisticId, data.data);
 
             return data.data;
         } catch (error) {

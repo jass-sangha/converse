@@ -36,8 +36,9 @@ const stagedAttachments = ref([]);
 const showPollModal = ref(false);
 const showEventModal = ref(false);
 let linkDebounce = null;
-let linkFetchUrl = null;
-let linkFetchPromise = null;
+// Keyed by URL rather than "the current one" so a submit() in flight for an earlier message
+// never shares mutable fetch state with whatever the user has typed since — see fetchLinkPreview.
+const linkPreviewCache = new Map();
 
 const { opened: dropdownOpened, closed: dropdownClosed } = useExclusiveDropdown();
 
@@ -78,7 +79,7 @@ watch(body, (value) => {
     }
 
     clearTimeout(linkDebounce);
-    linkDebounce = setTimeout(() => detectLink(value), 500);
+    linkDebounce = setTimeout(() => updateLivePreview(value), 500);
 });
 
 watch(() => props.editing, (message) => {
@@ -98,33 +99,40 @@ function focusInput() {
     nextTick(() => inputEl.value?.focus());
 }
 
-// Returns the in-flight fetch (or a resolved no-op) rather than firing a redundant duplicate
-// request — submit() awaits this same promise so a fast send doesn't skip the preview just
-// because the 500ms debounce above hadn't fired yet.
-function detectLink(value) {
-    const match = value.match(/https?:\/\/\S+/);
+function detectUrl(value) {
+    return value.match(/https?:\/\/\S+/)?.[0] ?? null;
+}
 
-    if (!match) {
-        linkFetchUrl = null;
-        linkFetchPromise = null;
+// Cached per URL (not per composer state) so concurrent callers — the live-preview watcher
+// below and any number of in-flight submit() calls — reuse the same in-flight request for the
+// same URL without any of them mutating shared state the others depend on.
+function fetchLinkPreview(url) {
+    if (!linkPreviewCache.has(url)) {
+        linkPreviewCache.set(
+            url,
+            api.post('/link-preview', { url }).then(({ data }) => data.data).catch(() => null),
+        );
+    }
+
+    return linkPreviewCache.get(url);
+}
+
+// Drives the preview card shown live in the composer while typing. Guarded on completion
+// because the fetch can easily outlive the text that triggered it (user keeps typing, or
+// sends and starts a new message) — applying a stale result would flash the wrong preview.
+async function updateLivePreview(value) {
+    const url = detectUrl(value);
+
+    if (!url) {
         linkPreview.value = null;
-        return Promise.resolve();
+        return;
     }
 
-    if (match[0] === linkFetchUrl && linkFetchPromise) {
-        return linkFetchPromise;
+    const preview = await fetchLinkPreview(url);
+
+    if (detectUrl(body.value) === url) {
+        linkPreview.value = preview;
     }
-
-    linkFetchUrl = match[0];
-    linkFetchPromise = api.post('/link-preview', { url: match[0] })
-        .then(({ data }) => {
-            linkPreview.value = data.data;
-        })
-        .catch(() => {
-            linkPreview.value = null;
-        });
-
-    return linkFetchPromise;
 }
 
 function onEmojiPick(emoji) {
@@ -202,15 +210,25 @@ function onInputEscape() {
 
 async function sendStagedAttachments() {
     const trimmed = body.value.trim();
+    const staged = stagedAttachments.value;
+    const replyToId = props.replyTo?.id ?? null;
 
     // Attachments of different message types (image/video/document/audio) can't share a
     // single message — group same-type ones together so e.g. 4 photos picked at once
     // collapse into one message, while a photo + a document still send as two.
     const groups = new Map();
-    for (const item of stagedAttachments.value) {
+    for (const item of staged) {
         if (!groups.has(item.type)) groups.set(item.type, []);
         groups.get(item.type).push(item.attachment.id);
     }
+
+    // Clear immediately, not after the sends below finish: this batch's ids are already
+    // captured in `groups` above, so leaving them staged while several sequential sends are in
+    // flight would mean any attachment/caption added meanwhile gets silently wiped out by this
+    // function's own cleanup once it finally completes.
+    stagedAttachments.value = stagedAttachments.value.filter((item) => !staged.includes(item));
+    body.value = '';
+    emit('dismiss-reply');
 
     let captionUsed = false;
     for (const [type, attachmentIds] of groups) {
@@ -218,15 +236,12 @@ async function sendStagedAttachments() {
             type,
             attachment_ids: attachmentIds,
             body: !captionUsed && trimmed ? trimmed : null,
-            reply_to_message_id: !captionUsed ? (props.replyTo?.id ?? null) : null,
+            reply_to_message_id: !captionUsed ? replyToId : null,
         });
         captionUsed = true;
     }
 
-    stagedAttachments.value = [];
-    body.value = '';
     emit('sent');
-    emit('dismiss-reply');
 }
 
 async function submit() {
@@ -248,36 +263,40 @@ async function submit() {
     const trimmed = body.value.trim();
     if (!trimmed) return;
 
+    const url = detectUrl(trimmed);
+    const replyToId = props.replyTo?.id ?? null;
+
     stopTyping(props.conversationId);
+    clearTimeout(linkDebounce);
+
+    // Clear right away rather than after the awaits below — a slow link-preview fetch or a
+    // slow send must never hold the composer hostage. This is what lets someone type and hit
+    // send again and again back to back: each call snapshots what it needs (trimmed, url,
+    // replyToId) before this point and touches no shared state after it, so a later still-in-
+    // flight call can never stomp on whatever's since been typed into the box.
+    body.value = '';
+    linkPreview.value = null;
+    emit('dismiss-reply');
 
     // A send fired within the 500ms debounce window (e.g. paste-a-link-then-hit-enter) would
     // otherwise skip the preview entirely, since the debounced fetch hadn't even started yet.
-    // Flush it now and wait briefly for whichever fetch is in flight — capped so a slow/dead
-    // site can't stall sending; if it doesn't resolve in time the message still sends, just
-    // without a preview, same as today.
-    clearTimeout(linkDebounce);
-    await Promise.race([
-        detectLink(trimmed),
-        new Promise((resolve) => setTimeout(resolve, 4000)),
-    ]);
-
-    const metadata = linkPreview.value ? { link_preview: linkPreview.value } : null;
+    // Capped so a slow/dead site can't stall sending; if it doesn't resolve in time the message
+    // still sends, just without a preview, same as today.
+    const preview = url
+        ? await Promise.race([
+            fetchLinkPreview(url),
+            new Promise((resolve) => setTimeout(() => resolve(null), 4000)),
+        ])
+        : null;
 
     await send(props.conversationId, {
         type: 'text',
         body: trimmed,
-        metadata,
-        reply_to_message_id: props.replyTo?.id ?? null,
+        metadata: preview ? { link_preview: preview } : null,
+        reply_to_message_id: replyToId,
     });
 
-    body.value = '';
-    linkPreview.value = null;
-    // Otherwise retyping the same link right after sending would silently reuse the already-
-    // settled promise from before and never re-fetch, leaving linkPreview stuck null.
-    linkFetchUrl = null;
-    linkFetchPromise = null;
     emit('sent');
-    emit('dismiss-reply');
 }
 </script>
 
