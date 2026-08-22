@@ -48,20 +48,36 @@ class OpenGraphLinkPreviewFetcher implements LinkPreviewFetcher
         $response = null;
 
         for ($hop = 0; $hop <= self::MAX_REDIRECTS; $hop++) {
-            if (! $this->isSafeUrl($url)) {
+            $resolution = $this->resolveHost($url);
+
+            if ($resolution === false) {
                 return $preview;
             }
 
-            try {
+            $options = [
                 // Tighter than you'd expect for a "just fetch a URL" request: the target is
                 // attacker-controlled, so a slow/hanging server can otherwise tie up a worker
                 // for a long time. Some legitimately slow sites will now come back blank instead
                 // of with a preview — an acceptable trade for not letting an arbitrary URL hold
                 // a connection open. `stream: true` + readBounded() below cap response size
                 // without buffering an attacker's response fully into memory first.
+                'allow_redirects' => false,
+                'stream' => true,
+            ];
+
+            if ($resolution !== null) {
+                // Pins curl's connection to the exact IP resolveHost() just validated, instead
+                // of letting curl re-resolve the hostname itself at connect time. Without this,
+                // a DNS-rebinding attacker returns a public IP for resolveHost()'s lookup and a
+                // private/metadata IP a moment later for curl's own lookup — passing every check
+                // above while still landing the request on the internal network.
+                $options['curl'] = [CURLOPT_RESOLVE => [$resolution]];
+            }
+
+            try {
                 $response = Http::connectTimeout(3)
                     ->timeout(5)
-                    ->withOptions(['allow_redirects' => false, 'stream' => true])
+                    ->withOptions($options)
                     ->get($url);
             } catch (\Throwable) {
                 return $preview;
@@ -71,7 +87,7 @@ class OpenGraphLinkPreviewFetcher implements LinkPreviewFetcher
                 break;
             }
 
-            // Guzzle's own allow_redirects is deliberately off: a URL that passes isSafeUrl()
+            // Guzzle's own allow_redirects is deliberately off: a URL that passes resolveHost()
             // can still 30x to an internal address, so every hop is re-validated by hand instead
             // of trusting the client to follow the chain unchecked.
             $location = $response->header('Location');
@@ -97,7 +113,16 @@ class OpenGraphLinkPreviewFetcher implements LinkPreviewFetcher
         return $preview;
     }
 
-    protected function isSafeUrl(string $url): bool
+    /**
+     * Validates the current hop's host and, when resolving it required a DNS lookup, returns
+     * a CURLOPT_RESOLVE pin ("host:port:ip") for the exact IP that was just checked — see the
+     * call site for why that pin matters.
+     *
+     * @return string|false|null false = reject this hop entirely; null = safe with nothing to
+     *                           pin (host is already a literal IP, or didn't resolve at all —
+     *                           left to fail naturally); string = the CURLOPT_RESOLVE pin.
+     */
+    protected function resolveHost(string $url): string|false|null
     {
         $parts = parse_url($url);
         $scheme = strtolower($parts['scheme'] ?? '');
@@ -107,16 +132,31 @@ class OpenGraphLinkPreviewFetcher implements LinkPreviewFetcher
             return false;
         }
 
-        foreach ($this->resolveIps($host) as $ip) {
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            return $this->isPubliclyRoutable($host) ? null : false;
+        }
+
+        $ips = $this->resolveIps($host);
+
+        foreach ($ips as $ip) {
             if (! $this->isPubliclyRoutable($ip)) {
                 return false;
             }
         }
 
-        // An unresolvable host has nothing to validate against — let the HTTP client's own
-        // connection attempt fail naturally (already wrapped in try/catch above) rather than
-        // block on an inconclusive lookup.
-        return true;
+        // An unresolvable host has nothing to validate — or pin — against; let the HTTP
+        // client's own connection attempt fail naturally (already wrapped in try/catch above)
+        // rather than block on an inconclusive lookup.
+        if ($ips === []) {
+            return null;
+        }
+
+        $port = $parts['port'] ?? ($scheme === 'https' ? 443 : 80);
+        $ip = $ips[0];
+
+        // curl's --resolve/CURLOPT_RESOLVE syntax brackets IPv6 literals in the address field,
+        // same as a URL host would be.
+        return $host.':'.$port.':'.(str_contains($ip, ':') ? "[{$ip}]" : $ip);
     }
 
     /**
