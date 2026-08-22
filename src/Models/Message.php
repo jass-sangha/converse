@@ -24,6 +24,7 @@ class Message extends Model
         'forwarded_from_message_id',
         'is_forwarded',
         'metadata',
+        'has_link',
         'edited_at',
         'deleted_for_everyone_at',
         'expires_at',
@@ -32,6 +33,7 @@ class Message extends Model
     protected $casts = [
         'type' => MessageType::class,
         'is_forwarded' => 'boolean',
+        'has_link' => 'boolean',
         'metadata' => 'array',
         'edited_at' => 'datetime',
         'deleted_for_everyone_at' => 'datetime',
@@ -111,5 +113,17 @@ class Message extends Model
     public function isSystemMessage(): bool
     {
         return $this->type === MessageType::System || $this->chatable_id === null;
+    }
+
+    /**
+     * Any text message containing a URL counts as a "link" for the media/search 'links'
+     * filter — not only ones where the composer's client-side OG-preview fetch happened to
+     * finish before send (that's a best-effort race against however fast the sender hits
+     * enter). Computed at write time (see MessageService::send()/update()) into the indexed
+     * `has_link` column so MessageRepository::media() never needs a body LIKE scan.
+     */
+    public static function hasLinkInBody(?string $body): bool
+    {
+        return $body !== null && preg_match('/https?:\/\/\S+/', $body) === 1;
     }
 }

@@ -49,7 +49,11 @@ class MessageRepository implements MessageRepositoryInterface
             ->whereHas('conversation.participants', fn ($q) => Chat::whereChatable($q, $chatable)->whereNull('left_at'))
             ->whereDoesntHave('deletions', fn ($q) => Chat::whereChatable($q, $chatable))
             ->whereNull('deleted_for_everyone_at')
-            ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps', 'conversation.participants'])
+            // 'conversation.participants' is column-restricted: MessageResource only ever
+            // reads chatable_type/chatable_id off of it (to build the frontend's
+            // chatableKey()), so there's no reason to pull role/muted_until/archived_at/etc.
+            // for every participant of every conversation a search result happens to land in.
+            ->with(['chatable', 'attachments', 'reactions', 'replyTo.attachments', 'receipts.chatable', 'starredBy', 'pinnedIn', 'pollVotes', 'eventRsvps', 'conversation', 'conversation.participants:id,conversation_id,chatable_type,chatable_id'])
             ->orderByDesc('id');
 
         $this->matchBody($builder, $query);
@@ -99,11 +103,11 @@ class MessageRepository implements MessageRepositoryInterface
         match ($kind) {
             'media' => $builder->whereIn('type', ['image', 'video', 'gif']),
             'docs' => $builder->where('type', 'document'),
-            // Any text message containing a URL counts as a "link", not only the ones where
-            // the composer's client-side OG-preview fetch happened to finish before send —
-            // that fetch is a best-effort race against however fast the sender hits enter, so
-            // gating this list on metadata->link_preview silently dropped most real links.
-            'links' => $builder->where('type', 'text')->where('body', 'like', '%http%'),
+            // has_link is computed at write time (see Message::hasLinkInBody(), set in
+            // MessageService::send()/update()) from the same "any URL in the body" rule this
+            // used to check here with a leading-wildcard `body LIKE '%http%'` scan — indexed
+            // now instead of a full table scan.
+            'links' => $builder->where('type', 'text')->where('has_link', true),
         };
 
         if ($conversationId !== null) {

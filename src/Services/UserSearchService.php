@@ -22,7 +22,7 @@ class UserSearchService implements UserSearchServiceInterface
         }
 
         if (! empty($q)) {
-            $query->where($nameField, 'like', '%'.$q.'%');
+            $query->where($nameField, 'like', Chat::nameSearchPattern($q));
         }
 
         return $query->paginate($perPage);

@@ -145,7 +145,7 @@ class Chat
             $nameField = static::nameFieldFor($morphType);
 
             $model::query()
-                ->where($nameField, 'like', '%'.$term.'%')
+                ->where($nameField, 'like', static::nameSearchPattern($term))
                 ->pluck($instance->getKeyName())
                 ->each(function ($id) use ($morphType, &$pairs) {
                     $pairs[] = [$morphType, $id];
@@ -153,5 +153,14 @@ class Chat
         }
 
         return $pairs;
+    }
+
+    /**
+     * The LIKE pattern for matching a chatable's name field, per config('chat.user_search.strategy')
+     * — see that config key for why this is configurable instead of always a leading wildcard.
+     */
+    public static function nameSearchPattern(string $term): string
+    {
+        return config('chat.user_search.strategy') === 'starts_with' ? "{$term}%" : "%{$term}%";
     }
 }

@@ -47,6 +47,7 @@ class MessageService implements MessageServiceInterface
                 'chatable_id' => $chatable->getKey(),
                 'type' => $data['type'] ?? MessageType::Text->value,
                 'body' => $data['body'] ?? null,
+                'has_link' => Message::hasLinkInBody($data['body'] ?? null),
                 'reply_to_message_id' => $data['reply_to_message_id'] ?? null,
                 'metadata' => $data['metadata'] ?? null,
                 'expires_at' => $this->resolveExpiry($conversation),
@@ -101,6 +102,7 @@ class MessageService implements MessageServiceInterface
 
         $message->update([
             'body' => $body,
+            'has_link' => Message::hasLinkInBody($body),
             'edited_at' => now(),
         ]);
 

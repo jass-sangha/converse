@@ -406,6 +406,44 @@ it('lists a link in the media links tab even without a fetched preview', functio
         ->and($links->json('data.0.body'))->toContain('https://example.com/page');
 });
 
+it('recomputes the links tab membership when a message is edited to add or remove a url', function () {
+    $alice = mediaUser('alice-linksedit@example.com');
+    $bob = mediaUser('bob-linksedit@example.com');
+
+    $conversationId = $this->actingAs($alice)->postJson('/api/chat/conversations', [
+        'type' => 'private',
+        'participants' => [chatableRef($bob)],
+    ])->json('data.id');
+
+    $messageId = $this->actingAs($alice)->postJson("/api/chat/conversations/{$conversationId}/messages", [
+        'type' => 'text',
+        'body' => 'no link yet',
+    ])->assertCreated()->json('data.id');
+
+    $this->actingAs($alice)
+        ->getJson('/api/chat/messages/media?kind=links')
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/messages/{$messageId}", ['body' => 'now with a link https://example.com'])
+        ->assertOk();
+
+    $this->actingAs($alice)
+        ->getJson('/api/chat/messages/media?kind=links')
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
+
+    $this->actingAs($alice)
+        ->patchJson("/api/chat/messages/{$messageId}", ['body' => 'link removed now'])
+        ->assertOk();
+
+    $this->actingAs($alice)
+        ->getJson('/api/chat/messages/media?kind=links')
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+});
+
 it('persists a link preview attached to a sent text message', function () {
     $alice = mediaUser('alice-preview-persist@example.com');
     $bob = mediaUser('bob-preview-persist@example.com');

@@ -134,6 +134,13 @@ return [
     */
     'user_search' => [
         'name_field' => 'name',
+        // 'contains' (default) matches the query anywhere in name_field via a leading-
+        // wildcard LIKE '%term%', which can't use a normal index. This package can't add one
+        // itself — name_field lives on the host's own chatable model/table (e.g. `users`),
+        // not one this package migrates. 'starts_with' switches to LIKE 'term%' instead
+        // (narrower matching, but index-friendly if the host adds a normal index on that
+        // column) for a deployment that needs search to hold up at scale.
+        'strategy' => 'contains',
     ],
 
     /*

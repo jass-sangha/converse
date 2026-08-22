@@ -57,9 +57,18 @@ class ConversationRepository implements ConversationRepositoryInterface
         if (! empty($filters['q'])) {
             $term = $filters['q'];
             $matches = Chat::matchingChatablePairs($term);
+            // FULLTEXT on MySQL/Postgres (see the migration that adds it) instead of a
+            // leading-wildcard LIKE scan, which can't use any index — same tradeoff as
+            // MessageRepository::matchBody(). SQLite (tests/tiny installs) keeps the LIKE
+            // fallback since it has no FULLTEXT support.
+            $useFullText = in_array(DB::connection()->getDriverName(), ['mysql', 'pgsql'], true);
 
-            $query->where(function ($outer) use ($conversationTable, $term, $matches) {
-                $outer->where("{$conversationTable}.name", 'like', '%'.$term.'%');
+            $query->where(function ($outer) use ($conversationTable, $term, $matches, $useFullText) {
+                if ($useFullText) {
+                    $outer->whereFullText("{$conversationTable}.name", $term);
+                } else {
+                    $outer->where("{$conversationTable}.name", 'like', '%'.$term.'%');
+                }
 
                 // Private conversations have no stored `name` — their display name is the
                 // other participant's, resolved client-side — so matching only the column
